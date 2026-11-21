@@ -63,6 +63,10 @@ Passing-run checks (run 5, conversation `c0275cc5-9c62-4f17-93fa-7c74cb6d4c10`, 
 
 All conversations except run 5's were deleted afterwards.
 
+After merging `origin/main` at `2a3b1da` (X sourced facts, migration 003, pipeline changes) into the branch:
+build, lint and tests green (API 30/30, extension 30/30), migration 003 applied, and the end-to-end test passed
+2/2 with the same verdicts (yes / no).
+
 ## Not covered
 
 - Live Meet DOM (selectors), real caption quality, speaker labels for the local user, Chrome service-worker
