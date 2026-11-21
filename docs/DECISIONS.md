@@ -17,3 +17,7 @@ La integración prevista usará Embeddings y PostgreSQL con pgvector para recupe
 ## 004 · Escenarios fijos para la demo
 
 La API devuelve un resultado fijo por escenario mediante el mismo formato previsto para el flujo funcional. El panel identifica los datos simulados y permite reproducir cada caso desde un selector. La ruta devuelve neutral y una lista vacía cuando no se elige ningún escenario.
+
+## 005 · Contraste por turno de Meet
+
+La extensión y la API comparten el guion ficticio. La extensión envía el ID del turno y el servidor aplica reglas de extracción a las frases del emprendedor. La demo agrupa los casos con evidencia de un turno en una sola solicitud a Decisions. El motor simulado permite reproducir el mismo flujo sin una clave.

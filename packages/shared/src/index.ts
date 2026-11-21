@@ -18,3 +18,16 @@ export type FactCheckResult = {
     sourceUrl: string;
   }>;
 };
+
+export { MEET_TRANSCRIPT } from './meet-demo.js';
+export type { MeetTurn } from './meet-demo.js';
+
+export const MEET_DEMO_PATH = '/api/meet/demo/check';
+export const MEET_JUDGES = ['mock', 'decisions'] as const;
+export type MeetJudge = (typeof MEET_JUDGES)[number];
+
+export type MeetCheckRequest = { turnId: string; mode: MeetJudge };
+
+export type MeetCheckResult = {
+  checks: Array<FactCheckResult & { claim: string }>;
+};

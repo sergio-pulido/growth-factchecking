@@ -2,6 +2,8 @@ import { CLAIM_MAX_LENGTH, DEMO_SCENARIOS, FACT_CHECK_PATH } from '@growth-factc
 import type { DemoScenario, FactCheckRequest } from '@growth-factcheking/shared';
 import Fastify from 'fastify';
 import { mockResults } from './mock-facts.js';
+import { createPitchDecider } from './meet/decisions.js';
+import { registerMeetDemo } from './meet/route.js';
 
 export function createApp(logger = true) {
   const app = Fastify({ logger, ajv: { customOptions: { coerceTypes: false } } });
@@ -36,6 +38,9 @@ export function createApp(logger = true) {
       return mockResults[scenario];
     },
   );
+
+  const apiKey = process.env.OPENAI_API_KEY?.trim();
+  registerMeetDemo(app, apiKey ? createPitchDecider(apiKey) : undefined);
 
   return app;
 }

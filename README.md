@@ -4,8 +4,8 @@ Punto de partida para una extensión de Chrome que mostrará verificaciones sobr
 
 | Espacio de trabajo | Contenido inicial |
 | --- | --- |
-| `apps/extension` | Extensión Manifest V3. Abre un panel sobre la pestaña para probar veredictos, fuentes y errores con datos simulados. |
-| `apps/api` | API local con `GET /health` y la ruta de demostración `POST /api/fact-check`. |
+| `apps/extension` | Extensión Manifest V3 con escenarios de verificación y simulación de una conversación de Google Meet. |
+| `apps/api` | API local con `GET /health`, `POST /api/fact-check` y `POST /api/meet/demo/check`. |
 | `packages/shared` | Contrato TypeScript compartido por la extensión y la API. |
 
 ## Arranque local
@@ -27,7 +27,27 @@ curl -fsS http://127.0.0.1:3000/health
 
 Para abrir el panel, entra en `chrome://extensions`, activa **Modo de desarrollador**, pulsa **Cargar descomprimida** y selecciona `apps/extension/dist`. Abre una página web y pulsa el icono de la extensión. Opcionalmente, selecciona texto antes de abrirla. En el panel, elige un escenario y pulsa **Probar**.
 
-El arranque local solo necesita Node.js. `.env.example` reserva los nombres de las variables para cuando se conecten OpenAI y la base de datos.
+El modo simulado solo necesita Node.js.
+
+## Simulación de Google Meet
+
+En el panel de la extensión, pulsa **Simular Google Meet** y **Reproducir**. Clara, una inversora, pide a Mateo cifras de su empresa ficticia. El panel reproduce seis intervenciones y muestra cuatro afirmaciones verificables del emprendedor, con sus veredictos y fuentes de ejemplo. Las reglas de extracción están ajustadas a esta transcripción.
+
+El modo **Simulado** sirve para trabajar con resultados reproducibles. Para usar **OpenAI Decisions** en el mismo panel, configura `OPENAI_API_KEY` en el entorno del servidor y vuelve a iniciarlo. Por ejemplo, si guardaste la clave en un archivo `.env` local, desde la raíz ejecuta:
+
+```bash
+node --env-file=.env apps/api/dist/index.js
+```
+
+La llamada a Decisions usa las afirmaciones de la demo y sus fuentes ficticias. El piloto sin documentación queda neutral. La demo se puede consultar directamente con:
+
+```bash
+curl -fsS 'http://127.0.0.1:3000/api/meet/demo/check' \
+  -H 'Content-Type: application/json' \
+  -d '{"turnId":"traction","mode":"mock"}'
+```
+
+[Especificación de la simulación](docs/specs/meet-demo.md) · [OpenAI Decisions](https://developers.openai.com/api/docs/guides/decisions)
 
 ## Escenarios de prueba
 
@@ -58,6 +78,6 @@ Afirmación → Extensión → API
                           └─ OpenAI Decisions clasifica la afirmación con esos hechos
 ```
 
-La captura automática de afirmaciones y las integraciones con OpenAI y PostgreSQL quedan para las siguientes iteraciones.
+La captura de conversaciones reales y la búsqueda de evidencia en PostgreSQL forman parte del flujo previsto.
 
 [Especificación inicial](docs/specs/fact-checking-mvp.md) · [Estado del proyecto](docs/PROJECT_STATE.md) · [Decisiones de arquitectura](docs/DECISIONS.md)

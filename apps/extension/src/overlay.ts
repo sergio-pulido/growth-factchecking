@@ -1,16 +1,11 @@
 import { CLAIM_MAX_LENGTH, DEMO_SCENARIOS } from '@growth-factcheking/shared';
-import type { DemoScenario, Verdict } from '@growth-factcheking/shared';
+import type { DemoScenario } from '@growth-factcheking/shared';
 import type { DemoRequest, DemoResponse } from './messages.js';
+import { createMeetDemo } from './meet-demo.js';
 import styles from './overlay.css';
+import { verdictLabels } from './verdict-labels.js';
 
 const demoClaim = 'La biblioteca de Puerto Aurora abre los sábados.';
-const verdictLabels: Record<Verdict, string> = {
-  yes: 'Sí',
-  probably_yes: 'Probablemente sí',
-  neutral: 'Neutral',
-  probably_no: 'Probablemente no',
-  no: 'No',
-};
 const scenarioLabels: Record<DemoScenario, string> = {
   ...verdictLabels,
   no_evidence: 'Sin fuentes',
@@ -19,13 +14,13 @@ const scenarioLabels: Record<DemoScenario, string> = {
 
 declare global {
   interface Window {
-    growthFactCheckingOverlay?: HTMLElement;
+    growthFactCheckingOverlay?: () => void;
   }
 }
 
 function mountOverlay() {
   const claim = window.getSelection()?.toString().trim().slice(0, CLAIM_MAX_LENGTH) || demoClaim;
-  window.growthFactCheckingOverlay?.remove();
+  window.growthFactCheckingOverlay?.();
 
   const host = document.createElement('div');
   host.id = 'growth-factchecking-overlay';
@@ -76,7 +71,24 @@ function mountOverlay() {
   sourceTitle.textContent = 'Fuentes de ejemplo';
   const sourceList = document.createElement('ul');
   sources.append(sourceTitle, sourceList);
-  panel.append(demo, quote, form, status, sources);
+  const scenarioView = document.createElement('div');
+  scenarioView.append(demo, quote, form, status, sources);
+  const meet = createMeetDemo();
+  const changeView = document.createElement('button');
+  changeView.type = 'button';
+  changeView.className = 'meet-switch';
+
+  function showMeet(show: boolean) {
+    scenarioView.hidden = show;
+    meet.view.hidden = !show;
+    changeView.textContent = show ? 'Volver a escenarios' : 'Simular Google Meet';
+    title.textContent = show ? 'Simulación de Google Meet' : 'FactChecking';
+    if (!show) meet.stop();
+  }
+
+  showMeet(window.location.hostname === 'meet.google.com');
+  changeView.addEventListener('click', () => showMeet(meet.view.hidden));
+  panel.append(changeView, scenarioView, meet.view);
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -122,6 +134,7 @@ function mountOverlay() {
 
   const previousFocus = document.activeElement;
   function dismiss() {
+    meet.stop();
     host.remove();
     window.growthFactCheckingOverlay = undefined;
     if (previousFocus instanceof HTMLElement) previousFocus.focus();
@@ -132,7 +145,7 @@ function mountOverlay() {
     if (event.key === 'Escape') dismiss();
   });
 
-  window.growthFactCheckingOverlay = host;
+  window.growthFactCheckingOverlay = dismiss;
   shadow.append(panel);
   document.documentElement.append(host);
   close.focus();
