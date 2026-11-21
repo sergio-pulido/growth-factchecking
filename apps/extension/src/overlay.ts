@@ -2,7 +2,6 @@ import { CLAIM_MAX_LENGTH, DEMO_SCENARIOS } from '@growth-factcheking/shared';
 import type { DemoScenario } from '@growth-factcheking/shared';
 import type { FactCheckMessage, FactCheckMode, FactCheckResponse } from './messages.js';
 import { isXHome, startInlineFeed } from './inline-feed.js';
-import { createMeetDemo } from './meet-demo.js';
 import styles from './overlay.css';
 import { verdictLabels } from './verdict-labels.js';
 
@@ -20,7 +19,8 @@ declare global {
   }
 }
 
-function mountOverlay() {
+/** Panel that checks the text selected on the page (and toggles the X feed checks on X). */
+export function mountOverlay() {
   const selection = window.getSelection()?.toString().trim().slice(0, CLAIM_MAX_LENGTH) || '';
   window.growthFactCheckingOverlay?.();
 
@@ -79,21 +79,6 @@ function mountOverlay() {
   sources.append(sourceTitle, sourceList);
   const scenarioView = document.createElement('div');
   scenarioView.append(demo, quote, form, status, sources);
-  const meet = createMeetDemo();
-  const changeView = document.createElement('button');
-  changeView.type = 'button';
-  changeView.className = 'meet-switch';
-
-  function showMeet(show: boolean) {
-    scenarioView.hidden = show;
-    meet.view.hidden = !show;
-    changeView.textContent = show ? 'Volver a verificación' : 'Simular Google Meet';
-    title.textContent = show ? 'Simulación de Google Meet' : 'FactChecking';
-    if (!show) meet.stop();
-  }
-
-  showMeet(window.location.hostname === 'meet.google.com');
-  changeView.addEventListener('click', () => showMeet(meet.view.hidden));
   if (isXHome()) {
     const active = Boolean(window.growthFactCheckingFeed);
     const feed = document.createElement('div');
@@ -117,7 +102,7 @@ function mountOverlay() {
     feed.append(toggle, note);
     scenarioView.prepend(feed);
   }
-  panel.append(changeView, scenarioView, meet.view);
+  panel.append(scenarioView);
 
   let mode: FactCheckMode = 'mock';
   let busy = true;
@@ -227,7 +212,6 @@ function mountOverlay() {
 
   const previousFocus = document.activeElement;
   function dismiss() {
-    meet.stop();
     host.remove();
     window.growthFactCheckingOverlay = undefined;
     if (previousFocus instanceof HTMLElement) previousFocus.focus();
@@ -243,5 +227,3 @@ function mountOverlay() {
   document.documentElement.append(host);
   close.focus();
 }
-
-mountOverlay();

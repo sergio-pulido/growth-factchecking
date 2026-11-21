@@ -13,7 +13,7 @@
   "scripts": {
     "build": "npm run build --workspaces",
     "start": "npm run start --workspace @growth-factcheking/api",
-    "test": "npm run test --workspace @growth-factcheking/api",
+    "test": "npm run test --workspace @growth-factcheking/api && npm run test --workspace @growth-factcheking/extension",
     "db:migrate": "npm run db:migrate --workspace @growth-factcheking/api",
     "seed": "npm run seed --workspace @growth-factcheking/api --",
     "dev": "npm run build && npm start",

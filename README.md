@@ -1,11 +1,11 @@
 # Growth FactChecking
 
-Punto de partida para una extensión de Chrome que mostrará verificaciones sobre Google Meet, X y otras páginas web.
+Extensión de Chrome que verifica en directo lo que se dice en Google Meet, Zoom, Teams o cualquier pestaña con audio, y las publicaciones de X.
 
 | Espacio de trabajo | Contenido inicial |
 | --- | --- |
-| `apps/extension` | Extensión Manifest V3 con verificación real, escenarios simulados y una conversación ficticia de Google Meet. |
-| `apps/api` | API local con `GET /health`, `POST /api/fact-check`, `POST /api/fact-check/live` y `POST /api/meet/demo/check`. |
+| `apps/extension` | Extensión Manifest V3: panel de verificación en llamadas, verificación del texto seleccionado y del feed de X. |
+| `apps/api` | API local con `GET /health`, `POST /api/fact-check`, `POST /api/fact-check/live`, conversaciones (`/api/conversations`) y `POST /api/transcription/token`. |
 | `packages/shared` | Contrato TypeScript compartido por la extensión y la API. |
 
 ## Arranque local
@@ -68,21 +68,18 @@ Con la API local en marcha y un corpus real importado, abre **Inicio** de X en C
 
 La [demo local de publicaciones](http://127.0.0.1:3000/x-demo) usa el mismo renderizador y la API real sin instalar la extensión. Para cargar los hechos que necesita, ejecuta `npm run seed -- data/demo/x-politics.json` después de migrar la base de datos. Reinicia la API para limpiar los veredictos guardados.
 
-## Simulación de Google Meet
+## Verificación en directo de llamadas
 
-En el panel de la extensión, pulsa **Simular Google Meet** y **Reproducir**. Clara, una inversora, pide a Mateo cifras de su empresa ficticia. El panel reproduce seis intervenciones y muestra cuatro afirmaciones verificables del emprendedor, con sus veredictos y fuentes de ejemplo. Las reglas de extracción están ajustadas a esta transcripción.
+Pulsa el icono de la extensión en la pestaña de la llamada para abrir el panel de FactCheck. En Google Meet, Zoom (cliente web) y Microsoft Teams (web), el botón **Verificar esta llamada** también aparece solo, abajo a la derecha, al entrar en la llamada. El panel explica qué va a hacer; avisa a los participantes y pulsa **Empezar a verificar**.
 
-El modo **Simulado** sirve para trabajar con resultados reproducibles. Para usar **OpenAI Decisions**, guarda `OPENAI_API_KEY` en el archivo `.env` de la raíz, reinicia la API con `npm start` y elige ese motor en el panel.
+- **Meet, Zoom web y Teams web:** la extensión lee los subtítulos de la propia aplicación, con el nombre de quien habla. Si están apagados, intenta activarlos; si no puede, el panel indica cómo hacerlo.
+- **Cualquier otra pestaña** (otro servicio de vídeo, un webinar, YouTube…): la extensión escucha el audio de la pestaña y lo transcribe con OpenAI. Elige el idioma de la conversación antes de empezar. El audio no se guarda y los participantes aparecen sin nombre. Tu propio micrófono no forma parte del audio de la pestaña.
 
-La llamada a Decisions usa las afirmaciones de la demo y sus fuentes ficticias. El piloto sin documentación queda neutral. La demo se puede consultar directamente con:
+Cada frase se guarda en la API local, que extrae las afirmaciones verificables y las contrasta con el corpus. Con el panel recogido, cada veredicto aparece como una burbuja sobre el botón y tiñe los bordes de la pantalla. **Pausar** deja de enviar lo que se dice, **Detener** cierra la conversación y **Borrar conversación** la elimina de la base de datos. Desde el panel también puedes verificar el texto seleccionado en la página.
 
-```bash
-curl -fsS 'http://127.0.0.1:3000/api/meet/demo/check' \
-  -H 'Content-Type: application/json' \
-  -d '{"turnId":"traction","mode":"mock"}'
-```
+Necesita la API con `OPENAI_API_KEY` y `DATABASE_URL`, la base de datos migrada y un corpus importado. Las aplicaciones de escritorio de Zoom o Teams quedan fuera del alcance de una extensión de Chrome: usa su versión web.
 
-[Especificación de la simulación](docs/specs/meet-demo.md) · [OpenAI Decisions](https://developers.openai.com/api/docs/guides/decisions)
+[Especificación del panel de llamadas](docs/specs/call-overlay.md)
 
 ## Escenarios de prueba
 
@@ -113,6 +110,6 @@ Afirmación → Extensión → API
                           └─ OpenAI Decisions clasifica la afirmación con esos hechos
 ```
 
-La captura de conversaciones reales forma parte del flujo previsto.
+Las conversaciones se capturan desde los subtítulos de Meet, Zoom web y Teams web, o desde el audio de cualquier pestaña.
 
 [Especificación inicial](docs/specs/fact-checking-mvp.md) · [Estado del proyecto](docs/PROJECT_STATE.md) · [Decisiones de arquitectura](docs/DECISIONS.md)

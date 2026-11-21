@@ -110,69 +110,6 @@ a {
   color: #14533e;
 }
 
-.meet-switch {
-  margin-bottom: 10px;
-  padding: 3px 8px;
-  font: inherit;
-  color: #14533e;
-}
-
-.meet-demo form {
-  margin-top: 8px;
-}
-
-.meet-transcript,
-.meet-checks {
-  list-style: none;
-  padding: 0;
-  margin: 8px 0 0;
-}
-
-.meet-turn {
-  padding: 9px 10px;
-  border: 1px solid #d7dfdb;
-  border-radius: 6px;
-}
-
-.meet-turn[data-speaker="founder"] {
-  background: #f4f8f5;
-}
-
-.meet-turn-meta {
-  display: flex;
-  justify-content: space-between;
-  gap: 4px;
-  margin-bottom: 4px;
-  color: #42554b;
-  font-size: 12px;
-}
-
-.meet-check {
-  padding-inline-start: 8px;
-  border-inline-start: 3px solid #819489;
-}
-
-.meet-check[data-verdict="yes"],
-.meet-check[data-verdict="probably_yes"] {
-  border-inline-start-color: #26704f;
-}
-
-.meet-check[data-verdict="no"],
-.meet-check[data-verdict="probably_no"] {
-  border-inline-start-color: #a23c30;
-}
-
-.meet-check summary {
-  color: #14533e;
-  cursor: pointer;
-  font-size: 12px;
-}
-
-.meet-error {
-  margin-top: 6px;
-  color: #9f342b;
-}
-
 .feed-controls {
   margin-bottom: 14px;
   padding-bottom: 10px;
