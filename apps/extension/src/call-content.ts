@@ -1,5 +1,5 @@
-// FactCheck call overlay. Runs on Meet, Zoom web and Teams web (shows the pill once a call is on screen) and
-// on any other tab when the user clicks the toolbar icon. Nothing is read until "Empezar a verificar".
+// FactCheck call overlay. Zoom web, Teams web and YouTube start from captions. Meet and other audio
+// sources wait for the user's Start action. The toolbar click grants Chrome tab capture.
 // Spec: docs/specs/call-overlay.md
 import type { UtteranceBatchResult } from '@growth-factcheking/shared';
 import { createAudioSource } from './call/audio-source.js';
@@ -72,6 +72,8 @@ const pageTitle = () => document.title.trim().slice(0, 300) || location.hostname
 
 function mount(source: CaptureSource): CallPanel {
   const panel = mountCallPanel(source, transport, {
+    // Captions need no permission prompt, so caption sources start on their own; tab audio waits for the click.
+    autoStart: source.capture === 'captions',
     title: pageTitle,
     // Origin and path only: query strings and fragments can carry personal data.
     pageUrl: () => `${location.origin}${location.pathname}`,

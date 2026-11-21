@@ -26,6 +26,8 @@ export type CallPanel = {
 export type PanelOptions = SessionOptions & {
   /** Opens the panel that checks the text selected on the page. */
   onCheckSelection?: () => void;
+  /** Starts checking right away, as a small pill, without waiting for "Start checking". */
+  autoStart?: boolean;
 };
 
 const isAttention = (item: ClaimItem) => item.state === 'checked' && item.verdict !== null && ATTENTION.has(item.verdict);
@@ -343,6 +345,7 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
   document.documentElement.append(host);
   render(session.snapshot());
   setOpen(false, true);
+  if (options.autoStart) void session.start();
 
   return {
     capture: source.capture,
