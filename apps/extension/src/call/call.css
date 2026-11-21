@@ -12,8 +12,10 @@
   --v-yes: #5EE08F; --v-pyes: #B2E88A; --v-neutral: #D0D4D2; --v-pno: #FFC468; --v-no: #FF8F85;
   --v-yes-bg: rgba(94,224,143,.18); --v-pyes-bg: rgba(178,232,138,.16); --v-neutral-bg: rgba(255,255,255,.12);
   --v-pno-bg: rgba(255,196,104,.18); --v-no-bg: rgba(255,143,133,.2);
-  /* Near-opaque: over busy or bright pages (YouTube, slides) a see-through panel was hard to read. */
-  --glass-tint: linear-gradient(160deg, rgba(38,41,48,.95), rgba(16,18,23,.94));
+  /* Frosted glass: the blur (14px) keeps text readable over busy or bright pages (YouTube, slides),
+     so the open panel can stay see-through. The pill and bubbles are small and short-lived: lighter still. */
+  --glass-tint: linear-gradient(160deg, rgba(44,47,56,.62), rgba(16,18,23,.56));
+  --glass-clear: linear-gradient(160deg, rgba(70,74,86,.42), rgba(18,20,26,.38));
   --glass-edge: rgba(255,255,255,.55); --glass-glow: rgba(255,255,255,.10); --glass-drop: rgba(0,0,0,.40);
   --ring: #2E3138;
   --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Google Sans", Inter, system-ui, sans-serif;
@@ -30,23 +32,35 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .spacer { flex: 1; }
 
 /* ---------- Glass surfaces ---------- */
+/* Liquid glass: the backdrop is blurred, brightened and bent at the edges by the #gf-lens SVG filter (Chromium),
+   with a specular sheen on top and a light rim that is brighter where the light comes from (top left). */
 .panel, .bubble {
   position: absolute;
   color: var(--ink);
   background: var(--glass-tint);
-  -webkit-backdrop-filter: blur(26px) saturate(185%);
-  backdrop-filter: blur(26px) saturate(185%);
-  box-shadow: inset 0 1px 0 var(--glass-edge), inset 0 -1px 1px var(--glass-glow), inset 0 0 24px var(--glass-glow),
+  -webkit-backdrop-filter: blur(14px) saturate(190%) brightness(1.08);
+  backdrop-filter: url(#gf-lens) blur(14px) saturate(190%) brightness(1.08);
+  box-shadow:
+    inset 1.5px 1.5px 0 -0.5px rgba(255,255,255,.55), inset -1px -1px 0 -0.5px rgba(255,255,255,.22),
+    inset 0 0 18px rgba(255,255,255,.08), inset 0 -10px 22px -14px rgba(255,255,255,.25),
     0 24px 60px var(--glass-drop), 0 2px 8px var(--glass-drop);
   pointer-events: auto;
 }
 .panel::before, .bubble::before {
   content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none; z-index: 2;
-  background: linear-gradient(135deg, var(--glass-edge), rgba(255,255,255,.12) 28%, rgba(255,255,255,0) 55%,
-    rgba(255,255,255,.08) 75%, var(--glass-edge));
+  background: linear-gradient(135deg, rgba(255,255,255,.85), rgba(255,255,255,.18) 22%, rgba(255,255,255,0) 50%,
+    rgba(255,255,255,.10) 78%, rgba(255,255,255,.55));
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor; mask-composite: exclude;
 }
+/* Specular reflection: a soft highlight across the top left, like light caught on curved glass. */
+.bubble::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 1;
+  background:
+    radial-gradient(120% 70% at 18% -10%, rgba(255,255,255,.22), rgba(255,255,255,.06) 45%, transparent 70%),
+    linear-gradient(115deg, transparent 38%, rgba(255,255,255,.07) 46%, transparent 54%);
+}
+.bubble > * { position: relative; z-index: 2; }
 
 /* ---------- Island: one container morphs pill <-> panel ---------- */
 .panel {
@@ -56,9 +70,11 @@ button { font: inherit; color: inherit; cursor: pointer; }
 }
 .panel::after {
   content: ""; position: absolute; left: 0; right: 0; top: 0; height: 120px; pointer-events: none;
-  background: linear-gradient(180deg, var(--glass-glow), transparent); border-radius: 28px 28px 0 0;
+  background: radial-gradient(120% 100% at 20% -20%, rgba(255,255,255,.18), rgba(255,255,255,.04) 50%, transparent 75%);
+  border-radius: 28px 28px 0 0;
 }
 .panel:not(.is-open)::after { opacity: .6; }
+.panel:not(.is-open) { background: var(--glass-clear); }
 .panel > * { position: relative; z-index: 1; }
 .panel.bump { animation: bump .5s cubic-bezier(.34,1.56,.64,1); }
 @keyframes bump { 30% { transform: scale(1.08); } }
@@ -74,7 +90,18 @@ button { font: inherit; color: inherit; cursor: pointer; }
   width: 22px; height: 22px; border-radius: 8px; background: var(--accent);
   display: grid; place-items: center; flex: none; box-shadow: inset 0 1px 0 rgba(255,255,255,.5);
 }
-.pill-face .logo { width: 28px; height: 28px; border-radius: 50%; }
+.pill-face .logo {
+  width: 28px; height: 28px; border-radius: 50%; position: relative;
+  transition: background .45s cubic-bezier(.32,.72,0,1), box-shadow .45s;
+}
+.pill-face .logo svg { transition: transform .45s cubic-bezier(.34,1.56,.64,1), opacity .25s; }
+.pill-face .logo .orb {
+  position: absolute; inset: 0; opacity: 0; transform: scale(.6); pointer-events: none;
+  transition: opacity .35s ease, transform .45s cubic-bezier(.34,1.56,.64,1);
+}
+.pill-face.checking .logo { background: rgba(255,255,255,.07); box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); }
+.pill-face.checking .logo svg { opacity: 0; transform: scale(.4); }
+.pill-face.checking .logo .orb { opacity: 1; transform: none; }
 .pf-open {
   display: flex; align-items: center; gap: 9px; border: 0; background: none;
   padding: 0 8px 0 0; border-radius: 999px; color: inherit;
@@ -91,6 +118,16 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .pill-face.listening.voice .waves i { animation-duration: .8s; --amp: 1; background: var(--ink); }
 @keyframes wave { 0%, 100% { height: 4px; } 50% { height: max(4px, calc(var(--h) * var(--amp))); } }
 .pill-face.paused .waves i { opacity: .35; }
+.pf-checking {
+  font-size: 12px; font-weight: 600; letter-spacing: -.005em; padding-right: 2px;
+  color: transparent; -webkit-background-clip: text; background-clip: text;
+  background-image: linear-gradient(100deg, var(--t3) 0 35%, var(--ink) 50%, var(--t3) 65% 100%);
+  background-size: 300% 100%;
+  animation: shimmer 1.8s linear infinite, label-in .35s ease-out;
+}
+@keyframes shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
+@keyframes label-in { from { opacity: 0; filter: blur(4px); } }
+@media (prefers-reduced-motion: reduce) { .pf-checking { animation: none; color: var(--t2); } }
 .pf-btn {
   width: 28px; height: 28px; border-radius: 50%; border: 0; display: grid; place-items: center; flex: none;
   transition: transform .2s cubic-bezier(.32,.72,0,1), background .2s;
@@ -245,7 +282,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .bubble {
   right: 0; bottom: 0; width: 100%; overflow: hidden; cursor: pointer;
   border-radius: 16px 16px 5px 16px; transform-origin: 100% 100%;
-  background: linear-gradient(150deg, color-mix(in srgb, var(--vc) 22%, transparent), transparent 55%), var(--glass-tint);
+  background: linear-gradient(150deg, color-mix(in srgb, var(--vc) 22%, transparent), transparent 55%), var(--glass-clear);
   transition: transform .55s cubic-bezier(.32,.72,0,1), opacity .35s ease;
 }
 .b-content { padding: 8px 10px 9px; display: flex; flex-direction: column; gap: 2px; }

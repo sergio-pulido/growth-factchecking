@@ -4,6 +4,8 @@ import { analyzingCard, claimCard, ORDER, TONES, transcriptLine } from './cards.
 import type { EditState } from './cards.js';
 import { clock, h, icon } from './dom.js';
 import styles from './call.css';
+import { lensFilter } from './lens.js';
+import { createOrb } from './orb.js';
 import { createCallSession } from './session.js';
 import type { SessionOptions } from './session.js';
 import { ATTENTION } from './types.js';
@@ -39,6 +41,7 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
   const sheet = new CSSStyleSheet();
   sheet.replaceSync(styles);
   shadow.adoptedStyleSheets = [sheet];
+  shadow.append(lensFilter());
 
   const flash = h('div', { class: 'screen-flash', 'aria-hidden': 'true' });
   const bubbleList = h('div', { class: 'bubbles', 'aria-live': 'polite' });
@@ -58,6 +61,8 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
   const feed = h('div', { class: 'feed', 'aria-live': 'polite' });
   const foot = h('div', { class: 'p-foot' });
   const logo = () => h('span', { class: 'logo' }, icon('check', '#fff'));
+  // The pill's logo turns into a dotted orb while claims are being checked.
+  const orb = createOrb(28);
   const body = h('div', { class: 'p-body' },
     h('div', { class: 'p-head' }, logo(), h('span', { class: 'p-title' }, 'FactCheck'), live,
       h('span', { class: 'spacer' }), pauseButton, minimize),
@@ -153,14 +158,22 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
     face.classList.toggle('listening', snap.state === 'live');
     face.classList.toggle('voice', snap.state === 'live' && snap.voice);
     face.classList.toggle('paused', snap.state === 'paused');
-    const key = `${snap.state}:${attention}:${snap.claims.length}`;
+    const checking = snap.analyzing > 0 || snap.claims.some((item) => item.state === 'retrying');
+    face.classList.toggle('checking', checking);
+    orb.setRunning(checking);
+    const key = `${snap.state}:${attention}:${snap.claims.length}:${checking}`;
     if (key === pillKey) return;
     pillKey = key;
 
-    const opener = h('button', { class: 'pf-open', type: 'button', 'aria-label': 'Open FactCheck' }, logo());
+    const pillLogo = logo();
+    pillLogo.append(orb.element);
+    const opener = h('button', { class: 'pf-open', type: 'button', 'aria-label': 'Open FactCheck' }, pillLogo);
     opener.addEventListener('click', () => setOpen(true));
     if (capturing) {
-      opener.append(h('span', { class: 'waves', 'aria-hidden': 'true' }, h('i'), h('i'), h('i'), h('i'), h('i')));
+      // While claims are being checked the waves give way to a shimmering label; fitPill morphs the width.
+      opener.append(checking
+        ? h('span', { class: 'pf-checking', role: 'status' }, 'Checking…')
+        : h('span', { class: 'waves', 'aria-hidden': 'true' }, h('i'), h('i'), h('i'), h('i'), h('i')));
       if (attention) opener.append(h('span', { class: 'pf-count', title: `${attention} need attention` }, String(attention)));
     } else if (snap.state === 'starting' || snap.state === 'ending') {
       opener.append(h('span', { class: 'typing', 'aria-hidden': 'true' }, h('i'), h('i'), h('i')));
@@ -328,7 +341,11 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
     const buttons: HTMLElement[] = [];
     if (snap.state === 'idle') {
       const start = h('button', { class: 'btn primary wide', type: 'button' }, 'Start checking');
-      start.addEventListener('click', () => void session.start());
+      // Collapse to the pill as soon as checking starts: the call stays in view and verdicts arrive as bubbles.
+      start.addEventListener('click', () => {
+        setOpen(false);
+        void session.start();
+      });
       if (source.language) buttons.push(languagePicker(source.language));
       buttons.push(start);
     } else if (snap.state === 'starting') {
