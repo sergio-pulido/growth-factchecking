@@ -9,6 +9,7 @@ await build({
     'call-session': 'src/call/session.ts',
     'meet-source': 'src/call/meet-source.ts',
     'http-transport': 'src/call/http-transport.ts',
+    'call-relay': 'src/call-relay.ts',
   },
   bundle: true,
   format: 'esm',

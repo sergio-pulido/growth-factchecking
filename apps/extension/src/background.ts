@@ -1,8 +1,8 @@
 import { CLAIM_MAX_LENGTH, DEMO_SCENARIOS, FACT_CHECK_PATH } from '@growth-factcheking/shared';
 import { isFactCheckResult } from './call/http-transport.js';
 import { handleOffscreenEvent, isOffscreenEvent, releaseTab } from './audio-capture.js';
-import { isCallRequest, relayCallRequest } from './call-relay.js';
-import type { DemoPostsResponse, FactCheckMessage, FactCheckResponse, TabEvent } from './messages.js';
+import { isCallRequest, looksLikeCallRequest, relayCallRequest } from './call-relay.js';
+import type { CallReply, DemoPostsResponse, FactCheckMessage, FactCheckResponse, TabEvent } from './messages.js';
 
 // The toolbar icon opens the FactCheck call overlay on the current tab: captions mode on Meet, Zoom web and
 // Teams web, tab-audio mode anywhere else. Clicking it also grants the tab capture permission audio mode needs.
@@ -110,6 +110,13 @@ chrome.runtime.onMessage.addListener((message: unknown, sender, respond) => {
   if (isCallRequest(message, sender.url)) {
     void relayCallRequest(message, tabId).then(respond);
     return true;
+  }
+  if (looksLikeCallRequest(message)) {
+    // Never leave the overlay waiting on silence: say the request was rejected, and why, in this console.
+    const kind = (message as { kind: string }).kind;
+    console.warn('FactCheck rejected an invalid overlay request.', kind, sender.url);
+    respond({ ok: false, message: `FactCheck rejected an invalid request (${kind}).`, code: 'unavailable' } satisfies CallReply);
+    return false;
   }
   if (!isFactCheckMessage(message)) return;
 
