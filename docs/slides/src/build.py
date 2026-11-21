@@ -24,5 +24,8 @@ def svg(match):
 html = (root / 'src' / 'demo.template.html').read_text()
 html = re.sub(r'\{\{img:([^}]+)\}\}', image, html)
 html = re.sub(r'\{\{svg:([^:}]+):([^}]+)\}\}', svg, html)
+# Verdict icons, the same strokes as the extension pill.
+icons = {'ok': 'M5 12.5l4.5 4.5L19 7.5', 'warn': 'M9.5 9a2.5 2.5 0 114 2c-1 .7-1.5 1.2-1.5 2.5M12 17.5v.01', 'none': 'M6 12h12'}
+html = re.sub(r'\{\{icon:(\w+)\}\}', lambda m: f'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{icons[m.group(1)]}"/></svg>', html)
 (root / 'demo.html').write_text(html)
 print('wrote', root / 'demo.html', len(html), 'bytes')
