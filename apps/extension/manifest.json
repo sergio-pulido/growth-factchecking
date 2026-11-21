@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Growth FactChecking",
   "description": "Live fact-checking for what is said on Google Meet, Zoom, Teams or any tab with audio.",
-  "version": "0.4.5",
+  "version": "0.5.0",
   "minimum_chrome_version": "120",
   "action": { "default_title": "Open Growth FactChecking" },
   "background": { "service_worker": "background.js" },
@@ -21,7 +21,8 @@
         "https://*.zoom.us/wc/*",
         "https://teams.microsoft.com/*",
         "https://teams.live.com/*",
-        "https://teams.cloud.microsoft/*"
+        "https://teams.cloud.microsoft/*",
+        "https://www.youtube.com/*"
       ],
       "js": ["call-content.js"],
       "run_at": "document_idle"
