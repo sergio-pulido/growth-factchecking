@@ -70,7 +70,7 @@ The extension also checks approved news pages on load, with no button to press. 
 - [The Officer — business demography 2024](https://theofficer.es/las-empresas-nacidas-en-2019-sobrevivieron-solo-un-424-tras-cinco-anos/) — 2 claims.
 - [papeleta.es — Sánchez–Feijóo debate claims](https://papeleta.es/verificador/cara-a-cara) — 5 claims.
 
-Most cards return **Supported** or **Likely supported**. The elDiario.es headline on the experts' 4.9% proposal returns **Insufficient information**: the corpus records only the 5.3% the Government approved. On papeleta.es, Sánchez's claim that irregular migration is "39% below that peak" returns **Likely contradicted** against Interior's +39.4% for 2026, and two other debate quotes return **Inconclusive**.
+Most cards return **Supported** or **Likely supported**. The elDiario.es headline on the experts' 4.9% proposal returns **Verified**: the corpus records both the committee's recommendation and the 5.3% the Government approved later. On papeleta.es, Sánchez's claim that irregular migration is "39% below that peak" returns **Likely contradicted** against Interior's +39.4% for 2026, and two other debate quotes return **Inconclusive**.
 
 ## Restore the demo corpus
 
