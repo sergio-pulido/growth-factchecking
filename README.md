@@ -102,6 +102,8 @@ Each sentence is stored by the local API, which extracts the checkable claims an
 
 It needs the API with `OPENAI_API_KEY` and `DATABASE_URL`, a migrated database and an imported corpus. The Zoom and Teams desktop apps are out of reach for a Chrome extension: use their web versions. The Meet acceptance test runs a scripted caption timeline against the real API: `API_ORIGIN=http://127.0.0.1:3000 npm run test:e2e --workspace @growth-factcheking/extension` (corpus: `data/demo/meet-startup.json`).
 
+For a check against a public source, run `npm run seed -- data/demo/public-facts.json`. Then say “Francia tiene a Roma como capital” or “La capital de Francia es París” in a live call and check that the result cites the EU country profile.
+
 [Call overlay spec](docs/specs/call-overlay.md)
 
 ## Escenarios de prueba
