@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Growth FactChecking",
   "description": "Fact-checking panel for the active tab.",
-  "version": "0.3.2",
+  "version": "0.3.4",
   "minimum_chrome_version": "120",
   "action": { "default_title": "Open Growth FactChecking" },
   "background": { "service_worker": "background.js" },

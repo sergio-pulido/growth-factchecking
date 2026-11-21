@@ -45,6 +45,7 @@ function isFactCheckResult(value: unknown): value is FactCheckResult {
     && value.sources.every((source: unknown) =>
       typeof source === 'object' && source !== null
       && 'statement' in source && typeof source.statement === 'string'
+      && (!('statementEn' in source) || typeof source.statementEn === 'string')
       && 'sourceUrl' in source && typeof source.sourceUrl === 'string'
       && /^https?:\/\//i.test(source.sourceUrl) && URL.canParse(source.sourceUrl),
     );

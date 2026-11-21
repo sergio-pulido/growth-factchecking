@@ -1,8 +1,8 @@
 # Real X posts for the fact-check demo
 
-Post texts checked against the live corpus on 21 November 2026. Use the public permalinks below in Chrome with the extension loaded. The cards appear under the original post and on the Politics timeline. Approved posts also render in **History → Bookmarks** when saved there.
+35 approved posts. Post texts checked against the live corpus on 21 November 2026. Use the public permalinks below in Chrome with the extension loaded. The cards appear under the original post and on the Politics timeline. Approved posts also render in **History → Bookmarks** when saved there.
 
-The fact checker compares each post with the corpus and shows the specific evidence statement. **Insufficient information** means it found no direct evidence. **Inconclusive** can still show a source when the post mixes a supported fact with claims or framing the corpus does not settle.
+The fact checker compares each post with the corpus and shows the specific evidence statement, in English. Facts written in Spanish carry a reviewed English `statement_en` for display; retrieval and verdicts still use the original text. **Insufficient information** means it found no direct evidence. **Inconclusive** can still show a source when the post mixes a supported fact with claims or framing the corpus does not settle. Every card is checked live on each load, with no cached verdicts, and shows how long the check took.
 
 ## Supported examples
 
@@ -26,6 +26,18 @@ The fact checker compares each post with the corpus and shows the specific evide
 - [RTVE on Q2 house prices](https://x.com/rtvenoticias/status/2096888453309014044) — [Primary source](https://www.ine.es/dyngs/Prensa/IPV2T26.htm), [Corroborating source 1](https://www.ine.es/dyngs/Prensa/IPV2T26.pdf).
 - [INE’s Q2 house-price index](https://x.com/es_INE/status/2096855991526518994) — [Primary source](https://www.ine.es/dyngs/Prensa/IPV2T26.htm), [Corroborating source 1](https://www.ine.es/dyngs/Prensa/IPV2T26.pdf).
 
+- [The 2027 minimum wage](https://x.com/empleogob/status/2122657889546645772) — [Primary source](https://www.lamoncloa.gob.es/consejodeministros/resumenes/paginas/2026/171126-rueda-prensa-consejo-ministros.aspx), [Corroborating source 1](https://www.lamoncloa.gob.es/consejodeministros/referencias/Paginas/2026/20261117-referencia-rueda-de-consejo-ministros.aspx).
+- [SEPE on the 2027 minimum wage](https://x.com/empleo_SEPE/status/2123396444279148710) — [Primary source](https://www.lamoncloa.gob.es/consejodeministros/resumenes/paginas/2026/171126-rueda-prensa-consejo-ministros.aspx), [Corroborating source 1](https://www.lamoncloa.gob.es/consejodeministros/referencias/Paginas/2026/20261117-referencia-rueda-de-consejo-ministros.aspx).
+- [RTVE on minimum wage and civil-service pay](https://x.com/rtvenoticias/status/2122658916194545718) — [Primary source](https://www.lamoncloa.gob.es/consejodeministros/resumenes/paginas/2026/171126-rueda-prensa-consejo-ministros.aspx), [Corroborating source 1](https://www.lamoncloa.gob.es/consejodeministros/referencias/Paginas/2026/20261117-referencia-rueda-de-consejo-ministros.aspx).
+- [El País on minimum wage and civil-service pay](https://x.com/el_pais/status/2122660753454801038) — [Primary source](https://www.lamoncloa.gob.es/consejodeministros/resumenes/paginas/2026/171126-rueda-prensa-consejo-ministros.aspx), [Corroborating source 1](https://www.lamoncloa.gob.es/consejodeministros/referencias/Paginas/2026/20261117-referencia-rueda-de-consejo-ministros.aspx).
+- [EFE on the minimum-wage tax deduction](https://x.com/EFEnoticias/status/2122665187568243074) — [Primary source](https://www.lamoncloa.gob.es/consejodeministros/resumenes/paginas/2026/171126-rueda-prensa-consejo-ministros.aspx), [Corroborating source 1](https://www.boe.es/diario_boe/txt.php?id=BOE-A-2026-24120).
+- [El País on minimum-wage tax withholding](https://x.com/el_pais/status/2122670274805907696) — [Primary source](https://www.lamoncloa.gob.es/consejodeministros/resumenes/paginas/2026/171126-rueda-prensa-consejo-ministros.aspx), [Corroborating source 1](https://www.boe.es/diario_boe/txt.php?id=BOE-A-2026-24120).
+- [Minimum-wage growth since 2018](https://x.com/economyred/status/2122763784775410130) — [Primary source](https://www.boe.es/diario_boe/txt.php?id=BOE-A-2017-15848), [Corroborating source 1](https://www.lamoncloa.gob.es/consejodeministros/resumenes/paginas/2026/171126-rueda-prensa-consejo-ministros.aspx).
+- [2027 regional and local funding](https://x.com/Haciendagob/status/2124088018906587400) — [Primary source](https://www.lamoncloa.gob.es/consejodeministros/referencias/Paginas/2026/20261117-referencia-rueda-de-consejo-ministros.aspx), [Corroborating source 1](https://www.boe.es/diario_boe/txt.php?id=BOE-A-2026-24120).
+- [INE active-company count for 2024](https://x.com/es_INE/status/2123740644241776689) — [Primary source](https://www.ine.es/dyngs/Prensa/DAE2024.htm), [Corroborating source 1](https://www.ine.es/dyngs/INEbase/operacion.htm?c=Estadistica_C&cid=1254736161927&idp=1254735576550).
+- [INE September industry turnover](https://x.com/es_INE/status/2123688067542450280) — [Primary source](https://www.ine.es/dyngs/Prensa/ICN0926.htm).
+- [INE September services activity](https://x.com/es_INE/status/2123687989171900552) — [Primary source](https://www.ine.es/dyngs/Prensa/IASS0926.htm).
+
 ## Context examples
 
 The sources document a narrower fact. The full post returned an inconclusive verdict in the smoke check.
@@ -34,6 +46,12 @@ The sources document a narrower fact. The full post returned an inconclusive ver
 - [Context: reported sea arrivals to the Canary Islands](https://x.com/mario_bilbao/status/2123806611210731883) — [Primary source](https://www.interior.gob.es/opencms/export/sites/default/.galleries/galeria-de-prensa/documentos-y-multimedia/balances-e-informes/2026/21_informe_quincenal_acumulado_01-01_al_15-11-2026.pdf), [Corroborating source 1](https://pt.euronews.com/2026/11/17/canarias-recebem-mais-de-11000-migrantes-irregulares-na-primeira-quinzena-de-novembro).
 - [Context: Andalusia’s published seat totals](https://x.com/ideal_granada/status/2056615840607592937) — [Primary source](https://juntaelectoral.parlamentodeandalucia.es/documents/20117/74639/2026-0602-Resultados%2Belectorales.pdf/246524f6-8bdc-9311-8bb3-8f55e6fae2ff?t=1780400615236), [Corroborating source 1](https://www.juntaelectoralcentral.es/cs/jec/documentos/Andalucia_2026_resultados.pdf).
 - [Context: leave for birth or care](https://x.com/inclusiongob/status/2119690644910203220) — [Primary source](https://prestaciones.seg-social.es/servicio/prestacion-nacimiento-adopcion-cuidado-menor), [Corroborating source 1](https://www.boe.es/buscar/doc.php?id=BOE-A-2025-15741&lang=es).
+
+## Contradicted example
+
+The post repeats the official figure but claims the real rate is above 10%. The card cites INE's 4.9% and returns **Likely contradicted**.
+
+- [Contradicted: "real" inflation above 10%](https://x.com/ORamosBets/status/2121214434433712356) — [Primary source](https://www.ine.es/dyngs/Prensa/IPC1026.htm), [Corroborating source 1](https://www.ine.es/dyngs/Prensa/IPC1026.pdf).
 
 ## Restore the demo corpus
 
@@ -49,6 +67,6 @@ docker compose exec -T db psql -U factcheck -d factcheck -v ON_ERROR_STOP=1 < da
 npm start
 ```
 
-In `chrome://extensions`, enable Developer mode and load the unpacked `apps/extension/dist` directory. Open one of the public X permalinks above. If you already have the extension installed, click Reload on its card and refresh X.
+In `chrome://extensions`, enable Developer mode and load the unpacked `apps/extension/dist` directory. Open one of the public X permalinks above. If you already have the extension installed, click Reload on its card (it should read version 0.3.4) and refresh X. Restore the snapshot after `npm run db:migrate`, which adds the `statement_en` column it fills.
 
 `data/demo/x-posts.json` controls the approved Bookmarks posts. Update it and refresh X after editing; the extension loads the list from the local API.

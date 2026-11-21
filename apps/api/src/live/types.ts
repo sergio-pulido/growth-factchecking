@@ -4,6 +4,8 @@ import type { FactCheckResult, Verdict } from '@growth-factcheking/shared';
 export type Fact = {
   id: string;
   statement: string;
+  /** English display text; `statement` stays the text that is embedded and judged. */
+  statementEn?: string | null;
   sourceUrl: string;
   sourceTitle: string | null;
   additionalSourceUrls: string[];

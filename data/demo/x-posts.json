@@ -159,5 +159,89 @@
     "title": "Context: leave for birth or care",
     "factId": "es-permiso-nacimiento-19-semanas",
     "kind": "context"
+  },
+  {
+    "postId": "2122657889546645772",
+    "url": "https://x.com/empleogob/status/2122657889546645772",
+    "title": "The 2027 minimum wage",
+    "factId": "es-smi-2027-cuantia",
+    "kind": "sourced"
+  },
+  {
+    "postId": "2123396444279148710",
+    "url": "https://x.com/empleo_SEPE/status/2123396444279148710",
+    "title": "SEPE on the 2027 minimum wage",
+    "factId": "es-smi-2027-cuantia",
+    "kind": "sourced"
+  },
+  {
+    "postId": "2122658916194545718",
+    "url": "https://x.com/rtvenoticias/status/2122658916194545718",
+    "title": "RTVE on minimum wage and civil-service pay",
+    "factId": "es-smi-2027-cuantia",
+    "kind": "sourced"
+  },
+  {
+    "postId": "2122660753454801038",
+    "url": "https://x.com/el_pais/status/2122660753454801038",
+    "title": "El País on minimum wage and civil-service pay",
+    "factId": "es-smi-2027-cuantia",
+    "kind": "sourced"
+  },
+  {
+    "postId": "2122665187568243074",
+    "url": "https://x.com/EFEnoticias/status/2122665187568243074",
+    "title": "EFE on the minimum-wage tax deduction",
+    "factId": "es-smi-2027-irpf",
+    "kind": "sourced"
+  },
+  {
+    "postId": "2122670274805907696",
+    "url": "https://x.com/el_pais/status/2122670274805907696",
+    "title": "El País on minimum-wage tax withholding",
+    "factId": "es-smi-2027-irpf",
+    "kind": "sourced"
+  },
+  {
+    "postId": "2122763784775410130",
+    "url": "https://x.com/economyred/status/2122763784775410130",
+    "title": "Minimum-wage growth since 2018",
+    "factId": "es-smi-2018-2027-subida",
+    "kind": "sourced"
+  },
+  {
+    "postId": "2124088018906587400",
+    "url": "https://x.com/Haciendagob/status/2124088018906587400",
+    "title": "2027 regional and local funding",
+    "factId": "es-financiacion-territorial-2027",
+    "kind": "sourced"
+  },
+  {
+    "postId": "2123740644241776689",
+    "url": "https://x.com/es_INE/status/2123740644241776689",
+    "title": "INE active-company count for 2024",
+    "factId": "es-empresas-2024-demografia",
+    "kind": "sourced"
+  },
+  {
+    "postId": "2123688067542450280",
+    "url": "https://x.com/es_INE/status/2123688067542450280",
+    "title": "INE September industry turnover",
+    "factId": "es-icn-2026-sep",
+    "kind": "sourced"
+  },
+  {
+    "postId": "2123687989171900552",
+    "url": "https://x.com/es_INE/status/2123687989171900552",
+    "title": "INE September services activity",
+    "factId": "es-iass-2026-sep",
+    "kind": "sourced"
+  },
+  {
+    "postId": "2121214434433712356",
+    "url": "https://x.com/ORamosBets/status/2121214434433712356",
+    "title": "Contradicted: \"real\" inflation above 10%",
+    "factId": "es-ipc-2026-oct-anual",
+    "kind": "contradicted"
   }
 ]
