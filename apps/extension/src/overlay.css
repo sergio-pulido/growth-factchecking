@@ -29,7 +29,7 @@ header {
   margin-bottom: 8px;
 }
 
-h2, p {
+h2, h3, p {
   margin: 0;
 }
 
@@ -48,7 +48,56 @@ button {
 }
 
 blockquote {
-  margin: 0 0 8px;
+  margin: 8px 0 12px;
   padding-inline-start: 8px;
   border-inline-start: 2px solid #819489;
+}
+
+.demo-label {
+  color: #42554b;
+  font-size: 12px;
+}
+
+form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 8px;
+}
+
+label {
+  grid-column: 1 / -1;
+}
+
+select, button[type="submit"] {
+  padding: 4px 8px;
+  font: inherit;
+}
+
+button[type="submit"] {
+  background: #14533e;
+  color: #fff;
+}
+
+button:disabled {
+  cursor: wait;
+  opacity: .7;
+}
+
+[role="status"]:not(:empty), h3 {
+  margin-top: 12px;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+ul {
+  margin: 4px 0 0;
+  padding-inline-start: 18px;
+}
+
+li + li {
+  margin-top: 4px;
+}
+
+a {
+  color: #14533e;
 }

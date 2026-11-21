@@ -13,3 +13,7 @@ La extensión usa Manifest V3 y activa el panel al pulsar su icono. El permiso t
 La integración prevista usará Embeddings y PostgreSQL con pgvector para recuperar hechos. Decisions clasificará la afirmación a partir de esos hechos. La API será responsable de las credenciales y devolverá las referencias junto al veredicto.
 
 [Embeddings de OpenAI](https://developers.openai.com/api/docs/guides/embeddings) · [Decisions de OpenAI](https://developers.openai.com/api/docs/guides/decisions) · [pgvector](https://github.com/pgvector/pgvector)
+
+## 004 · Escenarios fijos para la demo
+
+La API devuelve un resultado fijo por escenario mediante el mismo formato previsto para el flujo funcional. El panel identifica los datos simulados y permite reproducir cada caso desde un selector. La ruta devuelve neutral y una lista vacía cuando no se elige ningún escenario.

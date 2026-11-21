@@ -1,8 +1,10 @@
 # Verificación sobre la página
 
-## Entrega inicial
+## Demo de interfaz
 
-El repositorio incluye una extensión de Chrome, una API local y un contrato compartido. El panel se activa desde el icono de la extensión y puede mostrar texto seleccionado. La API responde a `GET /health` y reserva `POST /api/fact-check` con HTTP 501 hasta que se implemente el flujo.
+La extensión de Chrome muestra una afirmación seleccionada o un texto de ejemplo y permite elegir un escenario de prueba. La API local devuelve resultados simulados con el contrato compartido. La demo cubre cinco veredictos, neutral sin fuentes y un error recuperable. El panel identifica los datos como simulados y muestra el estado de carga y los enlaces.
+
+`POST /api/fact-check` acepta una afirmación y un parámetro de consulta opcional `scenario`. Sin escenario, devuelve neutral con una lista de fuentes vacía. El resultado de cada escenario es fijo. Las fuentes son ficticias y usan dominios de ejemplo. La demo arranca sin credenciales ni base de datos.
 
 ## Primer flujo funcional
 
