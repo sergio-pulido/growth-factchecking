@@ -93,7 +93,10 @@ Click the extension icon on the call's tab to open the FactCheck overlay. On Goo
 
 Each sentence is stored by the local API, which extracts the checkable claims and checks them against the corpus. **Pause** stops sending what is said, **Stop** ends the conversation and **Delete conversation** erases it from the database. There are no simulated calls: the overlay only runs over real pages.
 
-**Use case 1: video meeting.** An investor meeting a founder on Google Meet keeps the pill in the corner. As each person speaks, the founder's figures, dates and agreements are checked against the documents in the corpus and flagged when the sources contradict them. Nothing is said in the call by the extension; it only informs the person using it.
+**Use case 1: video meeting.** A person in a video call keeps the pill in the corner. As each person speaks, the checkable statements (figures, dates, agreements) are checked against the documents in the corpus for that meeting, such as the founder's pitch deck, and flagged when the sources contradict them. The extension does not speak in the call; it only informs the person using it.
+
+- Example: a founder pitches on a video call hosted by itnig, with OpenAI in the role of the investor. While the founder presents, the investor checks the figures they say (customers, revenue, retention, signed pilots) against the numbers in the founder's pitch deck and the documents shared before the call. Where the spoken figure and the deck differ, the panel flags it.
+- This example is **illustrative and hypothetical**. itnig and OpenAI are named only to describe the setting of the hackathon demo; it does not describe a real meeting and implies no affiliation, partnership or endorsement.
 
 **Use case 2: video interview.** Someone watching a long-form interview on YouTube clicks the extension icon and checks the audio of that tab. Verdicts describe whether the available sources support a statement; they do not evaluate the speaker, a party or a policy.
 
