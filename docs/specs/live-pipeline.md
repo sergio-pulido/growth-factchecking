@@ -1,6 +1,6 @@
 # Live fact-check pipeline
 
-Status: **implemented** and wired in `createApp` (unit tests 13/13). Agent-run on a real stack (OpenAI + Postgres 17/pgvector) on 2026-11-21: 4/4 smoke checks pass, p50 618 ms total. See [docs/evidence/2026-11-21-live-smoke.md](../evidence/2026-11-21-live-smoke.md). A human re-run makes it **verified**; with that file it becomes **proven**.
+Status: **implemented** and wired in `createApp` (unit tests 17/17). Agent-run on a real stack (OpenAI + Postgres 17/pgvector) on 2026-11-21: 4/4 smoke checks pass, p50 618 / 519 ms total over two 20-call runs. See [docs/evidence/2026-11-21-live-smoke.md](../evidence/2026-11-21-live-smoke.md). A human re-run makes it **verified**; with that file it becomes **proven**.
 
 ## Flow
 
@@ -50,6 +50,6 @@ The importer accepts a JSON array or `{"facts":[...]}`. Each entry needs a stabl
 2. Extension: switch endpoint to `/api/fact-check/live` behind a setting (mock stays the default for UX work). Owner: Codex.
 3. Contract: consider adding `confidence` and per-source `similarity` to `FactCheckResult` once the UX needs them (proposal only).
 4. Calibrate the three thresholds with ~30 labelled claims over a real corpus. Defaults are unchanged; the smoke run only exercised 4 claims and a 6-pair probe.
-5. Latency: p50 618 ms meets the 800 ms target; p95 1132 ms is driven by Embeddings outliers. Revisit only if the extension UX needs a tighter tail.
+5. Latency: p50 618 / 519 ms meets the 800 ms target; p95 1132 / 935 ms comes from OpenAI variance (Embeddings in one run, Decisions in the other). Revisit only if the extension UX needs a tighter tail.
 6. Replace `data/facts.sample.json` (8 placeholder facts) with a real sourced corpus (the importer above validates it).
 7. Claim extraction (Meet captions, X posts): a separate step before this pipeline. Not in scope here.

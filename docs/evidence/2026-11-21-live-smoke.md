@@ -1,11 +1,12 @@
 # Live fact-check smoke run — 2026-11-21
 
 Ticket: GF-01. Route under test: `POST /api/fact-check/live`.
-Code under test: `main` at `aebb287` (route wired in `07946e2`, relevance-predicate fix in `aebb287`).
+Code under test: `main` at `aebb287` (run 1) and `b365e00` (run 2, after Codex's local-ingestion commit).
+Route wired in `07946e2`; relevance-predicate fix in `aebb287`.
 
 ## Evidence level
 
-- **Implemented**: merged to `main`, unit tests green (`npm test` 13/13, fakes only).
+- **Implemented**: merged to `main`, unit tests green (`npm test` 13/13 at `aebb287`, 17/17 at `b365e00`; fakes only).
 - **Run on a real stack**: real OpenAI Embeddings + Decisions and a real Postgres 17 + pgvector, executed by the
   Claude Code agent on Sergio's machine on 2026-11-21. This meets the ticket's "verified" bar.
 - Under the Alodai definition, **verified** requires a human run. Re-running the commands below by hand
@@ -40,9 +41,10 @@ cd /Users/nectios/workspace-os/hackathons/codex-devday-exchange/growth-factcheki
 FACTCHECK_DB_PORT=55432 docker compose up -d db
 export DATABASE_URL=postgres://factcheck:factcheck@127.0.0.1:55432/factcheck
 npm run build
-npm test                              # 13/13
+npm test                              # 13/13 (run 1), 17/17 (run 2)
 npm run db:migrate                    # Applied 001_facts.sql
-npm run seed -- data/facts.sample.json   # Seeded 8/8 (8 rows, vector_dims 1536)
+npm run seed -- data/facts.sample.json            # run 1: Seeded 8/8 (8 rows, vector_dims 1536)
+npm run seed -- "$PWD/data/facts.sample.json"     # run 2 (new importer): Imported 8 facts
 ```
 
 Launcher (scratch, not committed):
@@ -59,7 +61,9 @@ PORT=3100 LOG=1 FACT_CHECK_CACHE_TTL_MS=0 node --env-file-if-exists=../../.env s
 curl -s -D - -X POST localhost:3100/api/fact-check/live -H 'content-type: application/json' -d '{"claim":"..."}'
 ```
 
-## Smoke results (final code, cache disabled)
+## Smoke results (cache disabled)
+
+Run 1 at `aebb287`:
 
 | # | Claim | Expected | HTTP | Verdict | Sources | Server-Timing |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -78,6 +82,17 @@ Response bodies:
 ```
 
 All responses carry `X-Fact-Check-Mode: live`. Request #3 logged `reason: no_evidence`, `decideMs: 0`.
+
+Run 2 at `b365e00`: identical verdicts, sources and status codes.
+
+| # | Verdict | Server-Timing |
+| --- | --- | --- |
+| 1 | yes | `embed;dur=789, search;dur=26, decide;dur=426, total;dur=1241` |
+| 2 | no | `embed;dur=458, search;dur=3, decide;dur=394, total;dur=855` |
+| 3 | neutral, `[]` | `embed;dur=228, search;dur=5, decide;dur=0, total;dur=233` |
+| 4 | 503 | none |
+
+The mock route still answers 200 with and without `?scenario=` on the same server.
 
 ## Finding: relevance predicate rejected contradicting evidence (fixed in `aebb287`)
 
@@ -99,21 +114,22 @@ With the old wording an off-topic pair (0.43) outscored every contradiction (0.0
 wording was fixed instead ("same subject and the same property … answer true when the evidence contradicts").
 The probe used 6 hand-picked pairs; it is not a calibration set.
 
-## Latency (final code, 20 sequential calls, `FACT_CHECK_CACHE_TTL_MS=0`)
+## Latency (20 sequential calls per run, `FACT_CHECK_CACHE_TTL_MS=0`)
 
 Claims cycled 5× over: water (true), Eiffel/Rome (false), 30 chromosome pairs (false), Earth 300 days (false).
 All 20 reached Decisions and returned 200. Verdicts: 5× yes, 15× no (stable across repeats).
 
-| Stage | p50 (ms) | p95 (ms) | min | max |
-| --- | --- | --- | --- | --- |
-| embed | 237 | 802 | 170 | 1126 |
-| search | 7 | 13 | 2 | 18 |
-| decide | 348 | 441 | 204 | 503 |
-| **total** | **618** | **1132** | 390 | 1469 |
+| Stage | Run 1 p50 | Run 1 p95 | Run 1 max | Run 2 p50 | Run 2 p95 | Run 2 max |
+| --- | --- | --- | --- | --- | --- | --- |
+| embed | 237 | 802 | 1126 | 213 | 244 | 284 |
+| search | 7 | 13 | 18 | 6 | 15 | 16 |
+| decide | 348 | 441 | 503 | 313 | 698 | 882 |
+| **total** | **618** | **1132** | 1469 | **519** | **935** | 1173 |
 
-Target "< 800 ms total at p50": **met** (618 ms). The p95 tail comes from the Embeddings call (two outliers
-at 802 and 1126 ms); Decisions stayed under 510 ms on all 20 calls and pgvector search under 20 ms. Percentiles
-are nearest-rank over 20 samples from one machine on one network, so p95 is the 19th value and is noisy.
+All values in ms. Target "< 800 ms total at p50": **met** in both runs (618 and 519 ms). The p95 tail comes from
+a different OpenAI call in each run (Embeddings in run 1, Decisions in run 2), which points to upstream variance
+rather than one slow stage. pgvector search stayed under 20 ms throughout. Percentiles are nearest-rank over
+20 samples from one machine on one network, so p95 is the 19th value and is noisy.
 
 ## Not covered
 
