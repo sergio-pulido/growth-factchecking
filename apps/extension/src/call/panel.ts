@@ -1,6 +1,7 @@
 // The FactCheck island over a call: a pill that morphs into the panel. Spec: docs/specs/call-overlay.md
 import { createBubbles, flashFrame } from './alerts.js';
 import { analyzingCard, claimCard, ORDER, TONES, transcriptLine } from './cards.js';
+import type { EditState } from './cards.js';
 import { clock, h, icon } from './dom.js';
 import styles from './call.css';
 import { createCallSession } from './session.js';
@@ -73,6 +74,7 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
   let pillKey = '';
   let feedKey = '';
   let badge = -1;
+  let edit: EditState = null;
 
   const anchorBottom = source.anchorBottom;
   host.style.setProperty('--anchor-b', `${anchorBottom}px`);
@@ -268,7 +270,23 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
 
   function feedChildren(snap: SessionSnapshot): Node[] {
     if (snap.state === 'idle' && filter !== 'transcript') return [consent()];
-    const handlers = { onRetry: (id: string) => void session.retry(id), onToggle: session.toggleSources };
+    const handlers = {
+      onRetry: (id: string) => void session.retry(id),
+      onToggle: session.toggleSources,
+      onEdit: (id: string | null) => {
+        const item = id ? snap.claims.find((claim) => claim.id === id) : undefined;
+        edit = item ? { id: item.id, draft: item.claim } : null;
+        render(session.snapshot());
+        if (edit) focusEditor();
+      },
+      onDraft: (id: string, draft: string) => {
+        if (edit?.id === id) edit = { id, draft };
+      },
+      onSubmitEdit: (id: string, text: string) => {
+        edit = null;
+        void session.retry(id, text);
+      },
+    };
     if (filter === 'transcript') {
       return snap.transcript.length ? snap.transcript.map(transcriptLine)
         : [empty('No transcript yet', `Every sentence FactCheck ${source.capture === 'captions' ? 'reads from the captions' : 'transcribes from the audio'} and saves will show here.`)];
@@ -276,7 +294,7 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
     const list = filter === 'attention' ? snap.claims.filter(isAttention) : snap.claims;
     const cards: Node[] = list.map((item) => {
       const extra = [flashIds.has(item.id) ? 'flash' : '', item.id === target ? 'target' : ''].join(' ');
-      return claimCard(item, handlers, extra);
+      return claimCard(item, handlers, extra, edit);
     });
     if (filter === 'all' && snap.analyzing) cards.push(analyzingCard(snap.analyzing));
     if (cards.length) return cards;
@@ -286,14 +304,25 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
   }
 
   function renderFeed(snap: SessionSnapshot) {
-    const key = JSON.stringify([filter, target, snap.state, snap.analyzing, snap.transcript.length,
-      snap.claims.map(({ id, state, verdict, open: expanded }) => [id, state, verdict, expanded]), [...flashIds]]);
+    const key = JSON.stringify([filter, target, snap.state, snap.analyzing, snap.transcript.length, edit?.id ?? null,
+      snap.claims.map(({ id, state, verdict, open: expanded, claim, basis }) => [id, state, verdict, expanded, claim, basis]),
+      [...flashIds]]);
     if (key === feedKey) return;
     feedKey = key;
+    const editing = edit !== null && shadow.activeElement?.getAttribute('data-edit') === edit.id;
     const atBottom = feed.scrollHeight - feed.scrollTop - feed.clientHeight < 40;
     feed.replaceChildren(...feedChildren(snap));
     flashIds = new Set();
-    if (atBottom && !target) feed.scrollTop = feed.scrollHeight;
+    if (atBottom && !target && !edit) feed.scrollTop = feed.scrollHeight;
+    // A new claim re-renders the feed: keep the cursor in the editor the user is typing in.
+    if (editing) focusEditor();
+  }
+
+  function focusEditor() {
+    const input = shadow.querySelector<HTMLTextAreaElement>('textarea[data-edit]');
+    if (!input) return;
+    input.focus();
+    input.setSelectionRange(input.value.length, input.value.length);
   }
 
   function renderFoot(snap: SessionSnapshot) {

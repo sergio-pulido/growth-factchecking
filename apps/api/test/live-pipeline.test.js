@@ -41,6 +41,45 @@ test('no evidence returns neutral without calling Decisions', async () => {
   assert.equal(calls.decide, 0);
 });
 
+test('no corpus evidence falls back to a labelled general-knowledge verdict', async () => {
+  const { calls, deps: d } = deps({ search: async () => [], knowledge: async () => ({ choice: 'no', confidence: 0.97 }) });
+  const out = await createFactChecker(d)('The earth is flat');
+  assert.deepEqual(out.result, { verdict: 'no', sources: [], basis: 'general_knowledge' });
+  assert.equal(out.meta.reason, 'general_knowledge');
+  assert.equal(calls.decide, 0);
+});
+
+test('off-topic corpus evidence also falls back to general knowledge', async () => {
+  const { deps: d } = deps({
+    decide: async () => ({ relevance: 0, sourceId: null, choice: 'neutral', confidence: 0.9 }),
+    knowledge: async () => ({ choice: 'no', confidence: 0.95 }),
+  });
+  const out = await createFactChecker(d)('The capital of France is Rome');
+  assert.equal(out.result.verdict, 'no');
+  assert.equal(out.result.basis, 'general_knowledge');
+});
+
+test('general knowledge stays neutral when unsure, neutral or failing', async () => {
+  for (const knowledge of [
+    async () => ({ choice: 'yes', confidence: 0.5 }),
+    async () => ({ choice: 'neutral', confidence: 0.99 }),
+    async () => ({ choice: null, confidence: null }),
+    async () => { throw new Error('timeout'); },
+  ]) {
+    const out = await createFactChecker(deps({ search: async () => [], knowledge }).deps)('Opinion or unknown');
+    assert.deepEqual(out.result, { verdict: 'neutral', sources: [] });
+    assert.equal(out.meta.reason, 'no_evidence');
+  }
+});
+
+test('a corpus verdict never calls general knowledge', async () => {
+  let asked = 0;
+  const out = await createFactChecker(deps({ knowledge: async () => { asked++; return { choice: 'no', confidence: 1 }; } }).deps)('Water boils at 100 C');
+  assert.equal(out.result.verdict, 'yes');
+  assert.equal(out.result.basis, undefined);
+  assert.equal(asked, 0);
+});
+
 test('the verdict includes all links for the selected fact and no unrelated links', async () => {
   const otherwiseRelevant = { ...fact, id: 'f2', statement: 'Water freezes at 0 C.' };
   const { deps: d } = deps({ search: async () => [otherwiseRelevant, fact] });

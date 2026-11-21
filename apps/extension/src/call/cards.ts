@@ -16,6 +16,7 @@ export const TONES: Record<Verdict, Tone> = {
 };
 export const ORDER: readonly Verdict[] = VERDICTS;
 export const NO_EVIDENCE = 'There is no evidence about this claim in the available sources.';
+export const GENERAL_KNOWLEDGE = 'Not in our sources. Rated from well-established general knowledge, with no document cited.';
 
 const cssVar = (name: string) => `var(${name})`;
 
@@ -63,8 +64,9 @@ function sourcesSection(item: ClaimItem, onToggle: (id: string) => void) {
   if (count) hosts.slice(0, 4).forEach((host) => favs.append(favicon(host)));
   else favs.append(h('span', { class: 'fav fav-none' }, icon('search')));
 
+  const general = item.basis === 'general_knowledge';
   const label = h('span', { class: 'src-label' },
-    count ? `Checked against ${count} source${count > 1 ? 's' : ''}` : 'No sources found',
+    count ? `Checked against ${count} source${count > 1 ? 's' : ''}` : general ? 'General knowledge · no source cited' : 'No sources found',
     h('span', { class: 'src-sub' }, count ? ` · ${hosts.slice(0, 2).join(', ')}` : ''));
   const chevron = icon('chevron');
   chevron.classList.add('chev');
@@ -74,7 +76,11 @@ function sourcesSection(item: ClaimItem, onToggle: (id: string) => void) {
   const section = h('div', { class: `sources${item.open ? ' open' : ''}` }, toggle);
   if (item.open) {
     const body = h('div', { class: 'src-body' });
-    if (!count) body.append(h('div', { class: 'src-fail' }, 'No document in the corpus mentions this claim.'));
+    if (!count) {
+      body.append(h('div', { class: 'src-fail' }, general
+        ? 'No document in the corpus mentions this claim. The verdict comes from the model\'s general knowledge of long-settled facts, not from a cited source.'
+        : 'No document in the corpus mentions this claim.'));
+    }
     for (const source of item.sources) {
       const host = hostOf(source.sourceUrl);
       body.append(h('div', { class: 'src-item' },
@@ -87,14 +93,56 @@ function sourcesSection(item: ClaimItem, onToggle: (id: string) => void) {
   return section;
 }
 
-export type CardHandlers = { onRetry(id: string): void; onToggle(id: string): void };
+export type CardHandlers = {
+  onRetry(id: string): void;
+  onToggle(id: string): void;
+  /** Opens (id) or closes (null) the editor for a claim's wording. */
+  onEdit(id: string | null): void;
+  /** Re-checks the claim with the corrected wording. */
+  onSubmitEdit(id: string, text: string): void;
+  /** Keeps the draft across re-renders. */
+  onDraft(id: string, text: string): void;
+};
+
+export type EditState = { id: string; draft: string } | null;
 
 function meta(speaker: string, at: number) {
   return h('div', { class: 'meta' }, h('span', { class: 'who' }, speaker), h('span', { class: 'mono' }, clock(at)));
 }
 
-export function claimCard(item: ClaimItem, handlers: CardHandlers, extra = ''): HTMLDivElement {
-  const quote = h('p', { class: 'quote' }, `“${item.claim}”`);
+function editor(item: ClaimItem, draft: string, handlers: CardHandlers) {
+  const input = h('textarea', { class: 'edit-input', rows: '3', maxlength: '1000', 'aria-label': 'Claim text', 'data-edit': item.id });
+  input.value = draft;
+  input.addEventListener('input', () => handlers.onDraft(item.id, input.value));
+  const save = h('button', { class: 'btn primary sm', type: 'button' }, 'Re-check');
+  const cancel = h('button', { class: 'link', type: 'button' }, 'Cancel');
+  const submit = () => {
+    if (input.value.trim()) handlers.onSubmitEdit(item.id, input.value);
+  };
+  save.addEventListener('click', submit);
+  cancel.addEventListener('click', () => handlers.onEdit(null));
+  input.addEventListener('keydown', (event) => {
+    event.stopPropagation(); // Meet and other call apps bind single-key shortcuts.
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      submit();
+    } else if (event.key === 'Escape') {
+      handlers.onEdit(null);
+    }
+  });
+  return h('div', { class: 'edit' }, input, h('div', { class: 'actions' }, save, cancel));
+}
+
+function editLink(item: ClaimItem, handlers: CardHandlers) {
+  const edit = h('button', { class: 'link', type: 'button', title: 'Fix the wording and check again' }, 'Edit');
+  edit.addEventListener('click', () => handlers.onEdit(item.id));
+  return edit;
+}
+
+export function claimCard(item: ClaimItem, handlers: CardHandlers, extra = '', edit: EditState = null): HTMLDivElement {
+  const quote = edit?.id === item.id
+    ? editor(item, edit.draft, handlers)
+    : h('p', { class: 'quote' }, `“${item.claim}”`, item.edited ? h('span', { class: 'edited' }, ' (edited)') : '');
   if (item.state === 'retrying') {
     return h('div', { class: `card pending ${extra}`, 'data-id': item.id }, meta(item.speaker, item.at), quote,
       h('div', { class: 'meta' }, 'Checking against the sources…'), shimmer());
@@ -105,13 +153,16 @@ export function claimCard(item: ClaimItem, handlers: CardHandlers, extra = ''): 
     return h('div', { class: `card error ${extra}`, 'data-id': item.id }, meta(item.speaker, item.at), quote,
       h('div', { class: 'verdict' }, verdictPill(null)),
       h('p', { class: 'why' }, 'Could not be checked. The call goes on and you can retry.'),
-      h('div', { class: 'actions' }, retry));
+      h('div', { class: 'actions' }, retry, editLink(item, handlers)));
   }
-  const why = item.sources.length ? TONES[item.verdict].why : NO_EVIDENCE;
-  return h('div', { class: `card ${extra}`, 'data-id': item.id }, meta(item.speaker, item.at), quote,
+  const why = item.sources.length ? TONES[item.verdict].why
+    : item.basis === 'general_knowledge' ? GENERAL_KNOWLEDGE : NO_EVIDENCE;
+  const card = h('div', { class: `card ${extra}`, 'data-id': item.id }, meta(item.speaker, item.at), quote,
     h('div', { class: 'verdict' }, verdictPill(item.verdict), scale(item.verdict)),
     h('p', { class: 'why' }, why),
     sourcesSection(item, handlers.onToggle));
+  if (edit?.id !== item.id) card.append(h('div', { class: 'actions' }, editLink(item, handlers)));
+  return card;
 }
 
 function shimmer() {

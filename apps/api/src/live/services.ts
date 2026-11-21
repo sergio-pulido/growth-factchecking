@@ -4,7 +4,7 @@ import type OpenAI from 'openai';
 import type pg from 'pg';
 import type { LiveConfig } from './config.js';
 import { createFactSearch, createPool } from './fact-store.js';
-import { createDecider, createEmbedder, createOpenAIClient } from './openai.js';
+import { createDecider, createEmbedder, createKnowledgeDecider, createOpenAIClient } from './openai.js';
 import { createFactChecker } from './pipeline.js';
 import type { FactChecker } from './pipeline.js';
 
@@ -19,6 +19,8 @@ export function createLiveServices(config: LiveConfig): LiveServices {
     decide: createDecider(client, config),
     topK: config.topK,
     thresholds: { minRelevance: config.minRelevance, minConfidence: config.minConfidence },
+    ...(config.knowledgeFallback ? { knowledge: createKnowledgeDecider(client, config) } : {}),
+    knowledgeMinConfidence: config.knowledgeMinConfidence,
     cacheTtlMs: config.cacheTtlMs,
   });
   return { client, pool, check };

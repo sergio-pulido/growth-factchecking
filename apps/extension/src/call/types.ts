@@ -74,6 +74,10 @@ export type ClaimItem = {
   sources: ClaimCheck['sources'];
   /** Sources section expanded in the panel. */
   open: boolean;
+  /** "general_knowledge": no corpus document, judged against well-established knowledge. */
+  basis?: 'corpus' | 'general_knowledge';
+  /** The user corrected the claim's wording in the panel. */
+  edited?: boolean;
 };
 
 export type SessionSnapshot = {

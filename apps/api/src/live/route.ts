@@ -4,7 +4,7 @@ import type { FactCheckRequest } from '@growth-factcheking/shared';
 import type { FastifyInstance } from 'fastify';
 import { loadLiveConfig } from './config.js';
 import { createPool, createFactSearch } from './fact-store.js';
-import { createDecider, createEmbedder, createOpenAIClient } from './openai.js';
+import { createDecider, createEmbedder, createKnowledgeDecider, createOpenAIClient } from './openai.js';
 import { createFactChecker } from './pipeline.js';
 import type { FactChecker } from './pipeline.js';
 
@@ -25,6 +25,8 @@ export function registerLiveFactCheck(app: FastifyInstance, injected?: FactCheck
         decide: createDecider(client, config),
         topK: config.topK,
         thresholds: { minRelevance: config.minRelevance, minConfidence: config.minConfidence },
+        ...(config.knowledgeFallback ? { knowledge: createKnowledgeDecider(client, config) } : {}),
+        knowledgeMinConfidence: config.knowledgeMinConfidence,
         // Never reuse a verdict here: every X card and panel check runs the full pipeline, so the demo
         // shows real latency on each load. FACT_CHECK_CACHE_TTL_MS still applies to conversation capture.
         cacheTtlMs: 0,

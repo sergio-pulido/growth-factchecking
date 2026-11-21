@@ -50,6 +50,7 @@ export type ClaimCheck = {
   /** Null when status is "failed". */
   verdict: FactCheckResult['verdict'] | null;
   sources: FactCheckResult['sources'];
+  basis?: FactCheckResult['basis'];
 };
 
 export type UtteranceBatchResult = {
