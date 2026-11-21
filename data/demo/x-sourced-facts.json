@@ -247,6 +247,28 @@
       "additionalSourceUrls": [
         "https://noticias.juridicas.com/actualidad/noticias/21382-el-consejo-de-ministros-aprueba-la-subida-del-smi-en-un-5-3-en-2027-hasta-los-1-286-euros-mensuales/"
       ]
+    },
+    {
+      "id": "es-sector-publico-2026-clausula-ipc",
+      "statement": "Además del incremento máximo del 4,5% para 2027 del Real Decreto-ley 37/2026, el artículo 2.2 del Real Decreto-ley 14/2025 prevé para los empleados públicos un 0,5% adicional y consolidable con efectos desde el 1 de enero de 2026, si el IPC de 2026 es igual o superior al 1,5%, que se abona en el primer trimestre de 2027. El 4,5% de 2027 se calcula sobre las retribuciones vigentes a 31 de diciembre de 2026, incluido ese 0,5%. Son dos subidas distintas: 4,5% en 2027 y 0,5% pendiente de 2026.",
+      "statementEn": "Besides the maximum 4.5% rise for 2027 in Royal Decree-law 37/2026, article 2.2 of Royal Decree-law 14/2025 gives public employees an extra, consolidated 0.5% backdated to 1 January 2026 if 2026 inflation is 1.5% or higher, paid in the first quarter of 2027. The 2027 4.5% is calculated on pay at 31 December 2026, including that 0.5%. They are two separate rises.",
+      "sourceUrl": "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2026-24119",
+      "sourceTitle": "BOE — Royal Decree-law 37/2026, public-sector pay, 18 November 2026",
+      "additionalSourceUrls": [
+        "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2025-24445",
+        "https://www.lamoncloa.gob.es/consejodeministros/resumenes/Paginas/2026/171126-rueda-prensa-consejo-ministros.aspx",
+        "https://www.que.es/2026/11/20/subida-empleados-publicos-2027-nomina/"
+      ]
+    },
+    {
+      "id": "es-smi-2027-beneficiarios",
+      "statement": "Según el Ministerio de Trabajo, la subida del salario mínimo de 2027 aprobada el 17 de noviembre de 2026 alcanzará aproximadamente al 13,6% de las personas asalariadas, unos 2,7 millones de trabajadores, de los que unos 1,7 millones son mujeres. Andalucía (550.000) y la Comunidad de Madrid (387.000) concentran más beneficiarios. Es una estimación del Gobierno, no un recuento de nóminas.",
+      "statementEn": "According to the Labour Ministry, the 2027 minimum-wage rise approved on 17 November 2026 will reach about 13.6% of employees, some 2.7 million workers, about 1.7 million of them women. Andalusia (550,000) and the Madrid region (387,000) have the most. It is a Government estimate, not a payroll count.",
+      "sourceUrl": "https://www.lamoncloa.gob.es/consejodeministros/resumenes/Paginas/2026/171126-rueda-prensa-consejo-ministros.aspx",
+      "sourceTitle": "La Moncloa — Council of Ministers press conference, 17 November 2026",
+      "additionalSourceUrls": [
+        "https://www.eldiario.es/economia/salario-minimo-sube-1-286-euros-mes-neto-cobra-recibe_1_13669825.html"
+      ]
     }
   ]
 }
