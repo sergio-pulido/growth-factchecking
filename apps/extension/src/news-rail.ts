@@ -55,7 +55,14 @@ export function createNewsRail() {
   sheet.replaceSync(styles);
   shadow.adoptedStyleSheets = [sheet];
   let items: RailItem[] = [];
+  const storageKey = 'growth-factchecking-rail';
   let open = window.innerWidth > 1100;
+  try {
+    const saved = localStorage.getItem(storageKey);
+    if (saved) open = saved === 'open';
+  } catch {
+    // Storage can be blocked on some sites; the default is fine.
+  }
 
   function draw() {
     const rail = document.createElement('aside');
@@ -77,9 +84,13 @@ export function createNewsRail() {
     toggle.append(svg(open ? 'collapse' : 'expand'));
     toggle.addEventListener('click', () => {
       open = !open;
+      try {
+        localStorage.setItem(storageKey, open ? 'open' : 'closed');
+      } catch {
+        // Not persisted; the rail still toggles.
+      }
       draw();
     });
-    header.append(brand, toggle);
 
     const summary = document.createElement('div');
     summary.className = 'summary';
@@ -91,12 +102,26 @@ export function createNewsRail() {
       counts.set(verdict.label, entry);
     }
     const order = ['Verified', 'False', 'Doubtful', 'Not enough info', 'Checking…', 'Could not check'];
-    for (const entry of [...counts.values()].sort((a, b) => order.indexOf(a.label) - order.indexOf(b.label))) {
+    const sorted = [...counts.values()].sort((a, b) => order.indexOf(a.label) - order.indexOf(b.label));
+    for (const entry of sorted) {
       const chip = document.createElement('span');
       chip.className = 'count';
       chip.append(icon(entry.tone), `${entry.n} ${entry.label}`);
       summary.append(chip);
     }
+    // Collapsed, the header alone shows the tally: one icon and number per verdict.
+    const mini = document.createElement('span');
+    mini.className = 'mini';
+    for (const entry of sorted) {
+      const tally = document.createElement('span');
+      tally.title = `${entry.n} ${entry.label}`;
+      tally.append(icon(entry.tone), String(entry.n));
+      mini.append(tally);
+    }
+    header.append(brand, ...(open ? [] : [mini]), toggle);
+    if (!open) header.addEventListener('click', (event) => {
+      if (event.target !== toggle && !toggle.contains(event.target as Node)) toggle.click();
+    });
 
     const done = items.filter((item) => item.elapsedMs !== undefined);
     const meta = document.createElement('div');
