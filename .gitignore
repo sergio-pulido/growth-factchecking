@@ -14,3 +14,4 @@ coverage/
 # Registros y archivos del sistema
 *.log
 .DS_Store
+test-dist/

@@ -1,11 +1,18 @@
 import { CLAIM_MAX_LENGTH, DEMO_SCENARIOS, FACT_CHECK_PATH, MEET_DEMO_PATH, MEET_JUDGES, MEET_TRANSCRIPT, VERDICTS } from '@growth-factcheking/shared';
 import type { FactCheckResult, MeetCheckResult } from '@growth-factcheking/shared';
 import type { FactCheckMessage, FactCheckResponse, MeetDemoRequest, MeetDemoResponse } from './messages.js';
+import { registerConversationBridge, showMeetPanel } from './meet/conversation-bridge.js';
 
-chrome.action.onClicked.addListener(async ({ id }) => {
+registerConversationBridge();
+
+chrome.action.onClicked.addListener(async ({ id, url }) => {
   if (id === undefined) return;
 
   try {
+    if (url?.startsWith('https://meet.google.com/')) {
+      await showMeetPanel(id);
+      return;
+    }
     await chrome.scripting.executeScript({ target: { tabId: id }, files: ['overlay.js'] });
     await chrome.action.setBadgeText({ tabId: id, text: '' });
   } catch (error) {
