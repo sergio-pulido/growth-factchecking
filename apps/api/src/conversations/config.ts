@@ -13,6 +13,8 @@ export type ConversationConfig = {
   transcriptionModel: string;
   /** Lifetime of a Realtime client secret handed to the extension. */
   transcriptionTokenTtlSeconds: number;
+  /** Optional extra, off by default: not part of the MVP (docs/specs/argument-relevance.md). */
+  argumentRelevance: { enabled: boolean; model: string };
 };
 
 function int(name: string, fallback: number, min: number, max: number): number {
@@ -45,5 +47,9 @@ export function loadConversationConfig(): ConversationConfig {
     checkConcurrency: int('CLAIM_CHECK_CONCURRENCY', 4, 1, 16),
     transcriptionModel: process.env.TRANSCRIPTION_MODEL || 'gpt-live-transcribe',
     transcriptionTokenTtlSeconds: int('TRANSCRIPTION_TOKEN_TTL_SECONDS', 600, 10, 7200),
+    argumentRelevance: {
+      enabled: /^(1|true|yes|on)$/i.test(process.env.ARGUMENT_RELEVANCE_ENABLED ?? ''),
+      model: process.env.ARGUMENT_RELEVANCE_MODEL || process.env.DECISIONS_MODEL || 'gpt-6-luna',
+    },
   };
 }
