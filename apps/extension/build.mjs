@@ -18,3 +18,4 @@ await build({
 await copyFile('manifest.json', 'dist/manifest.json');
 await copyFile('src/offscreen.html', 'dist/offscreen.html');
 await copyFile('src/microphone.html', 'dist/microphone.html');
+await copyFile('src/microphone.css', 'dist/microphone.css');

@@ -216,7 +216,8 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
       button.replaceChildren(counts[name][0], h('span', { class: 'count' }, String(counts[name][1])));
       button.setAttribute('aria-pressed', String(name === filter));
     }
-    const message = snap.notice ?? (snap.state === 'live' && !snap.found ? source.hint : null);
+    const activeNotice = snap.state === 'live' || snap.state === 'paused' ? source.notice : undefined;
+    const message = snap.notice ?? activeNotice ?? (snap.state === 'live' && !snap.found ? source.hint : null);
     notice.hidden = !message;
     notice.textContent = message ?? '';
   }
