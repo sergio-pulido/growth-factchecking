@@ -28,7 +28,7 @@ pill / toolbar icon -> panel with consent text (+ language picker in audio mode)
   captions: turn on the app's captions if off; skip what is already on screen
   audio:    tabCapture stream id -> offscreen document -> WebRTC to OpenAI live transcription
             (client secret from POST /api/transcription/token, language hint from the picker)
-final segments, batched (1.2 s or 4 queued) --- call-send ---> POST /:id/utterances -> claims + verdicts
+final segments, batched (up to 250 ms from the first one, or 4 queued) --- call-send ---> POST /:id/utterances -> claims + verdicts
 verdict -> bubble (collapsed) or card (open) + edge glow
 Pause: nothing is sent (audio track muted); finished sentences said before the pause are kept, a half-said one is dropped
 Stop -> POST /:id/end · Erase -> DELETE /:id · failed claim "Reintentar" -> POST /api/fact-check/live (not stored)
@@ -53,9 +53,10 @@ Stop -> POST /:id/end · Erase -> DELETE /:id · failed claim "Reintentar" -> PO
 - Meet asks for microphone permission on a visible extension page. The user can close that page and start a new check from Meet once the permission is granted. The outgoing stream runs in the offscreen document as the user changes tabs or enters Picture-in-Picture. Meet's mute button controls the microphone for the call itself. FactCheck has its own Pause and Stop controls. [Chrome microphone capture example](https://github.com/GoogleChrome/chrome-extensions-samples/tree/main/functional-samples/cookbook.offscreen-user-media)
 - After granting microphone access, **Back to Google Meet** returns to the original tab. If Chrome rejects the separate request for tab audio, Meet checks the microphone alone and shows that limitation in the panel. To retry both sources, stop, invoke FactCheck from the toolbar on the Meet tab and start again. [Chrome tab capture](https://developer.chrome.com/docs/extensions/reference/api/tabCapture)
 - `gpt-live-transcribe` sessions have no turn detection: they stream `…input_audio_transcription.delta` events into
-  one open item and never send `completed`. The content side cuts that stream into sentences (a sentence is finished
-  when another word follows it, a finished tail after 1.5 s of silence, an unfinished one after 8 s, run-ons at 60
-  words). `completed` events are used only for items that sent no deltas (other models).
+  one open item. The panel shows the pending text in **Transcript** as it arrives, and keeps draft text local.
+  A sentence ends when another word follows the punctuation, after 0.6 s without a new fragment for a punctuated tail,
+  after 2.2 s for an unpunctuated tail, or after 3.2 s if a trailing number or connector suggests more words are coming.
+  Run-ons are capped at 60 words. Other models' `completed` events can settle a pending tail immediately.
 - The language picker (Español, English, Other = automatic) defaults to the browser language. The hint matters: in the
   run without it, "treinta y dos mil" came back as "train to Y dos mil".
 - Speaker is **Call audio** for the mixed stream and **Tab audio** for tab-only capture (`speakerKind: unknown`). A microphone-only check uses **You (microphone)** (`speakerKind: self`).
@@ -63,6 +64,7 @@ Stop -> POST /:id/end · Erase -> DELETE /:id · failed claim "Reintentar" -> PO
 ## Panel (`apps/extension/src/call/panel.ts`, `cards.ts`, `alerts.ts`, `call.css`)
 
 Closed shadow root, DOM APIs only (Meet enforces Trusted Types). English UI, as on main. Tabs: All, Needs attention, Transcript.
+The status below the tabs shows when the extension is listening, transcribing or extracting and checking claims.
 Cards show speaker, minute, claim, verdict and five-step scale, a one-line reading of the verdict and the sources.
 The consent card also links to the selection check (the older panel, now mounted from the overlay).
 

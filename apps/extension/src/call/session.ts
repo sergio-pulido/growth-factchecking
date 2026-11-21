@@ -20,7 +20,7 @@ export type SessionOptions = {
   pageUrl?: () => string | undefined;
 };
 
-const FLUSH_DELAY_MS = 1200;
+const FLUSH_DELAY_MS = 250;
 const FLUSH_NOW_AT = 4;
 const RETRY_MS = 4000;
 
@@ -36,6 +36,7 @@ export function createCallSession(
   let startedAt: number | null = null;
   let claims: ClaimItem[] = [];
   let transcript: TranscriptLine[] = [];
+  let draft = '';
   let queue: UtteranceInput[] = [];
   let analyzing = 0;
   let inflight: Promise<boolean> | null = null;
@@ -46,12 +47,15 @@ export function createCallSession(
   let notice: string | null = null;
   let seq = 0;
   let flushTimer: ReturnType<typeof setTimeout> | undefined;
+  let flushAt = Infinity;
+  let retryAt = 0;
 
   const elapsed = () => (startedAt === null ? 0 : Math.max(0, (Date.now() - startedAt) / 1000));
 
   function snapshot(): SessionSnapshot {
     return {
-      state, startedAt, claims, transcript, analyzing, found, voice: state === 'live' && voice, notice,
+      state, startedAt, claims, transcript, draft: state === 'live' ? draft : '', analyzing, found,
+      voice: state === 'live' && voice, notice,
     };
   }
   const changed = () => events.onChange(snapshot());
@@ -60,6 +64,11 @@ export function createCallSession(
     segments(list: readonly Segment[]) {
       if (state !== 'live' || list.length === 0) return;
       list.forEach(enqueue);
+      changed();
+    },
+    draft(text: string) {
+      if (state !== 'live' || text === draft) return;
+      draft = text;
       changed();
     },
     activity(next: { found: boolean; voice: boolean }) {
@@ -90,12 +99,25 @@ export function createCallSession(
       clientId, speaker: name, speakerKind: kind ?? speakerKindOf(speaker), text: text.slice(0, UTTERANCE_TEXT_MAX),
       spokenAt: new Date().toISOString(),
     }];
-    scheduleFlush(queue.length >= FLUSH_NOW_AT ? 0 : FLUSH_DELAY_MS);
+    if (!inflight) scheduleFlush(queue.length >= FLUSH_NOW_AT ? 0 : FLUSH_DELAY_MS);
+  }
+
+  function cancelFlush() {
+    clearTimeout(flushTimer);
+    flushTimer = undefined;
+    flushAt = Infinity;
   }
 
   function scheduleFlush(delay: number) {
-    clearTimeout(flushTimer);
-    flushTimer = setTimeout(() => void flush(), delay);
+    const now = Date.now();
+    const due = Math.max(now + delay, retryAt);
+    if (due >= flushAt) return;
+    cancelFlush();
+    flushAt = due;
+    flushTimer = setTimeout(() => {
+      cancelFlush();
+      void flush();
+    }, due - now);
   }
 
   function toItem(check: ClaimCheck): ClaimItem {
@@ -128,17 +150,18 @@ export function createCallSession(
     if (queue.length === 0 || !conversationId) return Promise.resolve(queue.length === 0);
     inflight = sendBatch(conversationId).finally(() => {
       inflight = null;
+      if (queue.length && (state === 'live' || state === 'paused')) scheduleFlush(0);
     });
     return inflight;
   }
 
   async function sendBatch(conversationId: string): Promise<boolean> {
     const batch = queue.slice(0, UTTERANCE_BATCH_MAX);
-    let retryIn = FLUSH_DELAY_MS;
     analyzing = batch.length;
     changed();
     try {
       const result = await transport.send(conversationId, batch);
+      retryAt = 0;
       queue = queue.slice(batch.length);
       const fresh = (await withRecoveredClaims(conversationId, result)).map(toItem);
       claims = [...claims, ...fresh];
@@ -149,17 +172,17 @@ export function createCallSession(
       notice = message(error);
       if (error instanceof CallTransportError && error.code !== 'unavailable') {
         queue = [];
+        draft = '';
         source.stop();
-        clearTimeout(flushTimer);
+        cancelFlush();
         state = 'ended';
       } else {
-        retryIn = RETRY_MS;
+        retryAt = Date.now() + RETRY_MS;
       }
       return false;
     } finally {
       analyzing = 0;
       changed();
-      if (queue.length && (state === 'live' || state === 'paused')) scheduleFlush(retryIn);
     }
   }
 
@@ -169,7 +192,11 @@ export function createCallSession(
     notice = null;
     claims = [];
     transcript = [];
+    draft = '';
     queue = [];
+    retryAt = 0;
+    found = false;
+    voice = false;
     changed();
     try {
       ({ id: conversationId } = await transport.start({
@@ -211,6 +238,8 @@ export function createCallSession(
     if (state !== 'live') return;
     // Finished sentences said before the pause are kept; a half-said sentence is not checked.
     source.pause().forEach(enqueue);
+    draft = '';
+    voice = false;
     state = 'paused';
     changed();
   }
@@ -228,8 +257,9 @@ export function createCallSession(
     const wasLive = state === 'live';
     const rest = source.stop();
     if (wasLive) rest.forEach(enqueue);
+    draft = '';
     state = 'ending';
-    clearTimeout(flushTimer);
+    cancelFlush();
     changed();
     // Wait for a batch already in flight, then send what is left before ending the conversation.
     if (inflight) await inflight;
@@ -300,7 +330,8 @@ export function createCallSession(
   function endOnLeave() {
     if (state !== 'live' && state !== 'paused') return;
     source.stop();
-    clearTimeout(flushTimer);
+    draft = '';
+    cancelFlush();
     state = 'ended';
     if (conversationId) void transport.end(conversationId).catch(() => undefined);
   }

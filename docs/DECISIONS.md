@@ -41,3 +41,7 @@ Tras iniciar la captura, la extensión usa los subtítulos de Document Picture-i
 ## 010 · Audio para Google Meet
 
 La versión 0.4.6 sustituye el lector de subtítulos de Meet. Chrome concede el permiso de micrófono en una página de la extensión. Tras **Start checking**, el documento offscreen mezcla el micrófono con el audio de la pestaña y envía la mezcla a OpenAI Realtime. Una sesión de transcripción por llamada conserva el flujo en segundo plano y agrupa ambas voces bajo **Call audio**. **Pause** silencia el envío y **Stop** cierra las capturas.
+
+## 011 · Texto provisional y envío de frases
+
+El panel muestra los fragmentos de OpenAI cuando llegan. El borrador solo vive en la extensión. La API recibe frases consolidadas, con una espera de 250 ms desde la primera frase en cola cuando no hay otra petición en curso. Se conserva el orden para que la extracción pueda usar las intervenciones anteriores como contexto. El corte por silencio es más corto para las frases con puntuación y deja más margen cuando falta una unidad o el final de una expresión.

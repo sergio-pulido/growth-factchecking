@@ -170,6 +170,9 @@ button { font: inherit; color: inherit; cursor: pointer; }
   box-shadow: inset 0 1px 0 var(--glass-edge), 0 1px 4px var(--glass-drop);
 }
 .tabs .count { font-size: 11px; padding-left: 4px; }
+.capture-status { display: flex; align-items: center; gap: 7px; margin: 10px 16px 0; color: var(--t2); font-size: 12px; }
+.capture-status i { width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--accent); }
+.capture-status.active i { animation: pulse 1s infinite; }
 .notice {
   margin: 10px 12px 0; padding: 8px 10px; border-radius: 12px; font-size: 12.5px;
   background: color-mix(in srgb, var(--v-pno) 16%, transparent); color: var(--ink);
@@ -240,6 +243,8 @@ button { font: inherit; color: inherit; cursor: pointer; }
 @keyframes sh { to { background-position: -200% 0; } }
 .line { border: 1px dashed var(--line); border-radius: 14px; padding: 8px 12px; display: flex; flex-direction: column; gap: 2px; }
 .line .quote { font-size: 13px; color: var(--t2); }
+.line-draft { border-color: var(--accent); background: var(--v-yes-bg); overflow-wrap: anywhere; }
+.line-draft .meta { color: var(--accent); }
 
 /* ---------- Sources ---------- */
 .sources { border-top: 1px solid var(--line); padding-top: 6px; }

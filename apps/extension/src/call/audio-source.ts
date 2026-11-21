@@ -6,12 +6,13 @@ import { takeSentences } from './segmenter.js';
 import type { CaptureSource, Segment, SourceSink } from './types.js';
 
 export const AUDIO_SPEAKER = 'Tab audio';
-// The live model sends text in bursts and trickles out the last words of a turn seconds apart: a finished
-// sentence is cut after a short silence, an unfinished one only after a long one.
-const QUIET_FINISHED_MS = 1500;
-const QUIET_UNFINISHED_MS = 8000;
+// The live model sends text in bursts. Wait longer when a number may still be missing its unit.
+const QUIET_FINISHED_MS = 600;
+const QUIET_UNFINISHED_MS = 2200;
+const QUIET_CONTINUATION_MS = 3200;
 const FINISHED = /[.!?…]["»”)]?$/u;
-const TICK_MS = 400;
+const EXPECTS_MORE = /(?:\p{N}[.,]?|(?:^|\s)(?:and|at|in|of|to|the|a|an|y|en|de|del|con|el|la|los|las))$/iu;
+const TICK_MS = 200;
 const VOICE_MS = 1200;
 
 export type AudioControl = (request: Extract<CallRequest, { kind: `audio-${string}` }>) => Promise<unknown>;
@@ -37,7 +38,8 @@ export function createAudioSource(control: AudioControl, platform: 'web' | 'meet
   let sink: SourceSink | null = null;
   let paused = false;
   let buffer = '';
-  let lastDelta = 0;
+  let lastDelta = -Infinity;
+  let lastItemId: string | undefined;
   let tick = 0;
   let language = browserLanguage();
   const streamedItems = new Set<string>();
@@ -47,8 +49,17 @@ export function createAudioSource(control: AudioControl, platform: 'web' | 'meet
     if (list.length) sink?.segments(list);
   }
 
+  function finishBuffer() {
+    const text = buffer;
+    buffer = '';
+    emit([text]);
+    sink?.draft?.('');
+  }
+
   function onDelta(itemId: string, text: string) {
-    if (paused) return;
+    if (paused || !text) return;
+    if (lastItemId !== undefined && lastItemId !== itemId && buffer) finishBuffer();
+    lastItemId = itemId;
     streamedItems.add(itemId);
     lastDelta = Date.now();
     buffer += text;
@@ -56,16 +67,17 @@ export function createAudioSource(control: AudioControl, platform: 'web' | 'meet
     buffer = rest;
     emit(done);
     sink?.activity({ found: true, voice: true });
+    sink?.draft?.(buffer.trim());
   }
 
   function onTick() {
-    const voice = Date.now() - lastDelta < VOICE_MS;
-    const wait = FINISHED.test(buffer.trim()) ? QUIET_FINISHED_MS : QUIET_UNFINISHED_MS;
-    if (buffer && Date.now() - lastDelta >= wait) {
-      emit([buffer]);
-      buffer = '';
-    }
-    sink?.activity({ found: true, voice: voice && !paused });
+    if (paused) return;
+    const quiet = Date.now() - lastDelta;
+    const tail = buffer.trim();
+    const wait = FINISHED.test(tail) ? QUIET_FINISHED_MS
+      : EXPECTS_MORE.test(tail) ? QUIET_CONTINUATION_MS : QUIET_UNFINISHED_MS;
+    if (tail && quiet >= wait) finishBuffer();
+    sink?.activity({ found: true, voice: quiet < VOICE_MS });
   }
 
   function onEvent(message: unknown) {
@@ -74,8 +86,10 @@ export function createAudioSource(control: AudioControl, platform: 'web' | 'meet
     if (event.kind === 'audio-delta' && typeof event.text === 'string' && typeof event.itemId === 'string') {
       onDelta(event.itemId, event.text);
     } else if (event.kind === 'audio-segment' && typeof event.text === 'string' && typeof event.itemId === 'string') {
-      // Models with turn detection also send the whole item at the end: use it only if no deltas came for it.
-      if (!paused && !streamedItems.has(event.itemId)) emit([event.text]);
+      if (paused) return;
+      // A completed item can settle its remaining draft immediately. Its earlier sentences have already been sent.
+      if (!streamedItems.has(event.itemId)) emit([event.text]);
+      else if (event.itemId === lastItemId && buffer) finishBuffer();
     } else if (event.kind === 'audio-error' && typeof event.message === 'string') {
       sink.failed(event.message);
     }
@@ -109,6 +123,8 @@ export function createAudioSource(control: AudioControl, platform: 'web' | 'meet
       paused = false;
       microphoneOnly = false;
       buffer = '';
+      lastDelta = -Infinity;
+      lastItemId = undefined;
       streamedItems.clear();
       try {
         microphoneOnly = await control({ kind: 'audio-start', ...(language ? { language } : {}), ...(microphone ? { microphone: true } : {}) }) === 'microphone';
@@ -123,7 +139,7 @@ export function createAudioSource(control: AudioControl, platform: 'web' | 'meet
       // Finished sentences are kept; the half-said one is dropped. The audio track is muted, so nothing said
       // while paused reaches OpenAI.
       const { done, rest } = takeSentences(buffer);
-      const kept = FINISHED.test(rest) ? [...done, rest] : done;
+      const kept = FINISHED.test(rest.trim()) ? [...done, rest] : done;
       buffer = '';
       paused = true;
       void control({ kind: 'audio-pause' }).catch(() => undefined);
@@ -132,6 +148,7 @@ export function createAudioSource(control: AudioControl, platform: 'web' | 'meet
     resume() {
       paused = false;
       buffer = '';
+      lastDelta = -Infinity;
       void control({ kind: 'audio-resume' }).catch(() => undefined);
     },
     stop() {

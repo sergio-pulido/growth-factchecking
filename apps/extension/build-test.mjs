@@ -10,6 +10,8 @@ await build({
     segmenter: 'src/call/segmenter.ts',
     terms: 'src/call/terms.ts',
     'call-session': 'src/call/session.ts',
+    'audio-source': 'src/call/audio-source.ts',
+    'call-panel': 'src/call/panel.ts',
     'meet-source': 'src/call/meet-source.ts',
     'http-transport': 'src/call/http-transport.ts',
     'call-relay': 'src/call-relay.ts',

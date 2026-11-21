@@ -22,6 +22,8 @@ export type Segment = { speaker: string; text: string; kind?: SpeakerKind };
 
 export type SourceSink = {
   segments(list: readonly Segment[]): void;
+  /** Provisional text shown locally while the source is still transcribing. */
+  draft?(text: string): void;
   /** `found`: captions (or audio) are reaching the source; `voice`: someone is speaking now. */
   activity(state: { found: boolean; voice: boolean }): void;
   /** The source stopped working on its own (e.g. the audio connection dropped). */
@@ -87,6 +89,7 @@ export type SessionSnapshot = {
   startedAt: number | null;
   claims: readonly ClaimItem[];
   transcript: readonly TranscriptLine[];
+  draft: string;
   /** Utterances sent and waiting for claim extraction. */
   analyzing: number;
   found: boolean;

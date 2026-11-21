@@ -30,18 +30,19 @@ const SENTENCE_END = /[.!?…]["»”)]?$/u;
 /**
  * Splits append-only text (a live transcription stream) into finished sentences and the unfinished rest.
  * A sentence is finished once another word follows it; `maxWords` caps run-on text without punctuation.
+ * The remainder keeps its trailing whitespace so the next delta can be appended verbatim.
  */
 export function takeSentences(text: string, maxWords = 60): { done: string[]; rest: string } {
-  const words = splitWords(text);
+  const words = [...text.matchAll(/\S+/gu)];
   const done: string[] = [];
   let start = 0;
   for (let i = 0; i < words.length - 1; i++) {
-    if (SENTENCE_END.test(words[i]!) || i + 1 - start >= maxWords) {
-      done.push(words.slice(start, i + 1).join(' '));
+    if (SENTENCE_END.test(words[i]![0]) || i + 1 - start >= maxWords) {
+      done.push(words.slice(start, i + 1).map((word) => word[0]).join(' '));
       start = i + 1;
     }
   }
-  return { done, rest: words.slice(start).join(' ') };
+  return { done, rest: text.slice(words[start]?.index ?? text.length) };
 }
 
 export function normalizeWord(word: string) {

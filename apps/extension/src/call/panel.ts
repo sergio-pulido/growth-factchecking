@@ -1,6 +1,6 @@
 // The FactCheck island over a call: a pill that morphs into the panel. Spec: docs/specs/call-overlay.md
 import { createBubbles, flashFrame } from './alerts.js';
-import { analyzingCard, claimCard, ORDER, TONES, transcriptLine } from './cards.js';
+import { claimCard, ORDER, TONES, transcriptLine } from './cards.js';
 import type { EditState } from './cards.js';
 import { clock, h, icon } from './dom.js';
 import styles from './call.css';
@@ -58,6 +58,12 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
     transcript: h('button', { type: 'button', 'aria-pressed': 'false' }),
   };
   const notice = h('div', { class: 'notice', role: 'status' });
+  const statusText = h('span');
+  const captureStatus = h('div', { class: 'capture-status', role: 'status', hidden: true },
+    h('i', { 'aria-hidden': 'true' }), statusText);
+  const draftText = h('p', { class: 'quote' });
+  const draftLine = h('div', { class: 'line line-draft', 'aria-live': 'off' },
+    h('span', { class: 'meta' }, 'Live transcript · Draft'), draftText);
   const feed = h('div', { class: 'feed', 'aria-live': 'polite' });
   const foot = h('div', { class: 'p-foot' });
   const logo = () => h('span', { class: 'logo' }, icon('check', '#fff'));
@@ -68,7 +74,7 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
       h('span', { class: 'spacer' }), pauseButton, minimize),
     h('div', { class: 'summary' }, h('div', { class: 'sum-line' }, sumText, sumAttention), distbar),
     h('div', { class: 'tabs' }, tabButtons.all, tabButtons.attention, tabButtons.transcript),
-    notice, feed, foot);
+    captureStatus, notice, feed, foot);
   const panel = h('aside', { class: 'panel', 'aria-label': 'Panel de FactCheck' }, face, body);
   shadow.append(flash, h('div', { class: 'dock' }, bubbleList), panel);
 
@@ -78,6 +84,8 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
   let flashIds = new Set<string>();
   let pillKey = '';
   let feedKey = '';
+  let summary: { snap: SessionSnapshot; filter: Filter } | undefined;
+  let footState: SessionSnapshot['state'] | undefined;
   let badge = -1;
   let edit: EditState = null;
 
@@ -101,6 +109,7 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
 
   function setOpen(next: boolean, instant = false) {
     open = next;
+    orb.setRunning(!open && face.classList.contains('checking'));
     const width = Math.min(340, window.innerWidth - 32);
     const height = Math.max(260, Math.min(560, window.innerHeight - anchorBottom - 24));
     body.style.width = `${width}px`;
@@ -160,7 +169,7 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
     face.classList.toggle('paused', snap.state === 'paused');
     const checking = snap.analyzing > 0 || snap.claims.some((item) => item.state === 'retrying');
     face.classList.toggle('checking', checking);
-    orb.setRunning(checking);
+    orb.setRunning(checking && !open);
     const key = `${snap.state}:${attention}:${snap.claims.length}:${checking}`;
     if (key === pillKey) return;
     pillKey = key;
@@ -209,10 +218,13 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
   }
 
   function renderSummary(snap: SessionSnapshot, attention: number) {
+    const previous = summary?.snap;
+    if (previous?.state === snap.state && previous.claims === snap.claims && previous.transcript === snap.transcript
+      && previous.notice === snap.notice && previous.found === snap.found && summary?.filter === filter) return;
+    summary = { snap, filter };
     const done = snap.claims.filter((item) => item.state === 'checked' && item.verdict);
     const pending = snap.claims.filter((item) => item.state === 'retrying').length;
-    const extra = [pending ? `${pending} in progress` : '', snap.analyzing ? 'analysing' : ''].filter(Boolean).join(' · ');
-    sumText.replaceChildren(h('strong', {}, String(done.length)), ` checked${extra ? ` · ${extra}` : ''}`);
+    sumText.replaceChildren(h('strong', {}, String(done.length)), ` checked${pending ? ` · ${pending} in progress` : ''}`);
     sumAttention.textContent = attention ? `${attention} need${attention > 1 ? '' : 's'} attention` : '';
     distbar.replaceChildren(...ORDER.flatMap((verdict) => {
       const count = done.filter((item) => item.verdict === verdict).length;
@@ -233,6 +245,18 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
     const message = snap.notice ?? activeNotice ?? (snap.state === 'live' && !snap.found ? source.hint : null);
     notice.hidden = !message;
     notice.textContent = message ?? '';
+  }
+
+  function renderCaptureStatus(snap: SessionSnapshot) {
+    const checking = snap.analyzing > 0;
+    const speaking = snap.voice || !!snap.draft;
+    const listening = source.capture === 'audio';
+    const label = checking ? 'Extracting and checking claims…'
+      : snap.state === 'live' && snap.found
+        ? (listening ? (speaking ? 'Transcribing speech…' : 'Listening for speech…') : 'Reading live captions…') : '';
+    captureStatus.hidden = !label;
+    captureStatus.classList.toggle('active', checking || speaking);
+    if (label !== statusText.textContent) statusText.textContent = label;
   }
 
   function consent() {
@@ -300,34 +324,44 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
       },
     };
     if (filter === 'transcript') {
-      return snap.transcript.length ? snap.transcript.map(transcriptLine)
-        : [empty('No transcript yet', `Every sentence FactCheck ${source.capture === 'captions' ? 'reads from the captions' : 'transcribes from the audio'} and saves will show here.`)];
+      if (snap.transcript.length || snap.draft) {
+        const lines = snap.transcript.map(transcriptLine);
+        if (snap.draft) lines.push(draftLine);
+        return lines;
+      }
+      return [empty('No transcript yet', `Every sentence FactCheck ${source.capture === 'captions' ? 'reads from the captions' : 'transcribes from the audio'} will show here.`)];
     }
     const list = filter === 'attention' ? snap.claims.filter(isAttention) : snap.claims;
     const cards: Node[] = list.map((item) => {
       const extra = [flashIds.has(item.id) ? 'flash' : '', item.id === target ? 'target' : ''].join(' ');
       return claimCard(item, handlers, extra, edit);
     });
-    if (filter === 'all' && snap.analyzing) cards.push(analyzingCard(snap.analyzing));
     if (cards.length) return cards;
+    if (filter === 'all' && snap.analyzing) return [];
     return filter === 'attention'
       ? [empty('Nothing doubtful so far', 'Claims rated False or Likely false will show here.')]
       : [empty('No claims yet', 'When someone says something checkable, it shows here with its verdict.')];
   }
 
   function renderFeed(snap: SessionSnapshot) {
-    const key = JSON.stringify([filter, target, snap.state, snap.analyzing, snap.transcript.length, edit?.id ?? null,
+    const visibleDraft = filter === 'transcript' ? snap.draft : '';
+    const draftChanged = draftText.textContent !== visibleDraft;
+    const key = JSON.stringify([filter, target, snap.state, snap.analyzing > 0, snap.transcript.length,
+      filter === 'transcript' && !!snap.draft, edit?.id ?? null,
       snap.claims.map(({ id, state, verdict, open: expanded, claim, basis }) => [id, state, verdict, expanded, claim, basis]),
       [...flashIds]]);
-    if (key === feedKey) return;
-    feedKey = key;
-    const editing = edit !== null && shadow.activeElement?.getAttribute('data-edit') === edit.id;
+    if (key === feedKey && !draftChanged) return;
     const atBottom = feed.scrollHeight - feed.scrollTop - feed.clientHeight < 40;
-    feed.replaceChildren(...feedChildren(snap));
-    flashIds = new Set();
+    if (draftChanged) draftText.textContent = visibleDraft;
+    if (key !== feedKey) {
+      feedKey = key;
+      const editing = edit !== null && shadow.activeElement?.getAttribute('data-edit') === edit.id;
+      feed.replaceChildren(...feedChildren(snap));
+      flashIds = new Set();
+      // A new claim re-renders the feed: keep the cursor in the editor the user is typing in.
+      if (editing) focusEditor();
+    }
     if (atBottom && !target && !edit) feed.scrollTop = feed.scrollHeight;
-    // A new claim re-renders the feed: keep the cursor in the editor the user is typing in.
-    if (editing) focusEditor();
   }
 
   function focusEditor() {
@@ -338,13 +372,17 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
   }
 
   function renderFoot(snap: SessionSnapshot) {
+    if (footState === snap.state) return;
+    footState = snap.state;
     const buttons: HTMLElement[] = [];
     if (snap.state === 'idle') {
       const start = h('button', { class: 'btn primary wide', type: 'button' }, 'Start checking');
       // Collapse to the pill as soon as checking starts: the call stays in view and verdicts arrive as bubbles.
       start.addEventListener('click', () => {
         setOpen(false);
-        void session.start();
+        void session.start().then(() => {
+          if (!open && session.snapshot().state === 'idle') setOpen(true);
+        });
       });
       if (source.language) buttons.push(languagePicker(source.language));
       buttons.push(start);
@@ -372,6 +410,7 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
     renderPill(snap, attention);
     renderHead(snap);
     renderSummary(snap, attention);
+    renderCaptureStatus(snap);
     renderFeed(snap);
     renderFoot(snap);
     if (attention !== badge) {
@@ -407,6 +446,7 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
     destroy() {
       window.clearInterval(clockTimer);
       window.removeEventListener('resize', onResize);
+      orb.setRunning(false);
       session.dispose();
       host.remove();
     },

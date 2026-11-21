@@ -171,11 +171,6 @@ function shimmer() {
   return bar;
 }
 
-export function analyzingCard(count: number): HTMLDivElement {
-  return h('div', { class: 'card pending' },
-    h('div', { class: 'meta' }, `Analysing ${count === 1 ? 'the last sentence' : `the last ${count} sentences`}…`), shimmer());
-}
-
 export function transcriptLine(line: TranscriptLine): HTMLDivElement {
   return h('div', { class: 'line' }, meta(line.speaker, line.at), h('p', { class: 'quote' }, line.text));
 }
