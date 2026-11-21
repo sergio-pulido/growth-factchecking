@@ -100,3 +100,12 @@ test('a streamed transcript is cut into finished sentences', () => {
   assert.deepEqual(takeSentences('Teníamos 42 clientes.'), { done: [], rest: 'Teníamos 42 clientes.' });
   assert.deepEqual(takeSentences('uno dos tres cuatro', 2), { done: ['uno dos'], rest: 'tres cuatro' });
 });
+
+test('the break before the next streamed delta is kept', () => {
+  // gpt-live-transcribe sends "Afecta al " then "13,6%": dropping the space glued them into "al13,6%".
+  let buffer = '';
+  for (const delta of ['Afecta', ' al ', '13,6%', ' de personas']) buffer = takeSentences(buffer + delta).rest;
+  assert.equal(buffer, 'Afecta al 13,6% de personas');
+  assert.deepEqual(takeSentences('Hola. Afecta al '), { done: ['Hola.'], rest: 'Afecta al ' });
+  assert.deepEqual(takeSentences('Hola. '), { done: [], rest: 'Hola. ' });
+});

@@ -5,7 +5,7 @@ import type { SpeakerKind } from '@growth-factcheking/shared';
 import type { CaptionLine } from './segmenter.js';
 
 export type CallPlatform = {
-  id: 'meet' | 'zoom' | 'teams' | 'youtube';
+  id: 'meet' | 'zoom' | 'teams';
   label: string;
   /** True when the page is a call (not a lobby, chat or landing page). */
   isCall(location: Location, root: ParentNode): boolean;
@@ -13,7 +13,7 @@ export type CallPlatform = {
 
 /** A call app read by the generic caption reader. */
 export type CaptionPlatform = CallPlatform & {
-  id: 'zoom' | 'teams' | 'youtube';
+  id: 'zoom' | 'teams';
   findRegion(root: ParentNode): HTMLElement | null;
   readLines(region: HTMLElement): CaptionLine[];
   /** Hint shown when captions are not on screen. */
@@ -22,7 +22,7 @@ export type CaptionPlatform = CallPlatform & {
   anchorBottom: number;
 };
 
-const CAPTIONS_BUTTON = /(turn on captions|show captions|activar subtítulos|mostrar subtítulos|subtitles\/closed captions|subtítulos)/iu;
+const CAPTIONS_BUTTON = /(turn on captions|show captions|activar subtítulos|mostrar subtítulos)/iu;
 const SELF_NAMES = /^(you|tú|tu|vous|du|você|yo)$/iu;
 
 function clean(text: string | null | undefined) {
@@ -121,23 +121,8 @@ export const TEAMS: CaptionPlatform = {
   anchorBottom: 24,
 };
 
-// YouTube videos: reads the player's own captions, so a video is checked without capturing the tab's audio and
-// without a click on the toolbar. Captions are switched on automatically when the video has them.
-export const YOUTUBE: CaptionPlatform = {
-  id: 'youtube',
-  label: 'YouTube',
-  isCall: ({ hostname, pathname }) => /(^|\.)youtube\.com$/u.test(hostname) && /^\/(?:watch|live\/)/u.test(pathname),
-  findRegion: (root) => first(root, ['.ytp-caption-window-container', '.caption-window']),
-  readLines: (region) => Array.from(region.querySelectorAll<HTMLElement>('.caption-visual-line'))
-    .map((line) => ({ key: line, speaker: '', text: clean(line.textContent) }))
-    .filter(({ text }) => text.length > 0),
-  hint: 'Turn on YouTube captions (CC): FactCheck reads what they show.',
-  anchorBottom: 96,
-};
-
 /** The call app this page belongs to, whether or not a call is running. */
 export function platformOf({ hostname }: Location): CallPlatform | CaptionPlatform | null {
-  if (/(^|\.)youtube\.com$/u.test(hostname)) return YOUTUBE;
   if (hostname === 'meet.google.com') return MEET;
   if (/(^|\.)zoom\.us$/u.test(hostname)) return ZOOM;
   if (/^teams\.(microsoft\.com|live\.com|cloud\.microsoft)$/u.test(hostname)) return TEAMS;

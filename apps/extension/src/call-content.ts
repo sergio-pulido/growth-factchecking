@@ -1,4 +1,4 @@
-// FactCheck call overlay. Zoom web, Teams web and YouTube start from captions. Meet and other audio
+// FactCheck call overlay. Zoom web and Teams web start from captions. Meet, YouTube and other audio
 // sources wait for the user's Start action. The toolbar click grants Chrome tab capture.
 // Spec: docs/specs/call-overlay.md
 import type { UtteranceBatchResult } from '@growth-factcheking/shared';

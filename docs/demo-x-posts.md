@@ -74,7 +74,19 @@ Most cards return **Supported** or **Likely supported**. The elDiario.es headlin
 
 ## YouTube video
 
-[Subida del SMI a 1.286 € y sueldos públicos un 5 % en 2027](https://www.youtube.com/watch?v=VhiCa_4wmsU) (Castilla y León Televisión, about a minute). Open it as a `watch` page, not from the Shorts feed, and press play: the FactCheck pill turns captions on and checks what is said without a toolbar click. The corpus has the 2027 minimum wage (€1,286, 5.3%) and the public-sector pay rise, which Royal Decree-law 37/2026 caps at 4.5%. The title's "5 %" is a rounding the checker may flag.
+[Castilla y León Televisión — SMI at €1,286 and public pay +5% in 2027](https://www.youtube.com/watch?v=VhiCa_4wmsU) (69 s, Spanish). Open it as a `watch` page, not from the Shorts feed. Click the extension icon, pick **Español** and press **Start checking**, then play the video from 0:00. Tab audio goes to OpenAI live transcription, the API extracts the claims, and each card appears in the call panel about 3–5 seconds after its sentence ends. The facts behind it are in `data/demo/video-smi.json`, and the snapshot below includes them.
+
+| Time | What is said | Panel verdict |
+| --- | --- | --- |
+| 0:00 | The minimum wage rises €65 a month, €910 a year | True |
+| 0:07 | It reaches an estimated 13.6% of employees, up to 2.7 million people | True |
+| 0:16 | A 5.3% rise, to €1,286 gross a month in 14 payments | True |
+| 0:21 | A decree exempts it from income tax | Likely true or Neutral (varies by run) |
+| 0:27 | From 2027, minimum-wage earners pay no income tax from their first payslip | True |
+| 0:39 | The tax deduction tapers off up to €23,172 | True |
+| 0:46 | Civil servants will be paid 5% more next year | Neutral |
+
+The 5% is Neutral on purpose: the sources show 4.5% for 2027 plus a conditional 0.5% still owed for 2026, two separate rises. The live transcription sometimes mishears a figure ("1.266" for 1,286, "2017" for 2027, "3,6%" for 13.6%), and that card then comes back false. It happened in about one sentence in ten across nine runs, so do a rehearsal run first, and replay if a red card appears that the video does not deserve. See [the run evidence](evidence/2026-11-21-youtube-video.md).
 
 ## Restore the demo corpus
 
