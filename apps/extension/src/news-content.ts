@@ -1,10 +1,14 @@
-// Inline fact checks on approved news articles. The local API lists the articles and the sentences
-// to check (data/demo/news-articles.json); each sentence gets a card right below the text that
-// contains it. Every load checks again: nothing is cached.
+// Inline fact checks on approved news articles, with the same UI as X: a scanning band while a
+// sentence is checked, the checked sentence highlighted in its verdict colour, and a pill under it.
+// A sticky side rail lists every claim on the page. The local API lists the articles and the
+// sentences to check (data/demo/news-articles.json). Every load checks again: nothing is cached.
 import { CLAIM_MAX_LENGTH } from '@growth-factcheking/shared';
-import { createCardHost, renderCard, requestInExtension } from './card.js';
-import type { CardView } from './card.js';
+import { createCardHost, renderCard, requestInExtension, tones } from './card.js';
+import type { CardView, Tone } from './card.js';
+import { findCheckedRange, highlightStyles } from './inline-feed.js';
+import scannerStyles from './inline-scanner.css';
 import type { NewsArticle, NewsArticlesRequest, NewsArticlesResponse } from './messages.js';
+import { createNewsRail } from './news-rail.js';
 
 const concurrentChecks = 3;
 const autoClaimLimit = 6;
@@ -19,7 +23,34 @@ type Claim = {
   /** What the card shows now, so it can be redrawn if the page re-renders. */
   view?: CardView;
   checked?: boolean;
+  scanner?: HTMLElement;
+  highlight?: { range: Range; tone: Exclude<Tone, 'none'> };
 };
+
+let scannerSheet: CSSStyleSheet | undefined;
+
+/** The soft blue band X shows over a post while it is checked, here over the paragraph. */
+function showScanner(claim: Claim) {
+  if (claim.scanner?.isConnected || !claim.block?.getClientRects().length) return;
+  if (!scannerSheet) {
+    scannerSheet = new CSSStyleSheet();
+    scannerSheet.replaceSync(scannerStyles);
+  }
+  const host = document.createElement('div');
+  host.dataset.growthFactcheckingScanner = '';
+  host.setAttribute('aria-hidden', 'true');
+  const shadow = host.attachShadow({ mode: 'open' });
+  shadow.adoptedStyleSheets = [scannerSheet];
+  shadow.append(document.createElement('div'));
+  if (getComputedStyle(claim.block).position === 'static') claim.block.style.position = 'relative';
+  claim.block.append(host);
+  claim.scanner = host;
+}
+
+function hideScanner(claim: Claim) {
+  claim.scanner?.remove();
+  claim.scanner = undefined;
+}
 
 function pageKey(href: string) {
   const url = new URL(href);
@@ -80,10 +111,57 @@ function start(article: NewsArticle) {
   const claims: Claim[] = article.claims.length ? article.claims.map((text) => ({ text })) : autoClaims();
   const queue: Claim[] = [];
   let running = 0;
+  const rail = createNewsRail();
+  const highlights = typeof Highlight === 'function' && 'highlights' in CSS
+    ? { ok: new Highlight(), warn: new Highlight(), bad: new Highlight() }
+    : undefined;
+  if (highlights) {
+    for (const [tone, highlight] of Object.entries(highlights)) CSS.highlights.set(`growth-factchecking-${tone}`, highlight);
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync(highlightStyles);
+    document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+  }
+
+  function highlight(claim: Claim) {
+    if (claim.highlight && highlights) highlights[claim.highlight.tone].delete(claim.highlight.range);
+    claim.highlight = undefined;
+    const result = claim.view?.result;
+    if (!highlights || !claim.block || !result?.sources.length) return;
+    const { tone } = tones[result.verdict];
+    if (tone === 'none') return;
+    const range = findCheckedRange(claim.block, claim.text);
+    if (!range) return;
+    highlights[tone].add(range);
+    claim.highlight = { range, tone };
+  }
+
+  function reveal(claim: Claim) {
+    const target = claim.block?.getClientRects().length ? claim.block : claim.card;
+    target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (!claim.block) return;
+    showScanner(claim);
+    setTimeout(() => {
+      if (claim.view?.state !== 'checking') hideScanner(claim);
+    }, 1400);
+  }
+
+  function updateRail() {
+    rail.update(claims.filter((claim) => claim.card).map((claim) => ({
+      text: claim.text,
+      state: claim.view?.state ?? 'checking',
+      result: claim.view?.result,
+      elapsedMs: claim.view?.elapsedMs,
+      reveal: () => reveal(claim),
+    })));
+  }
 
   function show(claim: Claim, view: CardView) {
     claim.view = view;
     if (claim.card) renderCard(claim.card, view);
+    if (view.state === 'checking') showScanner(claim);
+    else hideScanner(claim);
+    highlight(claim);
+    updateRail();
   }
 
   async function check(claim: Claim) {
@@ -121,12 +199,14 @@ function start(article: NewsArticle) {
       if (!claim.block?.isConnected) claim.block = locate(claim.text);
       if (!claim.block) continue;
       place(claim);
-      renderCard(claim.card!, claim.view ?? { state: 'checking' });
-      if (!claim.view) {
-        claim.view = { state: 'checking' };
+      if (claim.view) {
+        show(claim, claim.view);
+      } else {
+        show(claim, { state: 'checking' });
         queue.push(claim);
       }
     }
+    updateRail();
     drain();
   }
 
