@@ -1,52 +1,65 @@
 /* Sticky side rail on news articles: every claim on the page and its verdict, always in view. */
+/* Same glass as the call overlay (call/call.css), a little more see-through so the article shows behind it. */
 :host {
   all: initial;
   position: fixed;
   z-index: 2147483000;
   top: 96px;
   right: 20px;
-  width: 300px;
-  font: 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
-  color-scheme: light;
-  --bg: rgb(255 255 255 / 72%);
-  --ink: #18181b;
-  --muted: #71717a;
-  --line: rgb(24 24 27 / 10%);
-  --hover: rgb(24 24 27 / 6%);
-  /* Tailwind CSS v4 palette: green-600, amber-600, red-600, zinc-500, blue-500. */
-  --ok: oklch(62.7% 0.194 149.214);
-  --warn: oklch(66.6% 0.179 58.318);
-  --bad: oklch(57.7% 0.245 27.325);
-  --none: oklch(55.2% 0.016 285.938);
-  --scan: oklch(62.3% 0.214 259.815);
-}
-
-@media (prefers-color-scheme: dark) {
-  :host {
-    color-scheme: dark;
-    --bg: rgb(24 24 27 / 70%);
-    --ink: #f4f4f5;
-    --muted: #a1a1aa;
-    --line: rgb(255 255 255 / 12%);
-    --hover: rgb(255 255 255 / 8%);
-  }
+  /* The host hugs the rail and is anchored on the right, so the collapsed bar grows leftwards and stays on screen. */
+  max-width: calc(100vw - 40px);
+  color-scheme: dark;
+  font: 13px/1.45 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Google Sans", Inter, system-ui, sans-serif;
+  --ink: #ffffff;
+  --muted: rgba(255,255,255,.62);
+  --line: rgba(255,255,255,.14);
+  --hover: rgba(255,255,255,.08);
+  /* Verdict colours from the call overlay. */
+  --ok: #5EE08F;
+  --warn: #FFC468;
+  --bad: #FF8F85;
+  --none: #9aa0a6;
+  --scan: #7cb4ff;
+  --glass-tint: linear-gradient(160deg, rgba(38,41,48,.82), rgba(16,18,23,.80));
+  --glass-edge: rgba(255,255,255,.55);
+  --glass-glow: rgba(255,255,255,.10);
+  --glass-drop: rgba(0,0,0,.40);
 }
 
 * { box-sizing: border-box; }
 
 .rail {
+  position: relative;
   display: flex;
   flex-direction: column;
+  width: 300px;
+  max-width: 100%;
   max-height: calc(100vh - 140px);
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: var(--bg);
-  -webkit-backdrop-filter: blur(16px) saturate(1.6);
-  backdrop-filter: blur(16px) saturate(1.6);
+  border-radius: 22px;
   color: var(--ink);
-  box-shadow: 0 12px 32px rgb(0 0 0 / 14%), 0 2px 6px rgb(0 0 0 / 8%);
+  background: var(--glass-tint);
+  -webkit-backdrop-filter: blur(26px) saturate(185%);
+  backdrop-filter: blur(26px) saturate(185%);
+  box-shadow: inset 0 1px 0 var(--glass-edge), inset 0 -1px 1px var(--glass-glow), inset 0 0 24px var(--glass-glow),
+    0 24px 60px var(--glass-drop), 0 2px 8px var(--glass-drop);
   overflow: hidden;
 }
+
+/* The light edge of the glass. */
+.rail::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none; z-index: 2;
+  background: linear-gradient(135deg, var(--glass-edge), rgba(255,255,255,.12) 28%, rgba(255,255,255,0) 55%,
+    rgba(255,255,255,.08) 75%, var(--glass-edge));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+}
+
+.rail::after {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 120px; pointer-events: none;
+  background: linear-gradient(180deg, var(--glass-glow), transparent);
+}
+
+.rail > * { position: relative; z-index: 1; }
 
 header {
   display: flex;
@@ -172,7 +185,7 @@ li button:focus-visible { outline: 2px solid var(--scan); outline-offset: -2px; 
   height: 18px;
   margin-top: 1px;
   border-radius: 50%;
-  color: #fff;
+  color: #10151a;
 }
 
 .icon svg { width: 11px; height: 11px; }
@@ -188,7 +201,7 @@ li button:focus-visible { outline: 2px solid var(--scan); outline-offset: -2px; 
 }
 
 /* Collapsed: one compact bar with the tally; click anywhere on it to open. */
-.rail.closed { width: max-content; margin-left: auto; border-radius: 999px; cursor: pointer; }
+.rail.closed { width: max-content; max-width: 100%; border-radius: 999px; cursor: pointer; }
 .rail.closed header { border-bottom: 0; padding: 7px 8px 7px 14px; gap: 12px; }
 .rail.closed .summary, .rail.closed ol, .rail.closed .meta { display: none; }
 .mini { display: inline-flex; gap: 10px; font-weight: 700; font-variant-numeric: tabular-nums; }
@@ -205,5 +218,5 @@ li button:focus-visible { outline: 2px solid var(--scan); outline-offset: -2px; 
 
 /* Narrow windows: start collapsed and sit lower so the rail never covers the article. */
 @media (max-width: 1100px) {
-  :host { top: auto; bottom: 16px; right: 16px; width: min(300px, calc(100vw - 32px)); }
+  :host { top: auto; bottom: 16px; right: 16px; max-width: calc(100vw - 32px); }
 }
