@@ -36,10 +36,13 @@
   html, body { height: 100%; }
   body { background: var(--paper); color: var(--ink); font-family: var(--sans); overflow: hidden; -webkit-font-smoothing: antialiased; }
 
-  #stage {
+  .stage {
     position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px;
     transform: translate(-50%, -50%) scale(var(--scale, 1));
     padding: 60px 96px 52px;
+  }
+  .stage[hidden] { display: none !important; }
+  #stage {
     display: grid;
     grid-template-columns: 1.08fr 0.92fr;
     grid-template-rows: auto 1fr auto;
@@ -138,6 +141,54 @@
   .num b { display: block; font-family: var(--serif); font-weight: 600; font-size: 64px; line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
   .num span { display: block; margin-top: 8px; font-size: 19px; line-height: 1.35; color: var(--ink-3); max-width: 330px; }
 
+
+  /* ---------- Slide 2: the OpenAI pipeline ---------- */
+  #tech { display: flex; flex-direction: column; }
+  #tech header { display: flex; }
+  .oai { display: inline-flex; align-items: center; gap: 12px; }
+  .oai svg { width: 30px; height: 30px; }
+  .pipe { margin-top: 46px; display: grid; grid-template-columns: 1fr 64px 1.25fr 64px 1fr 64px 1.45fr 64px 1fr; align-items: stretch; position: relative; }
+  .node { border: 1.5px solid var(--rule); background: var(--sheet); padding: 22px 22px 24px; display: flex; flex-direction: column; gap: 10px; position: relative;
+    transition: box-shadow .35s ease, transform .35s ease, border-color .35s ease; }
+  .node.api { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .node.api .what, .node.api .t { color: color-mix(in srgb, var(--paper) 70%, transparent); }
+  .node .tag { font-family: var(--mono); font-size: 15px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); display: flex; align-items: center; gap: 8px; }
+  .node.api .tag { color: color-mix(in srgb, var(--paper) 75%, transparent); }
+  .node.api .tag svg { width: 18px; height: 18px; fill: currentColor; }
+  .node h3 { font-family: var(--serif); font-size: 34px; font-weight: 600; line-height: 1.05; }
+  .node code { font-family: var(--mono); font-size: 18px; font-weight: 600; }
+  .node .what { font-size: 18px; line-height: 1.35; color: var(--ink-3); }
+  .node .t { margin-top: auto; font-family: var(--mono); font-size: 22px; font-weight: 600; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  .node.lit { transform: translateY(-6px); box-shadow: 0 0 0 3px var(--scan); }
+  .node.api.lit { box-shadow: 0 0 0 3px var(--scan), 0 14px 30px rgb(0 0 0 / 18%); }
+  .arrow { position: relative; align-self: center; height: 2px; background: var(--rule); margin: 0 8px; }
+  .arrow::after { content: ""; position: absolute; right: -2px; top: -6px; border: 7px solid transparent; border-left-color: var(--rule); border-right: 0; }
+  .arrow i { position: absolute; left: 0; top: -5px; width: 12px; height: 12px; border-radius: 50%; background: var(--scan); opacity: 0; }
+  .arrow.run i { animation: travel .28s linear forwards; }
+  @keyframes travel { 0% { left: 0; opacity: 1; } 100% { left: calc(100% - 12px); opacity: 1; } }
+
+  .verdict-demo { display: flex; flex-direction: column; gap: 10px; }
+  .mini-pill { display: inline-flex; align-items: center; gap: 8px; padding: 4px 14px 4px 5px; border: 1.5px solid var(--rule); border-radius: 999px; font-size: 18px; font-weight: 600; width: max-content;
+    opacity: .25; transition: opacity .3s; }
+  .mini-pill.on { opacity: 1; }
+  .mini-pill b { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; color: #fff; }
+  .mini-pill b svg { width: 14px; height: 14px; }
+  .mini-pill.ok b { background: var(--ok); } .mini-pill.warn b { background: var(--warn); } .mini-pill.none b { background: var(--ink-3); }
+
+  .total { margin-top: 26px; display: flex; align-items: baseline; gap: 18px; }
+  .total b { font-family: var(--serif); font-size: 64px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .total span { font-size: 20px; color: var(--ink-3); }
+
+  .below { margin-top: auto; display: grid; grid-template-columns: 1.35fr 1fr 1fr; gap: 0; border-top: 2px solid var(--ink); }
+  .cell { padding: 22px 32px 0 0; }
+  .cell + .cell { padding-left: 32px; border-left: 1px solid var(--rule); }
+  .cell h4 { font-family: var(--mono); font-size: 16px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); display: flex; align-items: center; gap: 8px; }
+  .cell h4 svg { width: 18px; height: 18px; fill: var(--ink); }
+  .cell p { margin-top: 10px; font-size: 21px; line-height: 1.4; color: var(--ink-2); }
+  .cell p code { font-family: var(--mono); font-size: 18px; color: var(--ink); }
+  .q { margin-top: 12px; font-family: var(--mono); font-size: 17px; line-height: 1.7; color: var(--ink-2); }
+  .q .a { color: var(--ink); font-weight: 600; }
+
   .hint { position: absolute; right: 96px; top: 24px; font-family: var(--mono); font-size: 14px; color: var(--ink-3); opacity: .7; }
   kbd { font-family: var(--mono); border: 1px solid var(--rule); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; }
 
@@ -148,7 +199,7 @@
 </style>
 </head>
 <body>
-<main id="stage">
+<main id="stage" class="stage">
   <header>
     <h1 class="in d1">Fact-checked <em>where</em><br>you read it.</h1>
     <p class="dek in d2">Posts, news articles and live calls, checked against official sources in about half a second, without leaving the page.</p>
@@ -211,13 +262,84 @@
     <div class="num in d6"><b data-count="36" data-suffix=" / 36">36 / 36</b><span>claims rendered on 12 news sites in our browser run</span></div>
   </section>
 
-  <div class="hint"><kbd>→</kbd> next example · <kbd>Space</kbd> pause · <kbd>R</kbd> replay</div>
+  <div class="hint"><kbd>→</kbd> next example · <kbd>↓</kbd> next slide · <kbd>Space</kbd> pause · <kbd>R</kbd> replay</div>
 </main>
+
+<main id="tech" class="stage" hidden>
+  <header>
+    <h1 class="in d1">One OpenAI round trip<br>per claim, <em>live.</em></h1>
+    <p class="dek in d2">The browser never holds the OpenAI key. Our local API calls OpenAI and returns only the verdict and its sources.</p>
+  </header>
+
+  <div class="pipe in d3" aria-label="What happens to one claim">
+    <div class="node" data-step="0">
+      <div class="tag">Browser</div>
+      <h3>Claim</h3>
+      <div class="what">A sentence from an X post, a news paragraph or a call caption.</div>
+    </div>
+    <div class="arrow" data-step="1"><i></i></div>
+    <div class="node api" data-step="1">
+      <div class="tag"><svg fill="currentColor" aria-hidden="true" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z"/></svg> Embeddings API</div>
+      <h3>Meaning as a vector</h3>
+      <code>text-embedding-3-small</code>
+      <div class="what">1,536 numbers. Spanish, Catalan, Italian or English land near the same facts.</div>
+      <div class="t">≈ 220 ms</div>
+    </div>
+    <div class="arrow" data-step="2"><i></i></div>
+    <div class="node" data-step="2">
+      <div class="tag">Postgres + pgvector</div>
+      <h3>Nearest facts</h3>
+      <div class="what">Cosine search over 94 reviewed facts, pre-embedded once. Top 5 kept.</div>
+      <div class="t">≈ 6 ms</div>
+    </div>
+    <div class="arrow" data-step="3"><i></i></div>
+    <div class="node api" data-step="3">
+      <div class="tag"><svg fill="currentColor" aria-hidden="true" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z"/></svg> Decisions API</div>
+      <h3>Judge with evidence</h3>
+      <code>gpt-6-luna</code>
+      <div class="what">One call answers two choice questions, each with a confidence score.</div>
+      <div class="t">≈ 330 ms</div>
+    </div>
+    <div class="arrow" data-step="4"><i></i></div>
+    <div class="node" data-step="4">
+      <div class="tag">Back in the page</div>
+      <h3>Verdict</h3>
+      <div class="verdict-demo">
+        <span class="mini-pill ok" data-v="ok"><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></b>Verified</span>
+        <span class="mini-pill warn" data-v="warn"><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 9a2.5 2.5 0 114 2c-1 .7-1.5 1.2-1.5 2.5M12 17.5v.01"/></svg></b>Doubtful</span>
+        <span class="mini-pill none" data-v="none"><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 12h12"/></svg></b>Not enough info</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="total in d4"><b id="total">0.00 s</b><span>end to end for one claim, median of 40 timed calls, recomputed on every page load</span></div>
+
+  <div class="below in d5">
+    <div class="cell">
+      <h4><svg fill="currentColor" aria-hidden="true" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z"/></svg> The two questions we ask Decisions</h4>
+      <div class="q">source  → which fact addresses the claim? <span class="a">fact_1 … fact_5 or none</span><br>
+      verdict → yes · probably yes · neutral · probably no · no<br>
+      relevance &lt; 0.5 → <span class="a">Not enough info</span> · confidence &lt; 0.6 → <span class="a">“likely”</span></div>
+    </div>
+    <div class="cell">
+      <h4><svg fill="currentColor" aria-hidden="true" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z"/></svg> Responses API</h4>
+      <p>Pulls checkable claims out of call captions. <code>gpt-6-luna</code>, low reasoning, strict JSON schema, <code>store: false</code>.</p>
+    </div>
+    <div class="cell">
+      <h4><svg fill="currentColor" aria-hidden="true" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z"/></svg> Realtime API</h4>
+      <p>Transcribes any tab’s audio, like a YouTube interview, with <code>gpt-live-transcribe</code>. The browser gets a 10-minute client secret, never the key.</p>
+    </div>
+  </div>
+</main>
+
 
 <script>
 (function () {
-  var stage = document.getElementById('stage');
-  function fit() { stage.style.setProperty('--scale', String(Math.min(innerWidth / 1920, innerHeight / 1080))); }
+  var stage = document.getElementById('stage'), tech = document.getElementById('tech');
+  function fit() {
+    var scale = String(Math.min(innerWidth / 1920, innerHeight / 1080));
+    stage.style.setProperty('--scale', scale); tech.style.setProperty('--scale', scale);
+  }
   addEventListener('resize', fit); fit();
 
   var ICONS = {
@@ -313,13 +435,58 @@
     play(0);
   }
 
+  // Slide 2: light each step in order and count the measured median times.
+  var techTimers = [];
+  function runTech() {
+    techTimers.forEach(clearTimeout); techTimers = [];
+    tech.classList.remove('go'); void tech.offsetWidth; tech.classList.add('go');
+    var nodes = tech.querySelectorAll('.node'), arrows = tech.querySelectorAll('.arrow'), pills = tech.querySelectorAll('.mini-pill');
+    var total = document.getElementById('total');
+    nodes.forEach(function (n) { n.classList.remove('lit'); });
+    arrows.forEach(function (a) { a.classList.remove('run'); });
+    pills.forEach(function (p) { p.classList.remove('on'); });
+    total.textContent = '0.00 s';
+    // Median Server-Timing per step (docs/evidence/2026-11-21-live-smoke.md), slowed 3x so the eye can follow.
+    var steps = [0, 220, 6, 330, 0], at = 1500, elapsed = 0;
+    steps.forEach(function (ms, i) {
+      techTimers.push(setTimeout(function () {
+        if (arrows[i - 1]) arrows[i - 1].classList.add('run');
+        nodes.forEach(function (n) { n.classList.remove('lit'); });
+        nodes[i].classList.add('lit');
+        var from = elapsed, to = elapsed + ms, t0 = performance.now(), dur = Math.max(ms * 3, 280);
+        (function tick() {
+          var t = Math.min(1, (performance.now() - t0) / dur);
+          total.textContent = ((from + (to - from) * t) / 1000).toFixed(2) + ' s';
+          if (t < 1) requestAnimationFrame(tick);
+        })();
+        elapsed = to;
+        if (i === steps.length - 1) {
+          pills.forEach(function (p, k) { techTimers.push(setTimeout(function () { p.classList.add('on'); }, 250 * k)); });
+          techTimers.push(setTimeout(function () { total.textContent = '≈ 0.56 s'; }, 900));
+        }
+      }, at));
+      at += Math.max(ms * 3, 280) + 300;
+    });
+  }
+  function show(which) {
+    var toTech = which === 'tech';
+    if (toTech === !tech.hidden) return;
+    stage.hidden = toTech; tech.hidden = !toTech;
+    if (toTech) { clear(); runTech(); } else { techTimers.forEach(clearTimeout); start(); }
+  }
+
   addEventListener('keydown', function (e) {
-    if (e.key === 'ArrowRight' || e.key === 'PageDown') play(index + 1);
-    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') play(index - 1);
+    if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === 'n') return show('tech');
+    if (e.key === 'ArrowUp' || e.key === 'PageUp' || e.key === 'p') return show('demo');
+    if (!tech.hidden) { if (e.key === 'r' || e.key === 'R' || e.key === 'ArrowRight') runTech(); return; }
+    if (e.key === 'ArrowRight') play(index + 1);
+    else if (e.key === 'ArrowLeft') play(index - 1);
     else if (e.key === ' ') { e.preventDefault(); paused = !paused; if (!paused) play(index + 1); else clear(); }
     else if (e.key === 'r' || e.key === 'R') start();
   });
   stage.addEventListener('click', function () { play(index + 1); });
+  tech.addEventListener('click', runTech);
+  if (location.hash === '#tech') { stage.hidden = true; tech.hidden = false; requestAnimationFrame(runTech); return; }
   requestAnimationFrame(start);
 })();
 </script>
