@@ -1,0 +1,10 @@
+[
+  { "id": "sample-001", "statement": "Water boils at 100 degrees Celsius at sea level.", "sourceUrl": "https://example.org/sample/water-boiling-point", "sourceTitle": "Sample source (placeholder)" },
+  { "id": "sample-002", "statement": "The Eiffel Tower is located in Paris, France.", "sourceUrl": "https://example.org/sample/eiffel-tower", "sourceTitle": "Sample source (placeholder)" },
+  { "id": "sample-003", "statement": "The Earth orbits the Sun once roughly every 365.25 days.", "sourceUrl": "https://example.org/sample/earth-orbit", "sourceTitle": "Sample source (placeholder)" },
+  { "id": "sample-004", "statement": "Light travels at approximately 300,000 kilometres per second in a vacuum.", "sourceUrl": "https://example.org/sample/speed-of-light", "sourceTitle": "Sample source (placeholder)" },
+  { "id": "sample-005", "statement": "Mount Everest is the highest mountain above sea level on Earth.", "sourceUrl": "https://example.org/sample/everest", "sourceTitle": "Sample source (placeholder)" },
+  { "id": "sample-006", "statement": "Humans have 23 pairs of chromosomes.", "sourceUrl": "https://example.org/sample/chromosomes", "sourceTitle": "Sample source (placeholder)" },
+  { "id": "sample-007", "statement": "The Pacific is the largest ocean on Earth by surface area.", "sourceUrl": "https://example.org/sample/pacific-ocean", "sourceTitle": "Sample source (placeholder)" },
+  { "id": "sample-008", "statement": "Barcelona is the capital of Catalonia.", "sourceUrl": "https://example.org/sample/barcelona", "sourceTitle": "Sample source (placeholder)" }
+]

@@ -1,0 +1,61 @@
+// Fact corpus in PostgreSQL + pgvector. Schema: db/migrations/001_facts.sql
+import pg from 'pg';
+import type { Fact, FactSearch } from './types.js';
+
+export function toVectorLiteral(embedding: number[]): string {
+  return `[${embedding.join(',')}]`;
+}
+
+export function createPool(databaseUrl: string): pg.Pool {
+  return new pg.Pool({ connectionString: databaseUrl, max: 10 });
+}
+
+type FactRow = {
+  id: string;
+  statement: string;
+  source_url: string;
+  source_title: string | null;
+  similarity: number;
+};
+
+/**
+ * Nearest facts by cosine distance. ORDER BY the raw distance so the HNSW index is used;
+ * the similarity floor is applied afterwards in JS.
+ */
+export function createFactSearch(pool: pg.Pool, minSimilarity: number): FactSearch {
+  return async (embedding, limit): Promise<Fact[]> => {
+    const { rows } = await pool.query<FactRow>(
+      `SELECT id, statement, source_url, source_title,
+              1 - (embedding <=> $1::vector) AS similarity
+         FROM facts
+        ORDER BY embedding <=> $1::vector
+        LIMIT $2`,
+      [toVectorLiteral(embedding), limit],
+    );
+    return rows
+      .map((r) => ({
+        id: r.id,
+        statement: r.statement,
+        sourceUrl: r.source_url,
+        sourceTitle: r.source_title,
+        similarity: Number(r.similarity),
+      }))
+      .filter((f) => f.similarity >= minSimilarity);
+  };
+}
+
+export type FactInput = { id: string; statement: string; sourceUrl: string; sourceTitle?: string };
+
+export async function upsertFact(pool: pg.Pool, fact: FactInput, embedding: number[]): Promise<void> {
+  await pool.query(
+    `INSERT INTO facts (id, statement, source_url, source_title, embedding)
+     VALUES ($1, $2, $3, $4, $5::vector)
+     ON CONFLICT (id) DO UPDATE
+        SET statement = EXCLUDED.statement,
+            source_url = EXCLUDED.source_url,
+            source_title = EXCLUDED.source_title,
+            embedding = EXCLUDED.embedding,
+            updated_at = now()`,
+    [fact.id, fact.statement, fact.sourceUrl, fact.sourceTitle ?? null, toVectorLiteral(embedding)],
+  );
+}
