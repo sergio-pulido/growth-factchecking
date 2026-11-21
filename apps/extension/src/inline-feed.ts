@@ -2,6 +2,7 @@ import { CLAIM_MAX_LENGTH } from '@growth-factcheking/shared';
 import type { FactCheckResult } from '@growth-factcheking/shared';
 import type { FactCheckMessage, FactCheckResponse } from './messages.js';
 import styles from './inline-feed.css';
+import scannerStyles from './inline-scanner.css';
 
 const articleSelector = 'article[data-testid="tweet"]';
 const textSelector = '[data-testid="tweetText"]';
@@ -21,6 +22,7 @@ type Post = {
   visible: boolean;
   state: 'idle' | 'checking' | 'checked' | 'failed';
   card?: HTMLElement;
+  scanner?: HTMLElement;
 };
 
 declare global {
@@ -97,6 +99,8 @@ export function startInlineFeed({
   const cache = new Map<string, FactCheckResult>();
   const sheet = new CSSStyleSheet();
   sheet.replaceSync(styles);
+  const scannerSheet = new CSSStyleSheet();
+  scannerSheet.replaceSync(scannerStyles);
   let frame = 0;
   let stopped = false;
 
@@ -162,6 +166,24 @@ export function startInlineFeed({
     host.shadowRoot?.replaceChildren(card);
   }
 
+  function showScanner(article: HTMLElement, post: Post) {
+    if (post.scanner) return;
+    const host = document.createElement('div');
+    host.dataset.growthFactcheckingScanner = '';
+    host.setAttribute('aria-hidden', 'true');
+    const shadow = host.attachShadow({ mode: 'open' });
+    shadow.adoptedStyleSheets = [scannerSheet];
+    shadow.append(document.createElement('div'));
+    if (getComputedStyle(article).position === 'static') article.style.position = 'relative';
+    article.append(host);
+    post.scanner = host;
+  }
+
+  function hideScanner(post: Post) {
+    post.scanner?.remove();
+    post.scanner = undefined;
+  }
+
   function complete(post: Post, result?: FactCheckResult) {
     post.state = result ? 'checked' : 'failed';
     render(post, result);
@@ -172,6 +194,7 @@ export function startInlineFeed({
     running.add(claim);
     post.state = 'checking';
     render(post);
+    showScanner(article, post);
     let result: FactCheckResult | undefined;
     try {
       result = await request(claim);
@@ -183,6 +206,7 @@ export function startInlineFeed({
       // The extension or local API may have restarted.
     } finally {
       running.delete(claim);
+      hideScanner(post);
     }
     if (!stopped && available() && article.isConnected && posts.get(article) === post && accepts(article) && readPost(article)?.claim === claim) {
       complete(post, result);
@@ -230,6 +254,7 @@ export function startInlineFeed({
   function forget(article: HTMLElement, post: Post) {
     visibility.unobserve(article);
     waiting.delete(article);
+    hideScanner(post);
     post.card?.remove();
     posts.delete(article);
   }
