@@ -13,7 +13,7 @@ There are no simulators: the overlay only runs over real pages.
 
 | Page | How the overlay appears | Source |
 | --- | --- | --- |
-| Google Meet call (`meet.google.com/xxx-xxxx-xxx`) | Pill appears on its own; toolbar icon toggles it | Meet captions (GF-03 engine) |
+| Google Meet call (`meet.google.com/xxx-xxxx-xxx`) | Pill appears on its own; toolbar icon toggles it | Meet captions in the tab or Meet's floating window (GF-03 engine) |
 | Zoom web client (`*.zoom.us/wc/…`) | Same | Zoom captions (speaker names when Zoom shows them) |
 | Teams web (`teams.microsoft.com`, `teams.live.com`, `teams.cloud.microsoft`) during a call | Same | Teams live captions |
 | Any other tab | Toolbar icon opens it | Tab audio, transcribed by OpenAI |
@@ -40,6 +40,10 @@ Stop -> POST /:id/end · Erase -> DELETE /:id · failed claim "Reintentar" -> PO
 300 ms and `meet/caption-consolidator.ts` emits one utterance per intervention once it settles (rules in
 [meet-captions-capture.md](meet-captions-capture.md)). Captions on screen at Start, or when resuming, are fed to a
 fresh consolidator and discarded, so they are never sent. Pause keeps turns that already settled.
+
+When Meet opens a Document Picture-in-Picture window, the same source reads its caption document and uses
+the floating window's timer to settle captions. Closing the floating window returns reading to the tab in the
+same conversation. The overlay stays in the Meet tab. [Chrome Document Picture-in-Picture](https://developer.chrome.com/docs/web-platform/document-picture-in-picture)
 
 **Zoom and Teams** (`call/platforms.ts`, `caption-source.ts`, `segmenter.ts`):
 

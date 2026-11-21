@@ -143,6 +143,7 @@ export function createBubbles(container: HTMLElement, onOpen: (id: string) => vo
  * tab (YouTube…), or the screen edge in a call app and when no video is visible. Neutral shows nothing.
  */
 export function flashFrame(el: HTMLElement, verdict: Verdict, target: FrameTarget): void {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const alert = verdictAlert(verdict);
   if (!alert) return;
   const place = (): void => {

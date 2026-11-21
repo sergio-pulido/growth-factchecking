@@ -47,6 +47,37 @@ test('nested row matches are read once', () => {
   assert.equal(readCaptionRows(d).length, 1);
 });
 
+test('reads speaker spans and caption text in the alternate Meet layout', () => {
+  const d = doc(`<div role="region" aria-label="Subtítulos">
+    <div class="nMcdL bj4p3b"><div><span class="NWpY1d">Tú</span></div><div class="ygicle VbkSUe">¿Cuál fue el MRR?</div></div>
+    <div class="nMcdL bj4p3b"><span class="NWpY1d">Leo</span><div class="ygicle VbkSUe">Fueron 32.000 euros.</div></div>
+  </div>`);
+  assert.deepEqual(readCaptionRows(d), [
+    { speaker: 'Tú', text: '¿Cuál fue el MRR?' },
+    { speaker: 'Leo', text: 'Fueron 32.000 euros.' },
+  ]);
+});
+
+test('recovers a named pair with an unfamiliar wrapper without duplicating a nested row', () => {
+  const d = doc(`<div role="region" aria-label="Subtítulos">
+    <div class="updated"><span class="NWpY1d">Ana</span><div class="TBMuR"><div class="ygicle VbkSUe">Hola.</div></div></div>
+    <div class="updated"><span class="NWpY1d">Leo</span><div class="ygicle VbkSUe">Gracias.</div></div>
+  </div>`);
+  assert.deepEqual(readCaptionRows(d), [{ speaker: 'Ana', text: 'Hola.' }, { speaker: 'Leo', text: 'Gracias.' }]);
+});
+
+test('leaves unrelated neighbouring caption text unassigned', () => {
+  const d = doc(`<div role="region" aria-label="Captions">
+    <div class="new-wrapper"><span class="NWpY1d">Leo</span><div class="TBMuR"><div class="ygicle VbkSUe">Una frase.</div></div>
+      <div class="TBMuR"><div class="ygicle VbkSUe">Otra frase.</div></div>
+    </div>
+  </div>`);
+  assert.deepEqual(readCaptionRows(d), [
+    { speaker: '', text: 'Una frase.' },
+    { speaker: '', text: 'Otra frase.' },
+  ]);
+});
+
 test('unknown layout falls back to the last non-notice line without a speaker', () => {
   const d = doc('<div role="region" aria-label="Captions"><div>Primera línea</div><div>Última línea</div><div>Live captions are on</div></div>');
   assert.deepEqual(readCaptionRows(d), [{ speaker: '', text: 'Última línea' }]);
