@@ -1,8 +1,11 @@
 import { CLAIM_MAX_LENGTH, DEMO_SCENARIOS, FACT_CHECK_PATH } from '@growth-factcheking/shared';
 import { isFactCheckResult } from './call/http-transport.js';
 import { handleOffscreenEvent, isOffscreenEvent, releaseTab } from './audio-capture.js';
-import { isCallRequest, relayCallRequest } from './call-relay.js';
-import type { DemoPostsResponse, FactCheckMessage, FactCheckResponse, NewsArticle, NewsArticlesResponse, TabEvent } from './messages.js';
+import { isCallRequest, looksLikeCallRequest, relayCallRequest } from './call-relay.js';
+import type {
+  CallReply, DemoPostsResponse, FactCheckMessage, FactCheckResponse, FaviconResponse, NewsArticle, NewsArticlesResponse,
+  TabEvent,
+} from './messages.js';
 
 // The toolbar icon opens the FactCheck call overlay on the current tab: captions mode on Meet, Zoom web and
 // Teams web, tab-audio mode anywhere else. Clicking it also grants the tab capture permission audio mode needs.
@@ -97,6 +100,36 @@ async function getDemoPosts(): Promise<DemoPostsResponse> {
   return { postIds: [] };
 }
 
+const favicons = new Map<string, Promise<string | undefined>>();
+
+/** Asks the local API for a site's favicon and returns it as a data URL, which pages like X allow. */
+async function fetchFavicon(host: string) {
+  const url = new URL('/api/favicon', apiOrigin);
+  url.searchParams.set('host', host);
+  const response = await fetch(url, { signal: AbortSignal.timeout(10_000), redirect: 'error' });
+  const type = response.headers.get('content-type')?.split(';')[0].trim() ?? '';
+  if (!response.ok || !type.startsWith('image/')) return;
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  let binary = '';
+  for (let index = 0; index < bytes.length; index += 0x8000) {
+    binary += String.fromCharCode(...bytes.subarray(index, index + 0x8000));
+  }
+  return `data:${type};base64,${btoa(binary)}`;
+}
+
+function getFavicon(host: string) {
+  let icon = favicons.get(host);
+  if (!icon) {
+    if (favicons.size >= 500) favicons.delete(favicons.keys().next().value!);
+    icon = fetchFavicon(host).catch(() => {
+      favicons.delete(host);
+      return undefined;
+    });
+    favicons.set(host, icon);
+  }
+  return icon;
+}
+
 async function getNewsArticles(): Promise<NewsArticlesResponse> {
   try {
     const response = await fetch(new URL('/api/news-demo/articles', apiOrigin), { signal: AbortSignal.timeout(3000), redirect: 'error' });
@@ -130,10 +163,23 @@ chrome.runtime.onMessage.addListener((message: unknown, sender, respond) => {
     void getDemoPosts().then(respond);
     return true;
   }
+  if (sender.url?.startsWith('https://') && typeof message === 'object' && message !== null
+    && 'kind' in message && message.kind === 'favicon' && 'host' in message
+    && typeof message.host === 'string' && /^[a-z0-9.-]{1,253}$/u.test(message.host)) {
+    void getFavicon(message.host).then((dataUrl) => respond({ dataUrl } satisfies FaviconResponse));
+    return true;
+  }
 
   if (isCallRequest(message, sender.url)) {
     void relayCallRequest(message, tabId).then(respond);
     return true;
+  }
+  if (looksLikeCallRequest(message)) {
+    // Never leave the overlay waiting on silence: say the request was rejected, and why, in this console.
+    const kind = (message as { kind: string }).kind;
+    console.warn('FactCheck rejected an invalid overlay request.', kind, sender.url);
+    respond({ ok: false, message: `FactCheck rejected an invalid request (${kind}).`, code: 'unavailable' } satisfies CallReply);
+    return false;
   }
   if (!isFactCheckMessage(message)) return;
 

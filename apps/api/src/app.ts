@@ -6,6 +6,7 @@ import { MockFactsBackend } from './local/backend.js';
 import { mockResults } from './mock-facts.js';
 import { registerLiveFactCheck } from './live/route.js';
 import { registerConversations } from './conversations/route.js';
+import { registerFavicons } from './favicons.js';
 
 export function createApp(logger = true, backend = new MockFactsBackend()) {
   const app = Fastify({ logger, ajv: { customOptions: { coerceTypes: false, removeAdditional: false } } });
@@ -47,6 +48,7 @@ export function createApp(logger = true, backend = new MockFactsBackend()) {
 
   registerLiveFactCheck(app);
   registerConversations(app);
+  registerFavicons(app);
 
   return app;
 }

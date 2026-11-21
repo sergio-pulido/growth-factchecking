@@ -51,6 +51,8 @@ export type OffscreenEvent =
 
 export type DemoPostsRequest = { kind: 'x-demo-posts' };
 export type DemoPostsResponse = { postIds: string[] };
+export type FaviconRequest = { kind: 'favicon'; host: string };
+export type FaviconResponse = { dataUrl?: string };
 
 /** An approved news article and the sentences on it to check; no sentences means automatic picks. */
 export type NewsArticle = { url: string; claims: string[] };
