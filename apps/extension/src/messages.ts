@@ -22,7 +22,7 @@ export type CallRequest =
   | { kind: 'call-recheck'; claim: string }
   | { kind: 'call-claims'; id: string }
   | { kind: 'call-badge'; count: number }
-  | { kind: 'audio-start'; language?: string }
+  | { kind: 'audio-start'; language?: string; microphone?: true }
   | { kind: 'audio-pause' }
   | { kind: 'audio-resume' }
   | { kind: 'audio-stop' };
@@ -40,8 +40,8 @@ export type TabEvent =
 
 /** Background worker <-> offscreen document that holds the tab audio stream. */
 export type OffscreenCommand =
-  | { target: 'offscreen'; kind: 'start'; streamId: string; token: string }
-  | { target: 'offscreen'; kind: 'pause' | 'resume' | 'stop' };
+  | { target: 'offscreen'; kind: 'start'; streamId: string; token: string; microphone: boolean }
+  | { target: 'offscreen'; kind: 'microphone-status' | 'pause' | 'resume' | 'stop' };
 
 export type OffscreenEvent =
   | { source: 'offscreen'; kind: 'delta'; itemId: string; text: string }

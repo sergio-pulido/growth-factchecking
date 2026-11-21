@@ -5,7 +5,8 @@ import { build } from 'esbuild';
 await rm('dist', { recursive: true, force: true });
 await build({
   entryPoints: [
-    'src/background.ts', 'src/call-content.ts', 'src/offscreen.ts', 'src/x-content.ts', 'src/x-demo.ts', 'src/news-content.ts',
+    'src/background.ts', 'src/call-content.ts', 'src/offscreen.ts', 'src/microphone.ts',
+    'src/x-content.ts', 'src/x-demo.ts', 'src/news-content.ts',
   ],
   bundle: true,
   format: 'iife',
@@ -16,3 +17,4 @@ await build({
 });
 await copyFile('manifest.json', 'dist/manifest.json');
 await copyFile('src/offscreen.html', 'dist/offscreen.html');
+await copyFile('src/microphone.html', 'dist/microphone.html');

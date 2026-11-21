@@ -25,3 +25,10 @@ test('rejects malformed requests but still recognises them, so the overlay gets 
   assert.equal(looksLikeCallRequest(bad), true);
   assert.equal(looksLikeCallRequest({ mode: 'live', claim: 'x' }), false);
 });
+
+test('the microphone can only be requested from Google Meet', () => {
+  const request = { kind: 'audio-start', language: 'en', microphone: true };
+  assert.equal(isCallRequest(request, 'https://meet.google.com/abc-defg-hij'), true);
+  assert.equal(isCallRequest(request, 'https://www.youtube.com/watch'), false);
+  assert.equal(isCallRequest(request, 'https://meet.google.com.example.test/'), false);
+});

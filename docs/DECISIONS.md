@@ -37,3 +37,7 @@ El mismo panel funciona sobre cualquier llamada. En Meet (con el motor de subtí
 ## 009 · Subtítulos en la ventana flotante de Meet
 
 Tras iniciar la captura, la extensión usa los subtítulos de Document Picture-in-Picture cuando Meet los muestra allí. Los cambios del documento flotante y su temporizador alimentan el mismo consolidador de subtítulos. Al cerrar la ventana se vuelve a leer la pestaña dentro de la misma conversación.
+
+## 010 · Audio para Google Meet
+
+La versión 0.4.6 sustituye el lector de subtítulos de Meet. Chrome concede el permiso de micrófono en una página de la extensión. Tras **Start checking**, el documento offscreen mezcla el micrófono con el audio de la pestaña y envía la mezcla a OpenAI Realtime. Una sesión de transcripción por llamada conserva el flujo en segundo plano y agrupa ambas voces bajo **Call audio**. **Pause** silencia el envío y **Stop** cierra las capturas.
