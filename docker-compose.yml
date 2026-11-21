@@ -6,7 +6,9 @@ services:
       POSTGRES_PASSWORD: factcheck
       POSTGRES_DB: factcheck
     ports:
-      - "127.0.0.1:5432:5432"
+      # Override when 5432 is taken by a local Postgres, e.g. FACTCHECK_DB_PORT=55432,
+      # and point DATABASE_URL at the same port.
+      - "127.0.0.1:${FACTCHECK_DB_PORT:-5432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
