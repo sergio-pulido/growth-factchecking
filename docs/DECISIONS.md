@@ -29,3 +29,7 @@ Primero se valida el flujo completo sin servicios externos. Cada instancia de la
 ## 007 · Fuente de verificación elegida en Chrome
 
 La extensión guarda la preferencia en el almacenamiento local de Chrome. **Simulado** es el valor inicial. **Real** requiere texto seleccionado y el botón **Verificar** para enviarlo al backend. El panel comprueba el modo indicado por la API antes de presentar el resultado.
+
+## 008 · Evaluación del contexto argumental
+
+El piloto etiqueta de forma independiente el veredicto frente a la evidencia y la contribución del dato a la pregunta o tesis activa. El experimento lee el contexto de GF‑02 y la propuesta usa un campo opcional para presentar esa evaluación. [Propuesta para revisar](specs/argument-relevance-proposal.md)

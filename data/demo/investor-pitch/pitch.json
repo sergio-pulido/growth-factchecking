@@ -1,0 +1,60 @@
+{
+  "title": "Evaluación ficticia · Pitch de Prisma Turnos",
+  "language": "es",
+  "batches": [
+    [
+      { "id": "inicio", "seconds": 0, "speaker": "Inés", "text": "Hola, Leo. Empieza por donde te resulte más cómodo." },
+      {
+        "id": "clientes", "seconds": 4, "speaker": "Leo",
+        "text": "Al 31 de octubre de 2026, Prisma Turnos tenía 42 clientes de pago, contando organizaciones con una suscripción activa abonada.",
+        "expected": { "verdict": "yes", "sourceId": "pitch-paying-customers-oct-2026", "relevance": "contexto_insuficiente", "contextId": null }
+      },
+      { "id": "pregunta-mrr", "seconds": 13, "speaker": "Inés", "text": "¿Cuál era vuestro ingreso mensual recurrente al cierre de octubre de 2026, contando solo suscripciones y dejando fuera la implantación y el IVA?" },
+      {
+        "id": "mrr", "seconds": 20, "speaker": "Leo",
+        "text": "Al cierre del 31 de octubre de 2026 nuestro MRR, con solo suscripciones y sin implantación ni IVA, fue de 32.000 euros.",
+        "expected": { "verdict": "no", "sourceId": "pitch-mrr-oct-2026", "relevance": "alta", "contextId": "pregunta-mrr" }
+      }
+    ],
+    [
+      { "id": "pregunta-julio", "seconds": 34, "speaker": "Inés", "text": "De las organizaciones que activaron su primera suscripción pagada en julio de 2026, ¿qué porcentaje seguía pagando 90 días después?" },
+      {
+        "id": "retencion-julio", "seconds": 41, "speaker": "Leo",
+        "text": "Para la cohorte que activó su primera suscripción pagada en julio de 2026, la retención a 90 días de Prisma Turnos fue del 90 %.",
+        "expected": { "verdict": "yes", "sourceId": "pitch-retention-jul-2026", "relevance": "alta", "contextId": "pregunta-julio" }
+      },
+      {
+        "id": "dato-mercado", "seconds": 52, "speaker": "Leo",
+        "text": "Por cierto, en su nota del 8 de diciembre de 2023, Eurostat dijo que el 45,2 % de las empresas de la UE con al menos diez personas ocupadas cubiertas por su encuesta compró servicios en la nube en 2023.",
+        "expected": { "verdict": "yes", "sourceId": "eurostat-cloud-release-2023", "relevance": "baja", "contextId": "pregunta-julio" }
+      },
+      { "id": "opinion", "seconds": 65, "speaker": "Leo", "text": "Personalmente me parece que el producto es muy atractivo." },
+      { "id": "proyeccion", "seconds": 69, "speaker": "Leo", "text": "Espero que el año que viene dupliquemos el MRR." }
+    ],
+    [
+      { "id": "pregunta-trimestre", "seconds": 77, "speaker": "Inés", "text": "Volviendo a retención, ¿cuál fue el porcentaje conjunto a 90 días para las organizaciones que empezaron a pagar entre julio y septiembre de 2026?" },
+      {
+        "id": "retencion-agosto", "seconds": 85, "speaker": "Leo",
+        "text": "La cohorte de agosto de 2026 de Prisma Turnos registró un 75 % de retención a 90 días, entre las organizaciones que activaron su primera suscripción pagada ese mes.",
+        "expected": { "verdict": "yes", "sourceId": "pitch-retention-aug-2026", "relevance": "parcial", "contextId": "pregunta-trimestre" }
+      }
+    ],
+    [
+      { "id": "pregunta-piloto", "seconds": 100, "speaker": "Inés", "text": "¿Firmasteis algún acuerdo de piloto hospitalario en octubre de 2026? ¿Con quién?" },
+      {
+        "id": "piloto", "seconds": 107, "speaker": "Leo",
+        "text": "Prisma Turnos firmó un acuerdo de piloto con el Hospital Mirador en octubre de 2026.",
+        "expected": { "verdict": "neutral", "sourceId": null, "relevance": "alta", "contextId": "pregunta-piloto" }
+      }
+    ],
+    [
+      { "id": "puente-mercado", "seconds": 122, "speaker": "Inés", "text": "Adelante con tu tesis de mercado." },
+      { "id": "tesis-mercado", "seconds": 128, "speaker": "Leo", "text": "Mi tesis es que en 2023 ya había una adopción amplia de servicios en la nube entre las empresas de la UE cubiertas por la encuesta de Eurostat." },
+      {
+        "id": "evidencia-mercado", "seconds": 134, "speaker": "Leo",
+        "text": "En su nota del 8 de diciembre de 2023, Eurostat dijo que el 45,2 % de las empresas de la UE con al menos diez personas ocupadas cubiertas por su encuesta compró servicios en la nube en 2023.",
+        "expected": { "verdict": "yes", "sourceId": "eurostat-cloud-release-2023", "relevance": "alta", "contextId": "tesis-mercado" }
+      }
+    ]
+  ]
+}

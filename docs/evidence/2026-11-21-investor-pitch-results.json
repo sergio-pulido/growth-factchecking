@@ -1,0 +1,519 @@
+{
+  "runAt": "2026-11-21T12:02:10.246Z",
+  "model": "gpt-6-luna",
+  "settings": {
+    "embeddingModel": "text-embedding-3-small",
+    "extractionModel": "gpt-6-luna",
+    "extractionEffort": "low",
+    "extractionTimeoutMs": 10000,
+    "factCheckTimeoutMs": 2500,
+    "cacheTtlMs": 0
+  },
+  "storedUtterances": 16,
+  "batches": [
+    {
+      "batch": 1,
+      "ids": [
+        "inicio",
+        "clientes",
+        "pregunta-mrr",
+        "mrr"
+      ],
+      "latencyMs": 2788,
+      "accepted": 4,
+      "duplicates": 0,
+      "extraction": "ok",
+      "claims": 2
+    },
+    {
+      "batch": 2,
+      "ids": [
+        "pregunta-julio",
+        "retencion-julio",
+        "dato-mercado",
+        "opinion",
+        "proyeccion"
+      ],
+      "latencyMs": 2418,
+      "accepted": 5,
+      "duplicates": 0,
+      "extraction": "ok",
+      "claims": 2
+    },
+    {
+      "batch": 3,
+      "ids": [
+        "pregunta-trimestre",
+        "retencion-agosto"
+      ],
+      "latencyMs": 2186,
+      "accepted": 2,
+      "duplicates": 0,
+      "extraction": "ok",
+      "claims": 1
+    },
+    {
+      "batch": 4,
+      "ids": [
+        "pregunta-piloto",
+        "piloto"
+      ],
+      "latencyMs": 1574,
+      "accepted": 2,
+      "duplicates": 0,
+      "extraction": "ok",
+      "claims": 1
+    },
+    {
+      "batch": 5,
+      "ids": [
+        "puente-mercado",
+        "tesis-mercado",
+        "evidencia-mercado"
+      ],
+      "latencyMs": 3294,
+      "accepted": 3,
+      "duplicates": 0,
+      "extraction": "ok",
+      "claims": 2
+    }
+  ],
+  "cases": [
+    {
+      "id": "inicio",
+      "text": "Hola, Leo. Empieza por donde te resulte más cómodo.",
+      "expected": null,
+      "actual": [],
+      "extractionMatches": true
+    },
+    {
+      "id": "clientes",
+      "text": "Al 31 de octubre de 2026, Prisma Turnos tenía 42 clientes de pago, contando organizaciones con una suscripción activa abonada.",
+      "expected": {
+        "verdict": "yes",
+        "sourceId": "pitch-paying-customers-oct-2026",
+        "relevance": "contexto_insuficiente",
+        "contextId": null
+      },
+      "actual": [
+        {
+          "id": "1",
+          "claim": "Al 31 de octubre de 2026, Prisma Turnos tenía 42 clientes de pago, contando organizaciones con una suscripción activa abonada.",
+          "speaker": "Leo",
+          "utteranceClientId": "clientes",
+          "status": "checked",
+          "verdict": "yes",
+          "sources": [
+            {
+              "sourceUrl": "https://github.com/sergio-pulido/growth-factchecking/blob/codex/pitch-evaluation/data/demo/investor-pitch/sources.md#registro-de-clientes-activos",
+              "statement": "Prisma Turnos tenía 42 clientes de pago al 31 de octubre de 2026. El registro cuenta organizaciones con una suscripción activa abonada a la fecha de cierre."
+            }
+          ],
+          "relevance": {
+            "level": "contexto_insuficiente",
+            "context": null,
+            "reason": "Los turnos disponibles aún no establecen una pregunta o tesis concreta para evaluar este dato.",
+            "latencyMs": 0
+          },
+          "independentRelevance": {
+            "level": "contexto_insuficiente",
+            "context": null,
+            "reason": "Los turnos disponibles aún no establecen una pregunta o tesis concreta para evaluar este dato.",
+            "latencyMs": 392
+          }
+        }
+      ],
+      "extractionMatches": true,
+      "verdictMatches": true,
+      "sourceMatches": true,
+      "relevanceMatches": true,
+      "contextMatches": true
+    },
+    {
+      "id": "pregunta-mrr",
+      "text": "¿Cuál era vuestro ingreso mensual recurrente al cierre de octubre de 2026, contando solo suscripciones y dejando fuera la implantación y el IVA?",
+      "expected": null,
+      "actual": [],
+      "extractionMatches": true
+    },
+    {
+      "id": "mrr",
+      "text": "Al cierre del 31 de octubre de 2026 nuestro MRR, con solo suscripciones y sin implantación ni IVA, fue de 32.000 euros.",
+      "expected": {
+        "verdict": "no",
+        "sourceId": "pitch-mrr-oct-2026",
+        "relevance": "alta",
+        "contextId": "pregunta-mrr"
+      },
+      "actual": [
+        {
+          "id": "2",
+          "claim": "Al cierre del 31 de octubre de 2026, el MRR de Prisma Turnos, contando solo suscripciones y sin implantación ni IVA, fue de 32.000 euros.",
+          "speaker": "Leo",
+          "utteranceClientId": "mrr",
+          "status": "checked",
+          "verdict": "no",
+          "sources": [
+            {
+              "sourceUrl": "https://github.com/sergio-pulido/growth-factchecking/blob/codex/pitch-evaluation/data/demo/investor-pitch/sources.md#cierre-de-mrr-de-octubre",
+              "statement": "El MRR de Prisma Turnos al cierre del 31 de octubre de 2026 fue de 27.800 euros, contando solo suscripciones activas y excluyendo IVA y cuotas únicas de implantación. Las cuotas de implantación fueron 4.200 euros."
+            }
+          ],
+          "relevance": {
+            "level": "alta",
+            "context": {
+              "id": "pregunta-mrr",
+              "speaker": "Inés",
+              "text": "¿Cuál era vuestro ingreso mensual recurrente al cierre de octubre de 2026, contando solo suscripciones y dejando fuera la implantación y el IVA?"
+            },
+            "reason": "La afirmación se refiere directamente a la pregunta o tesis citada.",
+            "latencyMs": 181
+          },
+          "independentRelevance": {
+            "level": "alta",
+            "context": {
+              "id": "pregunta-mrr",
+              "speaker": "Inés",
+              "text": "¿Cuál era vuestro ingreso mensual recurrente al cierre de octubre de 2026, contando solo suscripciones y dejando fuera la implantación y el IVA?"
+            },
+            "reason": "La afirmación se refiere directamente a la pregunta o tesis citada.",
+            "latencyMs": 406
+          }
+        }
+      ],
+      "extractionMatches": true,
+      "verdictMatches": true,
+      "sourceMatches": true,
+      "relevanceMatches": true,
+      "contextMatches": true
+    },
+    {
+      "id": "pregunta-julio",
+      "text": "De las organizaciones que activaron su primera suscripción pagada en julio de 2026, ¿qué porcentaje seguía pagando 90 días después?",
+      "expected": null,
+      "actual": [],
+      "extractionMatches": true
+    },
+    {
+      "id": "retencion-julio",
+      "text": "Para la cohorte que activó su primera suscripción pagada en julio de 2026, la retención a 90 días de Prisma Turnos fue del 90 %.",
+      "expected": {
+        "verdict": "yes",
+        "sourceId": "pitch-retention-jul-2026",
+        "relevance": "alta",
+        "contextId": "pregunta-julio"
+      },
+      "actual": [
+        {
+          "id": "3",
+          "claim": "Para la cohorte que activó su primera suscripción pagada en julio de 2026, la retención a 90 días de Prisma Turnos fue del 90 %.",
+          "speaker": "Leo",
+          "utteranceClientId": "retencion-julio",
+          "status": "checked",
+          "verdict": "yes",
+          "sources": [
+            {
+              "sourceUrl": "https://github.com/sergio-pulido/growth-factchecking/blob/codex/pitch-evaluation/data/demo/investor-pitch/sources.md#informe-de-cohortes-a-90-días",
+              "statement": "La retención a 90 días de la cohorte de pago de julio de 2026 de Prisma Turnos fue del 90 %. Seguían activas y pagando 36 de las 40 organizaciones que activaron su primera suscripción pagada en julio."
+            }
+          ],
+          "relevance": {
+            "level": "alta",
+            "context": {
+              "id": "pregunta-julio",
+              "speaker": "Inés",
+              "text": "De las organizaciones que activaron su primera suscripción pagada en julio de 2026, ¿qué porcentaje seguía pagando 90 días después?"
+            },
+            "reason": "La afirmación se refiere directamente a la pregunta o tesis citada.",
+            "latencyMs": 318
+          },
+          "independentRelevance": {
+            "level": "alta",
+            "context": {
+              "id": "pregunta-julio",
+              "speaker": "Inés",
+              "text": "De las organizaciones que activaron su primera suscripción pagada en julio de 2026, ¿qué porcentaje seguía pagando 90 días después?"
+            },
+            "reason": "La afirmación se refiere directamente a la pregunta o tesis citada.",
+            "latencyMs": 359
+          }
+        }
+      ],
+      "extractionMatches": true,
+      "verdictMatches": true,
+      "sourceMatches": true,
+      "relevanceMatches": true,
+      "contextMatches": true
+    },
+    {
+      "id": "dato-mercado",
+      "text": "Por cierto, en su nota del 8 de diciembre de 2023, Eurostat dijo que el 45,2 % de las empresas de la UE con al menos diez personas ocupadas cubiertas por su encuesta compró servicios en la nube en 2023.",
+      "expected": {
+        "verdict": "yes",
+        "sourceId": "eurostat-cloud-release-2023",
+        "relevance": "baja",
+        "contextId": "pregunta-julio"
+      },
+      "actual": [
+        {
+          "id": "4",
+          "claim": "El 8 de diciembre de 2023, Eurostat dijo que el 45,2 % de las empresas de la UE con al menos diez personas ocupadas cubiertas por su encuesta compró servicios en la nube en 2023.",
+          "speaker": "Leo",
+          "utteranceClientId": "dato-mercado",
+          "status": "checked",
+          "verdict": "yes",
+          "sources": [
+            {
+              "sourceUrl": "https://ec.europa.eu/eurostat/en/web/products-eurostat-news/w/ddn-20231208-1",
+              "statement": "En su publicación del 8 de diciembre de 2023, Eurostat informó que el 45,2 % de las empresas de la UE de al menos diez personas ocupadas cubiertas por la encuesta compró servicios de computación en la nube en 2023."
+            }
+          ],
+          "relevance": {
+            "level": "baja",
+            "context": {
+              "id": "pregunta-julio",
+              "speaker": "Inés",
+              "text": "De las organizaciones que activaron su primera suscripción pagada en julio de 2026, ¿qué porcentaje seguía pagando 90 días después?"
+            },
+            "reason": "La afirmación aporta otro indicador o tema respecto de la pregunta o tesis citada.",
+            "latencyMs": 368
+          },
+          "independentRelevance": {
+            "level": "baja",
+            "context": null,
+            "reason": "La afirmación aporta un dato de otro tema respecto del contexto citado.",
+            "latencyMs": 169,
+            "error": "Las respuestas de Decisions discrepan sobre el contexto o el motivo."
+          }
+        }
+      ],
+      "extractionMatches": true,
+      "verdictMatches": true,
+      "sourceMatches": true,
+      "relevanceMatches": true,
+      "contextMatches": true
+    },
+    {
+      "id": "opinion",
+      "text": "Personalmente me parece que el producto es muy atractivo.",
+      "expected": null,
+      "actual": [],
+      "extractionMatches": true
+    },
+    {
+      "id": "proyeccion",
+      "text": "Espero que el año que viene dupliquemos el MRR.",
+      "expected": null,
+      "actual": [],
+      "extractionMatches": true
+    },
+    {
+      "id": "pregunta-trimestre",
+      "text": "Volviendo a retención, ¿cuál fue el porcentaje conjunto a 90 días para las organizaciones que empezaron a pagar entre julio y septiembre de 2026?",
+      "expected": null,
+      "actual": [],
+      "extractionMatches": true
+    },
+    {
+      "id": "retencion-agosto",
+      "text": "La cohorte de agosto de 2026 de Prisma Turnos registró un 75 % de retención a 90 días, entre las organizaciones que activaron su primera suscripción pagada ese mes.",
+      "expected": {
+        "verdict": "yes",
+        "sourceId": "pitch-retention-aug-2026",
+        "relevance": "parcial",
+        "contextId": "pregunta-trimestre"
+      },
+      "actual": [
+        {
+          "id": "5",
+          "claim": "La cohorte de agosto de 2026 de Prisma Turnos registró un 75 % de retención a 90 días entre las organizaciones que activaron su primera suscripción pagada ese mes.",
+          "speaker": "Leo",
+          "utteranceClientId": "retencion-agosto",
+          "status": "checked",
+          "verdict": "yes",
+          "sources": [
+            {
+              "sourceUrl": "https://github.com/sergio-pulido/growth-factchecking/blob/codex/pitch-evaluation/data/demo/investor-pitch/sources.md#informe-de-cohortes-a-90-días",
+              "statement": "La retención a 90 días de la cohorte de pago de agosto de 2026 de Prisma Turnos fue del 75 %. Seguían activas y pagando 33 de las 44 organizaciones que activaron su primera suscripción pagada en agosto."
+            }
+          ],
+          "relevance": {
+            "level": "parcial",
+            "context": {
+              "id": "pregunta-trimestre",
+              "speaker": "Inés",
+              "text": "Volviendo a retención, ¿cuál fue el porcentaje conjunto a 90 días para las organizaciones que empezaron a pagar entre julio y septiembre de 2026?"
+            },
+            "reason": "La afirmación aporta solo una parte del dato o un indicador indirecto del contexto citado.",
+            "latencyMs": 196
+          },
+          "independentRelevance": {
+            "level": "parcial",
+            "context": {
+              "id": "pregunta-trimestre",
+              "speaker": "Inés",
+              "text": "Volviendo a retención, ¿cuál fue el porcentaje conjunto a 90 días para las organizaciones que empezaron a pagar entre julio y septiembre de 2026?"
+            },
+            "reason": "La afirmación cubre solo una parte del periodo, población o alcance solicitado.",
+            "latencyMs": 207
+          }
+        }
+      ],
+      "extractionMatches": true,
+      "verdictMatches": true,
+      "sourceMatches": true,
+      "relevanceMatches": true,
+      "contextMatches": true
+    },
+    {
+      "id": "pregunta-piloto",
+      "text": "¿Firmasteis algún acuerdo de piloto hospitalario en octubre de 2026? ¿Con quién?",
+      "expected": null,
+      "actual": [],
+      "extractionMatches": true
+    },
+    {
+      "id": "piloto",
+      "text": "Prisma Turnos firmó un acuerdo de piloto con el Hospital Mirador en octubre de 2026.",
+      "expected": {
+        "verdict": "neutral",
+        "sourceId": null,
+        "relevance": "alta",
+        "contextId": "pregunta-piloto"
+      },
+      "actual": [
+        {
+          "id": "6",
+          "claim": "Prisma Turnos firmó un acuerdo de piloto con el Hospital Mirador en octubre de 2026.",
+          "speaker": "Leo",
+          "utteranceClientId": "piloto",
+          "status": "checked",
+          "verdict": "neutral",
+          "sources": [],
+          "relevance": {
+            "level": "alta",
+            "context": {
+              "id": "pregunta-piloto",
+              "speaker": "Inés",
+              "text": "¿Firmasteis algún acuerdo de piloto hospitalario en octubre de 2026? ¿Con quién?"
+            },
+            "reason": "La afirmación se refiere directamente a la pregunta o tesis citada.",
+            "latencyMs": 302
+          },
+          "independentRelevance": {
+            "level": "alta",
+            "context": {
+              "id": "pregunta-piloto",
+              "speaker": "Inés",
+              "text": "¿Firmasteis algún acuerdo de piloto hospitalario en octubre de 2026? ¿Con quién?"
+            },
+            "reason": "La afirmación se refiere directamente a la pregunta o tesis citada.",
+            "latencyMs": 173
+          }
+        }
+      ],
+      "extractionMatches": true,
+      "verdictMatches": true,
+      "sourceMatches": true,
+      "relevanceMatches": true,
+      "contextMatches": true
+    },
+    {
+      "id": "puente-mercado",
+      "text": "Adelante con tu tesis de mercado.",
+      "expected": null,
+      "actual": [],
+      "extractionMatches": true
+    },
+    {
+      "id": "tesis-mercado",
+      "text": "Mi tesis es que en 2023 ya había una adopción amplia de servicios en la nube entre las empresas de la UE cubiertas por la encuesta de Eurostat.",
+      "expected": null,
+      "actual": [
+        {
+          "id": "7",
+          "claim": "En 2023 ya había una adopción amplia de servicios en la nube entre las empresas de la UE cubiertas por la encuesta de Eurostat.",
+          "speaker": "Leo",
+          "utteranceClientId": "tesis-mercado",
+          "status": "checked",
+          "verdict": "neutral",
+          "sources": [
+            {
+              "sourceUrl": "https://ec.europa.eu/eurostat/en/web/products-eurostat-news/w/ddn-20231208-1",
+              "statement": "En su publicación del 8 de diciembre de 2023, Eurostat informó que el 45,2 % de las empresas de la UE de al menos diez personas ocupadas cubiertas por la encuesta compró servicios de computación en la nube en 2023."
+            }
+          ],
+          "relevance": {
+            "level": "alta",
+            "context": {
+              "id": "pregunta-trimestre",
+              "speaker": "Inés",
+              "text": "Volviendo a retención, ¿cuál fue el porcentaje conjunto a 90 días para las organizaciones que empezaron a pagar entre julio y septiembre de 2026?"
+            },
+            "reason": "La afirmación se refiere directamente a la pregunta o tesis citada.",
+            "latencyMs": 341
+          },
+          "independentRelevance": {
+            "level": "alta",
+            "context": null,
+            "reason": "La afirmación se refiere directamente a la pregunta o tesis citada.",
+            "latencyMs": 145,
+            "error": "Las respuestas de Decisions discrepan sobre el contexto o el motivo."
+          }
+        }
+      ],
+      "extractionMatches": false
+    },
+    {
+      "id": "evidencia-mercado",
+      "text": "En su nota del 8 de diciembre de 2023, Eurostat dijo que el 45,2 % de las empresas de la UE con al menos diez personas ocupadas cubiertas por su encuesta compró servicios en la nube en 2023.",
+      "expected": {
+        "verdict": "yes",
+        "sourceId": "eurostat-cloud-release-2023",
+        "relevance": "alta",
+        "contextId": "tesis-mercado"
+      },
+      "actual": [
+        {
+          "id": "8",
+          "claim": "El 45,2 % de las empresas de la UE con al menos diez personas ocupadas cubiertas por la encuesta de Eurostat compró servicios en la nube en 2023.",
+          "speaker": "Leo",
+          "utteranceClientId": "evidencia-mercado",
+          "status": "checked",
+          "verdict": "yes",
+          "sources": [
+            {
+              "sourceUrl": "https://ec.europa.eu/eurostat/en/web/products-eurostat-news/w/ddn-20231208-1",
+              "statement": "En su publicación del 8 de diciembre de 2023, Eurostat informó que el 45,2 % de las empresas de la UE de al menos diez personas ocupadas cubiertas por la encuesta compró servicios de computación en la nube en 2023."
+            }
+          ],
+          "relevance": {
+            "level": "alta",
+            "context": {
+              "id": "tesis-mercado",
+              "speaker": "Leo",
+              "text": "Mi tesis es que en 2023 ya había una adopción amplia de servicios en la nube entre las empresas de la UE cubiertas por la encuesta de Eurostat."
+            },
+            "reason": "La afirmación se refiere directamente a la pregunta o tesis citada.",
+            "latencyMs": 211
+          },
+          "independentRelevance": {
+            "level": "alta",
+            "context": {
+              "id": "tesis-mercado",
+              "speaker": "Leo",
+              "text": "Mi tesis es que en 2023 ya había una adopción amplia de servicios en la nube entre las empresas de la UE cubiertas por la encuesta de Eurostat."
+            },
+            "reason": "La afirmación se refiere directamente a la pregunta o tesis citada.",
+            "latencyMs": 495
+          }
+        }
+      ],
+      "extractionMatches": true,
+      "verdictMatches": true,
+      "sourceMatches": true,
+      "relevanceMatches": true,
+      "contextMatches": true
+    }
+  ]
+}
