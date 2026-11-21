@@ -1,13 +1,17 @@
 import { CLAIM_MAX_LENGTH, DEMO_SCENARIOS, FACT_CHECK_PATH } from '@growth-factcheking/shared';
 import type { DemoScenario, FactCheckRequest } from '@growth-factcheking/shared';
 import Fastify from 'fastify';
+import { registerLocalRoutes } from './local/routes.js';
+import { MockFactsBackend } from './local/backend.js';
 import { mockResults } from './mock-facts.js';
 import { createPitchDecider } from './meet/decisions.js';
 import { registerMeetDemo } from './meet/route.js';
 import { registerLiveFactCheck } from './live/route.js';
 
-export function createApp(logger = true) {
-  const app = Fastify({ logger, ajv: { customOptions: { coerceTypes: false } } });
+export function createApp(logger = true, backend = new MockFactsBackend()) {
+  const app = Fastify({ logger, ajv: { customOptions: { coerceTypes: false, removeAdditional: false } } });
+
+  registerLocalRoutes(app, backend);
 
   app.get('/health', async () => ({ status: 'ok' }));
 
@@ -29,8 +33,10 @@ export function createApp(logger = true) {
       },
     },
     async (request, reply) => {
-      const { scenario = 'no_evidence' } = request.query;
+      const { scenario } = request.query;
       reply.header('X-Fact-Check-Mode', 'mock');
+
+      if (!scenario) return backend.check(request.body.claim);
 
       if (scenario === 'error') {
         return reply.code(503).send({ message: 'Error simulado. Vuelve a intentarlo.' });

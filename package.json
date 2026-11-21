@@ -15,10 +15,14 @@
     "start": "npm run start --workspace @growth-factcheking/api",
     "test": "npm run test --workspace @growth-factcheking/api",
     "db:migrate": "npm run db:migrate --workspace @growth-factcheking/api",
-    "seed": "npm run seed --workspace @growth-factcheking/api --"
+    "seed": "npm run seed --workspace @growth-factcheking/api --",
+    "dev": "npm run build && npm start",
+    "lint": "oxlint apps/api/src apps/api/test apps/extension/src packages/shared/src",
+    "typecheck": "npm run build --workspace @growth-factcheking/shared && tsc --noEmit -p apps/api && tsc --noEmit -p apps/extension"
   },
   "devDependencies": {
     "@types/node": "^22.20.5",
-    "typescript": "~5.9.3"
+    "typescript": "~5.9.3",
+    "oxlint": "^1.94.0"
   }
 }

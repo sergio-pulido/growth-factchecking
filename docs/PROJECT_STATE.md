@@ -1,12 +1,16 @@
 # Estado del proyecto
 
-La extensión y la API están conectadas en modo de demostración. El panel muestra texto seleccionado o una afirmación de ejemplo. Los escenarios fijos cubren los cinco veredictos, fuentes de ejemplo, ausencia de fuentes y un error de servicio.
+La pila local funciona sin credenciales ni base de datos. `npm run dev` compila y arranca un sandbox en http://127.0.0.1:3000. La API permite importar lotes de hechos con fuentes, repetirlos sin duplicados, actualizar por ID, buscar mediante vectores simulados y devolver un veredicto simulado. El almacenamiento es en memoria y se reinicia con dos hechos ficticios.
+
+La extensión conserva sus escenarios fijos. El sandbox usa el corpus simulado. La ruta `/api/fact-check/live` usa OpenAI y PostgreSQL con un corpus importado.
+
+Los vectores son conteos de palabras deterministas; el clasificador devuelve sí solo para un texto idéntico y neutral en el resto. El corpus simulado se almacena en memoria. Los tests de CI cubren la ingestión, repetición, actualización, validación, aislamiento y consulta.
 
 La simulación de Meet reproduce una conversación ficticia entre una inversora y un emprendedor. Extrae cuatro afirmaciones con reglas específicas del guion y admite veredictos simulados o una llamada a OpenAI Decisions con el mismo corpus ficticio.
 
 ## Próximos hitos
 
-1. Conectar Embeddings y PostgreSQL con pgvector. Importar un corpus inicial con fuentes.
+1. Evaluar la recuperación y los veredictos con un corpus revisado de fuentes primarias.
 2. Probar Decisions con una clave del proyecto y revisar los resultados de la demo.
 3. Evaluar la extracción de afirmaciones con transcripciones variadas, incluido el manejo de hablantes y proyecciones.
 4. Diseñar cómo capturar afirmaciones en Meet con consentimiento explícito. Google ha anunciado el cierre de Meet Media API el 15 de enero de 2027. [Notas de Google Meet](https://developers.google.com/workspace/meet/release-notes)

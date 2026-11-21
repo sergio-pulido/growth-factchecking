@@ -1,6 +1,6 @@
 # Live fact-check pipeline
 
-Status: **implemented** (unit tests with fakes). Not yet **verified** against real OpenAI + Postgres.
+Status: **Available** at `POST /api/fact-check/live` when configured.
 
 ## Flow
 
@@ -15,7 +15,7 @@ POST /api/fact-check/live { claim }
        choice    verdict                  -> yes | probably_yes | neutral | probably_no | no (+ confidence)
   6. mapVerdict (conservative)
        refusal / unknown value         -> neutral
-       relevance < VERDICT_MIN_RELEVANCE -> neutral (off_topic)
+       relevance < VERDICT_MIN_RELEVANCE -> neutral with no sources (off_topic)
        yes/no with confidence < VERDICT_MIN_CONFIDENCE -> probably_yes / probably_no
   7. response = shared FactCheckResult { verdict, sources[] }
      headers: X-Fact-Check-Mode: live, Server-Timing: embed/search/decide/total
@@ -38,14 +38,14 @@ docker compose up -d db
 cp .env.example .env   # fill OPENAI_API_KEY; DATABASE_URL default matches docker-compose
 npm run build
 npm run db:migrate
-npm run seed -- data/facts.sample.json
+npm run seed -- /absolute/path/to/demo-facts.json
+npm run start:live --workspace @growth-factcheking/api
 ```
 
-`data/facts.sample.json` is a placeholder corpus with example.org sources. Replace it with a real sourced corpus before any demo claim of accuracy.
+The importer accepts a JSON array or `{"facts":[...]}`. Each entry needs a stable `id`, a `statement`, and an HTTP(S) `sourceUrl`. The optional `sourceTitle` identifies the original publication. The importer validates the full file and commits it in one transaction. Reusing an ID replaces the stored fact. Restart the API after importing while it is running to clear cached verdicts. Use sourced demo facts in place of the placeholder `data/facts.sample.json`.
 
 ## Open items
 
-1. Wire the route in `apps/api/src/app.ts`: `import { registerLiveFactCheck } from './live/route.js';` then `registerLiveFactCheck(app);` inside `createApp`.
 2. Extension: switch endpoint to `/api/fact-check/live` behind a setting (mock stays the default for UX work).
 3. Contract: consider adding `confidence` and per-source `similarity` to `FactCheckResult` once the UX needs them.
 4. Calibrate the three thresholds with ~30 labelled claims; measure p50/p95 from `Server-Timing`.

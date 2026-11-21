@@ -46,8 +46,8 @@ export function createFactSearch(pool: pg.Pool, minSimilarity: number): FactSear
 
 export type FactInput = { id: string; statement: string; sourceUrl: string; sourceTitle?: string };
 
-export async function upsertFact(pool: pg.Pool, fact: FactInput, embedding: number[]): Promise<void> {
-  await pool.query(
+export async function upsertFact(db: Pick<pg.PoolClient, 'query'>, fact: FactInput, embedding: number[]): Promise<void> {
+  await db.query(
     `INSERT INTO facts (id, statement, source_url, source_title, embedding)
      VALUES ($1, $2, $3, $4, $5::vector)
      ON CONFLICT (id) DO UPDATE

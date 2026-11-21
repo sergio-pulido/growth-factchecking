@@ -1,5 +1,4 @@
 // Live route. Lives next to the mock route instead of replacing it, so the UX demo keeps working.
-// Wire it in app.ts with:  await registerLiveFactCheck(app);
 import { CLAIM_MAX_LENGTH, FACT_CHECK_PATH } from '@growth-factcheking/shared';
 import type { FactCheckRequest } from '@growth-factcheking/shared';
 import type { FastifyInstance } from 'fastify';

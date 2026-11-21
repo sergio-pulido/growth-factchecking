@@ -14,9 +14,7 @@ Con Node.js 22.14 o posterior y npm, ejecuta desde la raíz.
 
 ```bash
 npm ci
-npm run build
-npm test
-npm start
+npm run dev
 ```
 
 En otra terminal, comprueba que la API responde.
@@ -27,7 +25,36 @@ curl -fsS http://127.0.0.1:3000/health
 
 Para abrir el panel, entra en `chrome://extensions`, activa **Modo de desarrollador**, pulsa **Cargar descomprimida** y selecciona `apps/extension/dist`. Abre una página web y pulsa el icono de la extensión. Opcionalmente, selecciona texto antes de abrirla. En el panel, elige un escenario y pulsa **Probar**.
 
-El modo simulado solo necesita Node.js.
+## Local mocked stack
+
+Open http://127.0.0.1:3000 after `npm run dev`. The sandbox lets you ingest JSON facts, inspect the corpus, search evidence, check a claim, and simulate every verdict or an HTTP 503. No API keys, database, Docker, or network access is needed at runtime. The API binds to loopback only. Restart it to reset the in-memory corpus to two fictional seed facts.
+
+`npm run dev` builds the API, shared package and unpacked extension, then starts the server. Restart it after source edits; reload the extension in Chrome after rebuilding.
+
+### Exercise the full flow
+
+1. Open the sandbox and ingest the prefilled planetarium fact.
+2. Repeat ingestion: the response should report `skipped: 1`.
+3. Use `El planetario de Puerto Aurora abre los viernes.` as the claim and choose **Local pipeline**. Retrieval returns the ingested source and the mock verdict is `yes`.
+4. Try an unrelated claim: expect neutral without sources. Try a similar but changed claim: the mock classifier returns neutral, even if retrieval finds related evidence.
+5. Select a fixed scenario to exercise each verdict or the service error state.
+6. Load `apps/extension/dist` in Chrome to exercise the extension’s fixed scenarios separately.
+
+### Local API
+
+| Route | Input / behavior |
+| --- | --- |
+| `GET /api/facts` | List the current fictional corpus |
+| `POST /api/facts/ingest` | `{ "facts": [{ "id": "planetarium", "statement": "A fact", "sourceUrl": "https://example.com/source" }] }` |
+| `POST /api/facts/search` | `{ "claim": "A fact" }`; returns up to five matches with cosine scores |
+| `POST /api/fact-check` | `{ "claim": "A fact" }`; retrieves from the current corpus |
+| `POST /api/fact-check?scenario=no` | Fixed demo response; bypasses corpus |
+
+IDs are stable keys: a changed statement or source updates that fact, while exact replays are skipped. Batches accept 1–100 facts, reject duplicate IDs and invalid sources before writing, and never fetch the source URLs. Each app instance owns its store.
+
+Mock embeddings are normalized 256-dimensional hashed word counts with a fixed similarity cutoff of 0.6. They exercise the vector plumbing; they do not model semantic meaning. Mock classification returns `yes` only for an exact stored statement (case and surrounding whitespace ignored), otherwise `neutral`. Importing a statement does not verify its truth. The separate live route uses OpenAI and PostgreSQL when configured.
+
+`npm run lint` and `npm run typecheck` are local checks. CI builds and runs the complete API tests. See the [live backend instructions](docs/specs/live-pipeline.md) to run PostgreSQL, import a sourced corpus and call `/api/fact-check/live`.
 
 ## Simulación de Google Meet
 

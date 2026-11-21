@@ -4,7 +4,7 @@
 
 La extensión de Chrome muestra una afirmación seleccionada o un texto de ejemplo y permite elegir un escenario de prueba. La API local devuelve resultados simulados con el contrato compartido. La demo cubre cinco veredictos, neutral sin fuentes y un error recuperable. El panel identifica los datos como simulados y muestra el estado de carga y los enlaces.
 
-`POST /api/fact-check` acepta una afirmación y un parámetro de consulta opcional `scenario`. Sin escenario, devuelve neutral con una lista de fuentes vacía. El resultado de cada escenario es fijo. Las fuentes son ficticias y usan dominios de ejemplo. La demo arranca sin credenciales ni base de datos.
+`POST /api/fact-check` acepta una afirmación y un parámetro de consulta opcional `scenario`. Sin escenario, recorre el corpus local simulado: genera un vector determinista, recupera coincidencias y devuelve sí solo para una afirmación textual idéntica; en el resto devuelve neutral. La ingestión local acepta lotes de hechos con ID estable, texto y URL. El sandbox en la raíz de la API permite importar y consultar el corpus sin credenciales. El resultado de cada escenario es fijo. Las fuentes son ficticias y usan dominios de ejemplo. La demo arranca sin credenciales ni base de datos.
 
 ## Primer flujo funcional
 

@@ -48,6 +48,15 @@ test('evidence + decision returns verdict and sources', async () => {
   assert.deepEqual(out.result.sources, [{ statement: fact.statement, sourceUrl: fact.sourceUrl }]);
 });
 
+test('retrieved facts that do not address the claim are not cited', async () => {
+  const { deps: d } = deps({
+    decide: async () => ({ relevance: 0.2, choice: 'neutral', confidence: 0.9 }),
+  });
+  const out = await createFactChecker(d)('An unrelated claim');
+  assert.deepEqual(out.result, { verdict: 'neutral', sources: [] });
+  assert.equal(out.meta.reason, 'off_topic');
+});
+
 test('cache dedupes repeated claims', async () => {
   const { calls, deps: d } = deps({ cacheTtlMs: 60_000 });
   const check = createFactChecker(d);

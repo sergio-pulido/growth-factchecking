@@ -28,7 +28,13 @@ export async function embedMany(client: OpenAI, config: LiveConfig, texts: strin
     input: texts,
     dimensions: config.embeddingDimensions,
   });
-  return response.data.sort((a, b) => a.index - b.index).map((d) => d.embedding);
+  const vectors = [...response.data].sort((a, b) => a.index - b.index);
+  if (vectors.length !== texts.length || vectors.some(({ index, embedding }, position) =>
+    index !== position || embedding.length !== config.embeddingDimensions || !embedding.every(Number.isFinite)
+  )) {
+    throw new Error('OpenAI returned invalid embeddings for the corpus batch.');
+  }
+  return vectors.map(({ embedding }) => embedding);
 }
 
 const JUDGE_INSTRUCTIONS =
