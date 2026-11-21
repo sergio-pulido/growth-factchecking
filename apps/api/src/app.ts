@@ -4,6 +4,7 @@ import Fastify from 'fastify';
 import { mockResults } from './mock-facts.js';
 import { createPitchDecider } from './meet/decisions.js';
 import { registerMeetDemo } from './meet/route.js';
+import { registerLiveFactCheck } from './live/route.js';
 
 export function createApp(logger = true) {
   const app = Fastify({ logger, ajv: { customOptions: { coerceTypes: false } } });
@@ -41,6 +42,7 @@ export function createApp(logger = true) {
 
   const apiKey = process.env.OPENAI_API_KEY?.trim();
   registerMeetDemo(app, apiKey ? createPitchDecider(apiKey) : undefined);
+  registerLiveFactCheck(app);
 
   return app;
 }
