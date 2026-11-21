@@ -85,7 +85,8 @@ function buildServices(app: FastifyInstance): ConversationServices | null {
   const live = loadLiveConfig();
   if (!live) return null;
   const config = loadConversationConfig();
-  const { pool, check } = createLiveServices(live);
+  // Own client for call fact-checks: longer timeout and one retry (see ConversationConfig.checkTimeoutMs).
+  const { pool, check } = createLiveServices({ ...live, openaiTimeoutMs: config.checkTimeoutMs, openaiMaxRetries: config.checkRetries });
   app.addHook('onClose', async () => pool.end());
   // Separate client: the fact-check client uses a short real-time timeout that extraction can exceed.
   const client = createOpenAIClient({ ...live, openaiTimeoutMs: config.extractionTimeoutMs });

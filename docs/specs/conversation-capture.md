@@ -2,7 +2,8 @@
 
 Status: API side **implemented** (tests 30/30) and agent-run on a real stack on 2026-11-21, see
 [docs/evidence/2026-11-21-conversation-capture.md](../evidence/2026-11-21-conversation-capture.md).
-Extension capture: Meet captions in progress (GF-03, `docs/specs/meet-captions-capture.md`).
+Extension capture: implemented for Meet captions (GF-03 engine, `docs/specs/meet-captions-capture.md`), Zoom web
+and Teams web captions and tab audio, all behind the call overlay ([call-overlay.md](call-overlay.md)).
 
 ## Goal
 
@@ -80,6 +81,12 @@ and posts only the final transcript text back. The API key stays on the server.
   adding information. A relayed claim ("the slide says X") is extracted as X. References to unknown utterances
   are dropped; at most 20 claims per batch.
 
+## Fact-checks during a call
+
+Each extracted claim goes through the live pipeline with its own OpenAI client: `CLAIM_CHECK_TIMEOUT_MS` (default
+5000) and `CLAIM_CHECK_RETRIES` (default 1), up to `CLAIM_CHECK_CONCURRENCY` (4) at once. The interactive route
+`/api/fact-check/live` keeps 2.5 s and no retries. Evidence: `docs/evidence/2026-11-21-call-check-timeouts.md`.
+
 ## Data (`db/migrations/002_conversations.sql`)
 
 `conversations` (uuid) → `utterances` (unique `conversation_id, client_id`) → `claims` (verdict, sources jsonb,
@@ -98,7 +105,7 @@ Meeting bots, speaker identification from audio, a hosted deployment, auth, rete
 
 ## Open items
 
-1. Capture in the extension. Meet captions: first milestone in `docs/specs/meet-captions-capture.md` (GF-03).
-   Still open: chat and page-text readers, other platforms, tab-audio fallback.
-2. Retention policy and an in-extension "delete this conversation" control.
+1. Capture in the extension: done for captions and tab audio ([call-overlay.md](call-overlay.md)); chat and page-text
+   readers remain.
+2. Retention policy. The call overlay has a "delete this conversation" control.
 3. Evaluate extraction on varied real transcripts (Spanish and English, cross-talk, numbers).

@@ -7,7 +7,7 @@ import { VERDICT_CHOICES } from './verdict.js';
 
 export function createOpenAIClient(config: LiveConfig): OpenAI {
   // Real-time path: fail fast. A retry would blow the latency budget; the extension can re-ask.
-  return new OpenAI({ apiKey: config.openaiApiKey, timeout: config.openaiTimeoutMs, maxRetries: 0 });
+  return new OpenAI({ apiKey: config.openaiApiKey, timeout: config.openaiTimeoutMs, maxRetries: config.openaiMaxRetries ?? 0 });
 }
 
 export function createEmbedder(client: OpenAI, config: LiveConfig): Embedder {

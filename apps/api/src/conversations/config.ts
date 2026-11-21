@@ -7,6 +7,13 @@ export type ConversationConfig = {
   extraction: ExtractorConfig;
   /** Timeout for extraction and token calls. Longer than the fact-check timeout: extraction generates text. */
   extractionTimeoutMs: number;
+  /**
+   * Fact-checks of claims found in a call. The batch is not a keystroke-level interaction, so each OpenAI call gets
+   * more room than the interactive route (2.5 s, no retries): a rare upstream spike no longer leaves a claim unchecked.
+   * Worst case per batch stays under the extension's 45 s request timeout.
+   */
+  checkTimeoutMs: number;
+  checkRetries: number;
   /** Earlier utterances sent to extraction to resolve references. */
   contextSize: number;
   checkConcurrency: number;
@@ -41,6 +48,8 @@ export function loadConversationConfig(): ConversationConfig {
       ...(reasoningEffort ? { reasoningEffort } : {}),
     },
     extractionTimeoutMs: int('CLAIM_EXTRACTION_TIMEOUT_MS', 10_000, 1, 120_000),
+    checkTimeoutMs: int('CLAIM_CHECK_TIMEOUT_MS', 5000, 100, 60_000),
+    checkRetries: int('CLAIM_CHECK_RETRIES', 1, 0, 3),
     contextSize: int('CLAIM_CONTEXT_UTTERANCES', 6, 0, 50),
     checkConcurrency: int('CLAIM_CHECK_CONCURRENCY', 4, 1, 16),
     transcriptionModel: process.env.TRANSCRIPTION_MODEL || 'gpt-live-transcribe',
