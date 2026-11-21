@@ -19,7 +19,7 @@ that skew source selection). Corpus and pitch from `codex/pitch-evaluation`: `da
 
 ```bash
 export DATABASE_URL=postgres://factcheck:factcheck@127.0.0.1:55432/relevance_eval
-node apps/api/dist/scripts/migrate.js        # 001–004 applied
+node apps/api/dist/scripts/migrate.js        # 001–004 applied (this migration was 004 then; renumbered 005 after main took 004)
 node apps/api/dist/scripts/seed.js facts.json  # Imported 5 facts
 ARGUMENT_RELEVANCE_ENABLED=true  …  # runs 1–2;  flag unset … # runs 3–4
 ```

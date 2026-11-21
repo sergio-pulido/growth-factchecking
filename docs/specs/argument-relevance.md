@@ -41,12 +41,12 @@ argumentRelevance?: {
 
 ```bash
 cd /Users/nectios/workspace-os/hackathons/codex-devday-exchange/growth-factcheking
-npm run db:migrate                       # adds nullable claims.argument_relevance (migration 004)
+npm run db:migrate                       # adds nullable claims.argument_relevance (migration 005)
 ARGUMENT_RELEVANCE_ENABLED=true npm run start:live --workspace @growth-factcheking/api
 ```
 
 With the flag off (default) no query reads or writes `claims.argument_relevance`, no extra OpenAI call is made, and
-the core works even where migration 004 was not applied. Unit tests cover this.
+the core works even where migration 005 was not applied. Unit tests cover this.
 
 ## Limits (from Codex's pilot and our runs)
 

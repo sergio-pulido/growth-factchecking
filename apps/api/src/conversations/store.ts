@@ -52,7 +52,7 @@ const toClaim = (r: ClaimRow): ClaimCheck => ({
 export type StoreOptions = {
   /**
    * Optional extra. When false (default) no query touches claims.argument_relevance, so the core runs unchanged
-   * and does not need migration 004.
+   * and does not need migration 005.
    */
   argumentRelevance?: boolean;
 };
