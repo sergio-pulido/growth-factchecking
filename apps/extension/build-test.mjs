@@ -12,6 +12,7 @@ await build({
     'meet-source': 'src/call/meet-source.ts',
     'http-transport': 'src/call/http-transport.ts',
     'call-relay': 'src/call-relay.ts',
+    alerts: 'src/call/alerts.ts',
   },
   bundle: true,
   format: 'esm',
