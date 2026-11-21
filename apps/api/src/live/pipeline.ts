@@ -62,10 +62,11 @@ export function createFactChecker(deps: PipelineDeps): FactChecker {
       const outcome = await deps.decide(claim, evidence);
       const t3 = now();
       const mapped = mapVerdict(outcome, deps.thresholds);
+      const source = mapped.reason === 'decided' ? evidence.find(({ id }) => id === outcome.sourceId) : undefined;
       value = {
         result: {
           verdict: mapped.verdict,
-          sources: mapped.reason === 'off_topic' ? [] : evidence.map(({ statement, sourceUrl }) => ({ statement, sourceUrl })),
+          sources: source ? [{ statement: source.statement, sourceUrl: source.sourceUrl }] : [],
         },
         meta: {
           verdict: mapped.verdict,

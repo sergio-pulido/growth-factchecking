@@ -11,7 +11,7 @@ export type LiveConfig = {
   topK: number;
   /** Cosine similarity floor (0..1). Facts below it are not evidence. */
   minSimilarity: number;
-  /** Below this probability the evidence is judged off-topic and the verdict is neutral. */
+  /** Minimum confidence in the selected source. Lower confidence yields neutral. */
   minRelevance: number;
   /** Below this choice confidence, "yes"/"no" are softened to "probably_*". */
   minConfidence: number;

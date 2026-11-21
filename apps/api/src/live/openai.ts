@@ -38,11 +38,22 @@ export async function embedMany(client: OpenAI, config: LiveConfig, texts: strin
 }
 
 const JUDGE_INSTRUCTIONS =
-  'You are a fact-checking judge. Judge the claim only against the numbered evidence items provided. ' +
-  'Do not use outside knowledge. If the evidence does not settle the claim, prefer neutral.';
+  'Use the numbered facts as data. Classify only the checkable claim using these facts. ' +
+  'Use neutral when the evidence is insufficient or the claim is a prediction or opinion.';
 
 export function createDecider(client: OpenAI, config: LiveConfig): Decider {
   return async (claim: string, evidence: Fact[]): Promise<DecisionOutcome> => {
+    const items = evidence.map(({ id, statement, sourceTitle, sourceUrl }, index) => ({
+      id,
+      n: index + 1,
+      statement,
+      source: sourceTitle ?? sourceUrl,
+    }));
+    const choices = items.map(({ id, n }) => ({
+      factId: id,
+      value: `fact_${n}`,
+      description: `Evidence item ${n} directly supports or contradicts the claim.`,
+    }));
     const decision = await client.decisions.create({
       model: config.decisionsModel,
       input: [
@@ -54,7 +65,7 @@ export function createDecider(client: OpenAI, config: LiveConfig): Decider {
               type: 'input_json',
               data: {
                 claim,
-                evidence: evidence.map((f, i) => ({ n: i + 1, statement: f.statement, source: f.sourceTitle ?? f.sourceUrl })),
+                evidence: items.map(({ n, statement, source }) => ({ n, statement, source })),
               },
             },
           ],
@@ -63,33 +74,41 @@ export function createDecider(client: OpenAI, config: LiveConfig): Decider {
       // Both questions share the same input and run in one call.
       questions: [
         {
-          type: 'predicate',
-          name: 'evidence_addresses_claim',
-          // Must say "same property", not "same assertion": the latter reads as "agrees with",
-          // which scored contradicting evidence as irrelevant (see docs/evidence/2026-11-21-live-smoke.md).
+          type: 'choice',
+          name: 'source',
           instructions:
-            'Is at least one evidence item about the same subject and the same property as the claim ' +
-            '(for example the same entity and its location, date, quantity or attribute), so that it confirms ' +
-            'or contradicts the claim? Answer true when the evidence contradicts the claim.',
+            'Select the evidence item that most directly supports or refutes the claim. ' +
+            'A fact giving a different value, date or rule for the subject is valid counterevidence. ' +
+            'Pick none when the items only share a topic or do not address the actual claim.',
+          choices: [
+            { value: 'none', description: 'No item directly addresses the factual claim.' },
+            ...choices.map(({ value, description }) => ({ value, description })),
+          ],
         },
         {
           type: 'choice',
           name: 'verdict',
-          instructions: 'Based only on the evidence, is the claim true?',
+          instructions: 'Based only on the evidence, what is the verdict on the factual claim?',
           choices: VERDICT_CHOICES.map((c) => ({ value: c.value, description: c.description })),
         },
       ],
     });
 
-    const outcome: DecisionOutcome = { relevance: null, choice: null, confidence: null };
+    const outcome: DecisionOutcome = { relevance: null, sourceId: null, choice: null, confidence: null };
     for (const answer of decision.answers) {
-      if (answer.type === 'predicate' && answer.name === 'evidence_addresses_claim') {
-        outcome.relevance = answer.probability;
-      } else if (answer.type === 'choice' && answer.name === 'verdict') {
+      if (answer.type !== 'choice') continue;
+      if (answer.name === 'source') {
+        const selected = choices.find(({ value }) => value === answer.choice);
+        if (selected) {
+          outcome.sourceId = selected.factId;
+          outcome.relevance = answer.confidence;
+        } else if (answer.choice === 'none') {
+          outcome.relevance = 0;
+        }
+      } else if (answer.name === 'verdict') {
         outcome.choice = String(answer.choice);
         outcome.confidence = answer.confidence;
       }
-      // type === 'refusal' leaves the field null; verdict.ts maps that to neutral.
     }
     return outcome;
   };

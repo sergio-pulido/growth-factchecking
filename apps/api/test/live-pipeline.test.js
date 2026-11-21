@@ -15,7 +15,7 @@ function deps(overrides = {}) {
     deps: {
       embed: async () => { calls.embed++; return [0.1, 0.2]; },
       search: async () => { calls.search++; return [fact]; },
-      decide: async () => { calls.decide++; return { relevance: 0.9, choice: 'yes', confidence: 0.95 }; },
+      decide: async () => { calls.decide++; return { relevance: 0.9, sourceId: fact.id, choice: 'yes', confidence: 0.95 }; },
       topK: 5,
       thresholds,
       cacheTtlMs: 0,
@@ -41,8 +41,9 @@ test('no evidence returns neutral without calling Decisions', async () => {
   assert.equal(calls.decide, 0);
 });
 
-test('evidence + decision returns verdict and sources', async () => {
-  const { deps: d } = deps();
+test('evidence + decision returns the verdict and only the selected evidence', async () => {
+  const otherwiseRelevant = { ...fact, id: 'f2', statement: 'Water freezes at 0 C.' };
+  const { deps: d } = deps({ search: async () => [otherwiseRelevant, fact] });
   const out = await createFactChecker(d)('Water boils at 100 degrees');
   assert.equal(out.result.verdict, 'yes');
   assert.deepEqual(out.result.sources, [{ statement: fact.statement, sourceUrl: fact.sourceUrl }]);
@@ -50,7 +51,7 @@ test('evidence + decision returns verdict and sources', async () => {
 
 test('retrieved facts that do not address the claim are not cited', async () => {
   const { deps: d } = deps({
-    decide: async () => ({ relevance: 0.2, choice: 'neutral', confidence: 0.9 }),
+    decide: async () => ({ relevance: 0.2, sourceId: null, choice: 'neutral', confidence: 0.9 }),
   });
   const out = await createFactChecker(d)('An unrelated claim');
   assert.deepEqual(out.result, { verdict: 'neutral', sources: [] });

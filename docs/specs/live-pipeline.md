@@ -11,11 +11,11 @@ POST /api/fact-check/live { claim }
   3. pgvector HNSW cosine top-k (FACT_TOP_K=5)         -> drop facts below FACT_MIN_SIMILARITY
   4. no facts left                                     -> neutral, sources [] (no Decisions call)
   5. OpenAI Decisions (gpt-6-luna), ONE call, two questions on shared input:
-       predicate evidence_addresses_claim -> relevance probability
+       choice source                      -> strongest numbered evidence item or none
        choice    verdict                  -> yes | probably_yes | neutral | probably_no | no (+ confidence)
   6. mapVerdict (conservative)
        refusal / unknown value         -> neutral
-       relevance < VERDICT_MIN_RELEVANCE -> neutral with no sources (off_topic)
+       no direct source or low source confidence -> neutral with no sources (off_topic)
        yes/no with confidence < VERDICT_MIN_CONFIDENCE -> probably_yes / probably_no
   7. response = shared FactCheckResult { verdict, sources[] }
      headers: X-Fact-Check-Mode: live, Server-Timing: embed/search/decide/total
@@ -27,7 +27,7 @@ The mock route `POST /api/fact-check?scenario=...` stays untouched for the UX de
 
 - **Decisions over Responses**: closed answer set, typed answer with probabilities, ~10x lower latency per OpenAI. Choice values are the shared verdict ids, so no translation layer.
 - **Evidence as `input_json`**: claim + numbered evidence passed as structured data, judge instructions as a developer message.
-- **Relevance predicate**: vector similarity alone cannot tell "same topic" from "same assertion". The predicate gates the verdict so off-topic evidence never yields a confident yes/no.
+- **Evidence selection**: Decisions picks the strongest fact that supports or challenges the claim, or `none` if no item addresses it. The API returns only the selected source when its selection confidence reaches `VERDICT_MIN_RELEVANCE`.
 - **No retries, short timeout** (`OPENAI_TIMEOUT_MS=2500`): real-time UI; a failure returns 503 and the extension can re-ask.
 - **Cache**: Meet captions and X timelines repeat claims; normalized-claim cache avoids repeated paid calls.
 

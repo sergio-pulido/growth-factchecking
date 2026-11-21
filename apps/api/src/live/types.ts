@@ -12,8 +12,9 @@ export type Fact = {
 
 /** Raw, typed outcome of one Decisions call. Mapping to a verdict lives in verdict.ts. */
 export type DecisionOutcome = {
-  /** Probability that the evidence addresses the claim. null if refused. */
+  /** Confidence in the selected source, zero for no direct evidence, null if refused. */
   relevance: number | null;
+  sourceId: string | null;
   /** Value chosen by the model. null if refused. */
   choice: string | null;
   /** Choice confidence. null if refused. */
