@@ -1,12 +1,12 @@
 {
   "manifest_version": 3,
   "name": "Growth FactChecking",
-  "description": "Fact-checking panel for the active tab.",
-  "version": "0.3.4",
+  "description": "Live fact-checking for what is said on Google Meet, Zoom, Teams or any tab with audio.",
+  "version": "0.4.0",
   "minimum_chrome_version": "120",
   "action": { "default_title": "Open Growth FactChecking" },
   "background": { "service_worker": "background.js" },
-  "permissions": ["activeTab", "scripting", "storage"],
+  "permissions": ["activeTab", "scripting", "storage", "tabCapture", "offscreen"],
   "host_permissions": ["http://127.0.0.1/*"],
   "content_scripts": [
     {
@@ -15,8 +15,15 @@
       "run_at": "document_idle"
     },
     {
-      "matches": ["https://meet.google.com/*"],
-      "js": ["meet-capture.js"],
+      "matches": [
+        "https://meet.google.com/*",
+        "https://app.zoom.us/*",
+        "https://*.zoom.us/wc/*",
+        "https://teams.microsoft.com/*",
+        "https://teams.live.com/*",
+        "https://teams.cloud.microsoft/*"
+      ],
+      "js": ["call-content.js"],
       "run_at": "document_idle"
     }
   ]

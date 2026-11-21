@@ -18,9 +18,9 @@ La integración prevista usará Embeddings y PostgreSQL con pgvector para recupe
 
 La API devuelve un resultado fijo por escenario mediante el mismo formato previsto para el flujo funcional. El panel identifica los datos simulados y permite reproducir cada caso desde un selector. Sin escenario, la ruta consulta el corpus local.
 
-## 005 · Contraste por turno de Meet
+## 005 · Contraste por turno de Meet (retirada)
 
-La extensión y la API comparten el guion ficticio. La extensión envía el ID del turno y el servidor aplica reglas de extracción a las frases del emprendedor. La demo agrupa los casos con evidencia de un turno en una sola solicitud a Decisions. El motor simulado permite reproducir el mismo flujo sin una clave.
+Retirada el 21-11-2026: la simulación de Meet se ha eliminado y las llamadas reales usan el panel de llamadas (decisión 008).
 
 ## 006 · Pila local completamente simulada
 
@@ -29,3 +29,7 @@ Primero se valida el flujo completo sin servicios externos. Cada instancia de la
 ## 007 · Fuente de verificación elegida en Chrome
 
 La extensión guarda la preferencia en el almacenamiento local de Chrome. **Simulado** es el valor inicial. **Real** requiere texto seleccionado y el botón **Verificar** para enviarlo al backend. El panel comprueba el modo indicado por la API antes de presentar el resultado.
+
+## 008 · Panel de llamadas: subtítulos primero, audio de la pestaña como alternativa
+
+El mismo panel funciona sobre cualquier llamada. En Meet (con el motor de subtítulos de GF-03), Zoom web y Teams web lee los subtítulos de la aplicación, que ya traen el nombre de quien habla y no cuestan transcripción. En cualquier otra pestaña captura su audio con `tabCapture`, lo envía desde un documento offscreen a la transcripción en directo de OpenAI con un permiso temporal emitido por la API local, y la clave de OpenAI nunca sale del servidor. No hay bots que se unan a la llamada ni simulaciones. Especificación: [call-overlay.md](specs/call-overlay.md).

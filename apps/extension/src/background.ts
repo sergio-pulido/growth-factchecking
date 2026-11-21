@@ -1,24 +1,35 @@
-import { CLAIM_MAX_LENGTH, DEMO_SCENARIOS, FACT_CHECK_PATH, MEET_DEMO_PATH, MEET_JUDGES, MEET_TRANSCRIPT, VERDICTS } from '@growth-factcheking/shared';
-import type { FactCheckResult, MeetCheckResult } from '@growth-factcheking/shared';
-import type { DemoPostsResponse, FactCheckMessage, FactCheckResponse, MeetDemoRequest, MeetDemoResponse } from './messages.js';
-import { registerConversationBridge, showMeetPanel } from './meet/conversation-bridge.js';
+import { CLAIM_MAX_LENGTH, DEMO_SCENARIOS, FACT_CHECK_PATH } from '@growth-factcheking/shared';
+import { isFactCheckResult } from './call/http-transport.js';
+import { handleOffscreenEvent, isOffscreenEvent, releaseTab } from './audio-capture.js';
+import { isCallRequest, relayCallRequest } from './call-relay.js';
+import type { DemoPostsResponse, FactCheckMessage, FactCheckResponse, TabEvent } from './messages.js';
 
-registerConversationBridge();
-
-chrome.action.onClicked.addListener(async ({ id, url }) => {
+// The toolbar icon opens the FactCheck call overlay on the current tab: captions mode on Meet, Zoom web and
+// Teams web, tab-audio mode anywhere else. Clicking it also grants the tab capture permission audio mode needs.
+chrome.action.onClicked.addListener(async ({ id }) => {
   if (id === undefined) return;
-
+  const toggle: TabEvent = { kind: 'call-toggle' };
   try {
-    if (url?.startsWith('https://meet.google.com/')) {
-      await showMeetPanel(id);
-      return;
-    }
-    await chrome.scripting.executeScript({ target: { tabId: id }, files: ['overlay.js'] });
+    await chrome.tabs.sendMessage(id, toggle);
+    return;
+  } catch {
+    // No overlay in this tab yet.
+  }
+  try {
+    await chrome.scripting.executeScript({ target: { tabId: id }, files: ['call-content.js'] });
+    await chrome.tabs.sendMessage(id, toggle);
     await chrome.action.setBadgeText({ tabId: id, text: '' });
   } catch (error) {
-    console.warn('Could not open FactChecking on this tab.', error);
+    console.warn('Could not open FactCheck on this tab.', error);
     await chrome.action.setBadgeText({ tabId: id, text: '×' });
   }
+});
+
+chrome.tabs.onRemoved.addListener(releaseTab);
+// A page load in the captured tab (navigation or reload, which carries no url change) ends the overlay:
+// stop listening to it too. In-page navigation does not fire 'loading'.
+chrome.tabs.onUpdated.addListener((tabId, change) => {
+  if (change.status === 'loading') releaseTab(tabId);
 });
 
 function isFactCheckMessage(message: unknown): message is FactCheckMessage {
@@ -31,26 +42,6 @@ function isFactCheckMessage(message: unknown): message is FactCheckMessage {
     && 'scenario' in message && DEMO_SCENARIOS.some((scenario) => scenario === message.scenario));
 }
 
-function isMeetDemoRequest(message: unknown): message is MeetDemoRequest {
-  return typeof message === 'object' && message !== null
-    && 'kind' in message && message.kind === 'meet-check'
-    && 'turnId' in message && MEET_TRANSCRIPT.some(({ id }) => id === message.turnId)
-    && 'mode' in message && MEET_JUDGES.some((mode) => mode === message.mode);
-}
-
-function isFactCheckResult(value: unknown): value is FactCheckResult {
-  return typeof value === 'object' && value !== null
-    && 'verdict' in value && VERDICTS.some((verdict) => verdict === value.verdict)
-    && 'sources' in value && Array.isArray(value.sources)
-    && value.sources.every((source: unknown) =>
-      typeof source === 'object' && source !== null
-      && 'statement' in source && typeof source.statement === 'string'
-      && (!('statementEn' in source) || typeof source.statementEn === 'string')
-      && 'sourceUrl' in source && typeof source.sourceUrl === 'string'
-      && /^https?:\/\//i.test(source.sourceUrl) && URL.canParse(source.sourceUrl),
-    );
-}
-
 const apiOrigin = 'http://127.0.0.1:3000';
 
 function postJson(url: URL, body: object, timeoutMs: number) {
@@ -61,30 +52,6 @@ function postJson(url: URL, body: object, timeoutMs: number) {
     redirect: 'error',
     signal: AbortSignal.timeout(timeoutMs),
   });
-}
-
-async function checkMeetDemo({ turnId, mode }: MeetDemoRequest): Promise<MeetDemoResponse> {
-  const response = await postJson(new URL(MEET_DEMO_PATH, apiOrigin), { turnId, mode }, 10_000);
-  if (response.status === 404) {
-    return { ok: false, message: 'Restart the local API with npm start to load the Meet demo.' };
-  }
-  const data: unknown = await response.json();
-  if (!response.ok) {
-    const message = typeof data === 'object' && data !== null && 'message' in data
-      && typeof data.message === 'string' ? data.message : 'Checking this turn failed.';
-    return { ok: false, message };
-  }
-  if (!isMeetCheckResult(data)) {
-    return { ok: false, message: 'The local API returned an invalid turn.' };
-  }
-  return { ok: true, result: data };
-}
-
-function isMeetCheckResult(value: unknown): value is MeetCheckResult {
-  return typeof value === 'object' && value !== null && 'checks' in value
-    && Array.isArray(value.checks) && value.checks.every((check: unknown) =>
-      isFactCheckResult(check) && 'claim' in check && typeof check.claim === 'string',
-    );
 }
 
 async function checkClaim(request: FactCheckMessage): Promise<FactCheckResponse> {
@@ -131,23 +98,22 @@ async function getDemoPosts(): Promise<DemoPostsResponse> {
 }
 
 chrome.runtime.onMessage.addListener((message: unknown, sender, respond) => {
-  if (sender.id !== chrome.runtime.id || !sender.tab) return;
+  if (isOffscreenEvent(message, sender)) return handleOffscreenEvent(message, respond);
+  if (sender.id !== chrome.runtime.id || sender.tab?.id === undefined) return;
+  const tabId = sender.tab.id;
   if (sender.url?.startsWith('https://x.com/') && typeof message === 'object' && message !== null
     && 'kind' in message && message.kind === 'x-demo-posts') {
     void getDemoPosts().then(respond);
     return true;
   }
 
-  let request: Promise<FactCheckResponse | MeetDemoResponse>;
-  if (isMeetDemoRequest(message)) {
-    request = checkMeetDemo(message);
-  } else if (isFactCheckMessage(message)) {
-    request = checkClaim(message);
-  } else {
-    return;
+  if (isCallRequest(message, sender.url)) {
+    void relayCallRequest(message, tabId).then(respond);
+    return true;
   }
+  if (!isFactCheckMessage(message)) return;
 
-  void request.then(respond, (error: unknown) => {
+  checkClaim(message).then(respond, (error: unknown) => {
     console.warn('Request to the local API failed.', error);
     respond({ ok: false, message: 'Could not complete the request. Check that the local API is running (npm start).' } satisfies FactCheckResponse);
   });

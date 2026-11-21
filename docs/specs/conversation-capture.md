@@ -2,7 +2,8 @@
 
 Status: API side **implemented** (tests 30/30) and agent-run on a real stack on 2026-11-21, see
 [docs/evidence/2026-11-21-conversation-capture.md](../evidence/2026-11-21-conversation-capture.md).
-Extension capture: Meet captions in progress (GF-03, `docs/specs/meet-captions-capture.md`).
+Extension capture: implemented for Meet captions (GF-03 engine, `docs/specs/meet-captions-capture.md`), Zoom web
+and Teams web captions and tab audio, all behind the call overlay ([call-overlay.md](call-overlay.md)).
 
 ## Goal
 
@@ -98,7 +99,7 @@ Meeting bots, speaker identification from audio, a hosted deployment, auth, rete
 
 ## Open items
 
-1. Capture in the extension. Meet captions: first milestone in `docs/specs/meet-captions-capture.md` (GF-03).
-   Still open: chat and page-text readers, other platforms, tab-audio fallback.
-2. Retention policy and an in-extension "delete this conversation" control.
+1. Capture in the extension: done for captions and tab audio ([call-overlay.md](call-overlay.md)); chat and page-text
+   readers remain.
+2. Retention policy. The call overlay has a "delete this conversation" control.
 3. Evaluate extraction on varied real transcripts (Spanish and English, cross-talk, numbers).
