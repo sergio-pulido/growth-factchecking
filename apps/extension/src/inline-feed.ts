@@ -73,7 +73,7 @@ function readPost(article: HTMLElement) {
 }
 
 // Tailwind CSS v4 palette: a 500 tint behind the text, underlined in the 600 shade.
-const highlightStyles = `
+export const highlightStyles = `
 ::highlight(growth-factchecking-ok) { background-color: oklch(72.3% 0.219 149.579 / 18%); text-decoration: underline 2px oklch(62.7% 0.194 149.214); }
 ::highlight(growth-factchecking-warn) { background-color: oklch(76.9% 0.188 70.08 / 20%); text-decoration: underline 2px oklch(66.6% 0.179 58.318); }
 ::highlight(growth-factchecking-bad) { background-color: oklch(63.7% 0.237 25.331 / 16%); text-decoration: underline 2px oklch(57.7% 0.245 27.325); }
