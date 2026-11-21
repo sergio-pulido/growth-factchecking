@@ -12,7 +12,7 @@ Las pruebas automatizadas verificaron que se envían las dos pistas de Meet, que
 
 La versión 0.5.1 distingue el permiso del micrófono del acceso al audio de la pestaña. Si Chrome rechaza la captura de la pestaña, Meet sigue con el micrófono y el panel indica el modo activo. La pantalla de permiso permite volver a la llamada una vez concedido el acceso.
 
-La versión 0.5.2 muestra el texto provisional de OpenAI en **Transcript** y distingue cuándo escucha, transcribe o busca y coteja afirmaciones. Las frases completas se envían tras una espera de agrupación de hasta 250 ms si la API está libre. Las pruebas simulan incrementos de texto y comprueban el envío, las pausas y los reintentos. Falta medir en Chrome la latencia de voz a veredicto con dos personas, incluida una llamada en segundo plano.
+La versión 0.5.2 muestra el texto provisional de OpenAI en **Transcript** y distingue cuándo escucha, transcribe o busca y coteja afirmaciones. Las frases completas se envían tras una espera de agrupación de hasta 250 ms si la API está libre. En una prueba con audio sintético, OpenAI y la API local, los dos veredictos con fuentes llegaron en 3,4–3,5 s desde la última palabra, frente a 5,4–5,5 s con la versión 0.5.1. Falta medir el mismo recorrido en Chrome con dos personas, incluida una llamada en segundo plano. [Comparación de latencia](evidence/2026-11-21-meet-verdict-latency.md)
 
 ## Próximos hitos
 
