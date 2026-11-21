@@ -72,6 +72,10 @@ The extension also checks approved news pages on load, with no button to press. 
 
 Most cards return **Supported** or **Likely supported**. The elDiario.es headline on the experts' 4.9% proposal returns **Verified**: the corpus records both the committee's recommendation and the 5.3% the Government approved later. On papeleta.es, Sánchez's claim that irregular migration is "39% below that peak" returns **Likely contradicted** against Interior's +39.4% for 2026, and two other debate quotes return **Inconclusive**.
 
+## YouTube video
+
+[Subida del SMI a 1.286 € y sueldos públicos un 5 % en 2027](https://www.youtube.com/watch?v=VhiCa_4wmsU) (Castilla y León Televisión, about a minute). Open it as a `watch` page, not from the Shorts feed, and press play: the FactCheck pill turns captions on and checks what is said without a toolbar click. The corpus has the 2027 minimum wage (€1,286, 5.3%) and the public-sector pay rise, which Royal Decree-law 37/2026 caps at 4.5%. The title's "5 %" is a rounding the checker may flag.
+
 ## Restore the demo corpus
 
 The pgvector snapshot contains the public-source facts and their existing 1,536-dimensional `text-embedding-3-small` vectors. It upserts by fact ID and requires no embedding API calls during import. Live claims still need a project OpenAI key for query embeddings and Decisions.
