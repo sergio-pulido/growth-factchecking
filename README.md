@@ -68,9 +68,41 @@ Open the **Politics** timeline, X **Bookmarks** with demo posts saved, or an ind
 
 La [demo local de publicaciones](http://127.0.0.1:3000/x-demo) usa el mismo renderizador y la API real sin instalar la extensión. Para cargar los hechos que necesita, ejecuta `npm run seed -- data/demo/x-politics.json` después de migrar la base de datos. Reinicia la API para limpiar los veredictos guardados. To restore the public-source corpus with its existing embeddings, follow the [snapshot instructions](docs/demo-x-posts.md#restore-the-demo-corpus). To regenerate only the real X demo facts, run `npm run seed -- data/demo/x-sourced-facts.json`.
 
+## Overlay design and interview demo (Michella)
+
+Design and UI contribution for the browser extension, built with Tomas's prototype as reference.
+
+**Goal.** Show fact checks next to the content a person is already watching or reading, in a panel that stays out of the way: each claim with a verdict, a short explanation and links to its sources, without leaving the page.
+
+**Panel design** (`apps/extension/src/overlay.css`, `overlay.ts`)
+
+- Floating glass panel: dark translucent background with blur, Helvetica, rounded controls.
+- Resizable from the bottom-right corner, movable by dragging the header, and can be minimised to its header and restored.
+- A soft moving glow around the border only while a check is running; no glow when idle.
+- English UI text across the panel, background messages and verdict labels: True, Likely true, Neutral, Likely false, False.
+- Source links shown at the end of every answer, with the domain of each source.
+
+**Features from Tomas's prototype** (`apps/extension/src/interview-demo.ts`)
+
+- Summary line (checked, in progress, needs attention) with a bar showing the mix of verdicts.
+- Tabs: All, Needs attention (False and Likely false) and Skipped.
+- Sentences that are not checkable facts (questions, opinions, personal beliefs) are listed under Skipped with the reason, instead of receiving a verdict.
+- Each claim card: 5-step verdict scale, explanation, suggested follow-up question with Copy, and sources.
+- A "Not checked" state with Retry when sources cannot be reached.
+- The screen edge briefly tints with the verdict colour when a result arrives.
+- When the panel is minimised, new verdicts appear as small cards; clicking one reopens the panel.
+- Select text on the page to show a Check button for that text.
+
+**Demo scenario: video interview.** On YouTube (and Google Meet) the panel opens the offline **interview demo**: press **Play interview demo**, then **Play interview**. It replays excerpts of a long-form video interview (The Wild Project, Jordi Wild with Pedro Sánchez, November 2026) and checks the statements made in it. It is one example scenario; the same flow applies to any speaker or topic.
+
+- Runs entirely in the extension: no API, no network, no OpenAI key.
+- Statements are paraphrased from press coverage of the interview, and timestamps are approximate.
+- Verdicts and sources are **sample results for the demo**, not published fact checks. They describe whether the available sources support a statement; they do not evaluate the speaker, a party or a policy.
+- Opinions and personal beliefs are skipped rather than rated.
+
 ## Simulación de Google Meet
 
-En el panel de la extensión, pulsa **Simular Google Meet** y **Reproducir**. Clara, una inversora, pide a Mateo cifras de su empresa ficticia. El panel reproduce seis intervenciones y muestra cuatro afirmaciones verificables del emprendedor, con sus veredictos y fuentes de ejemplo. Las reglas de extracción están ajustadas a esta transcripción.
+El código de esta simulación sigue en `apps/extension/src/meet-demo.ts`; el panel ahora abre la demo de entrevista descrita arriba. En la versión anterior del panel se pulsaba **Simular Google Meet** y **Reproducir**. Clara, una inversora, pide a Mateo cifras de su empresa ficticia. El panel reproduce seis intervenciones y muestra cuatro afirmaciones verificables del emprendedor, con sus veredictos y fuentes de ejemplo. Las reglas de extracción están ajustadas a esta transcripción.
 
 El modo **Simulado** sirve para trabajar con resultados reproducibles. Para usar **OpenAI Decisions**, guarda `OPENAI_API_KEY` en el archivo `.env` de la raíz, reinicia la API con `npm start` y elige ese motor en el panel.
 
