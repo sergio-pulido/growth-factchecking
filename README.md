@@ -62,6 +62,12 @@ Mock embeddings are normalized 256-dimensional hashed word counts with a fixed s
 
 `npm run lint` and `npm run typecheck` are local checks. CI builds and runs the complete API tests. See the [live backend instructions](docs/specs/live-pipeline.md) to run PostgreSQL, import a sourced corpus and call `/api/fact-check/live`.
 
+## Verificación en el feed de X
+
+Con la API local en marcha y un corpus real importado, abre **Inicio** de X en Chrome y elige la pestaña **Politics**. Pulsa el icono de la extensión y **Verificar publicaciones en X**. Aparecen verificaciones y enlaces a las fuentes debajo de las publicaciones visibles con texto completo. Las publicaciones sin evidencia directa muestran **Información insuficiente**. Al desplazarte, la extensión comprueba las publicaciones que entran en pantalla. Para parar, abre el panel y pulsa **Desactivar verificaciones en X**.
+
+La [demo local de publicaciones](http://127.0.0.1:3000/x-demo) usa el mismo renderizador y la API real sin instalar la extensión. Para cargar los hechos que necesita, ejecuta `npm run seed -- data/demo/x-politics.json` después de migrar la base de datos. Reinicia la API para limpiar los veredictos guardados.
+
 ## Simulación de Google Meet
 
 En el panel de la extensión, pulsa **Simular Google Meet** y **Reproducir**. Clara, una inversora, pide a Mateo cifras de su empresa ficticia. El panel reproduce seis intervenciones y muestra cuatro afirmaciones verificables del emprendedor, con sus veredictos y fuentes de ejemplo. Las reglas de extracción están ajustadas a esta transcripción.

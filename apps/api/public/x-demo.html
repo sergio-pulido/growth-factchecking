@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FactChecking · Demo de publicaciones</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #f2f5f3;
+      color: #1b2923;
+      font: 16px/1.55 system-ui, sans-serif;
+    }
+    main { margin: auto; padding: 38px 20px 48px; max-width: 680px; }
+    h1 { margin: 0 0 6px; font-size: clamp(25px, 6vw, 36px); letter-spacing: -.03em; }
+    header p { margin: 0 0 24px; color: #40564a; }
+    article {
+      background: white;
+      border: 1px solid #d5dfd8;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      padding: 16px 18px;
+    }
+    article h2 { color: #40564a; font-size: 13px; margin: 0 0 6px; }
+    article p { margin: 0; }
+  </style>
+  <script src="/x-demo.js" defer></script>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Verificación en el feed</h1>
+      <p>Publicaciones de ejemplo sobre el 29N. El verificador consulta el corpus local en vivo mientras bajas por la lista.</p>
+    </header>
+    <article data-testid="tweet" id="fecha">
+      <h2>Calendario electoral</h2>
+      <p data-testid="tweetText">A 21 de noviembre de 2026 están convocadas elecciones generales en España para el 29 de noviembre de 2026.</p>
+    </article>
+    <article data-testid="tweet" id="madrid">
+      <h2>Reparto de escaños</h2>
+      <p data-testid="tweetText">Madrid elige 37 diputados al Congreso en las elecciones generales del 29 de noviembre de 2026.</p>
+    </article>
+    <article data-testid="tweet" id="cera">
+      <h2>Voto desde el extranjero</h2>
+      <p data-testid="tweetText">El plazo ordinario para depositar el voto CERA en los consulados para el 29N de 2026 va del 21 al 26 de noviembre, ambos incluidos.</p>
+    </article>
+    <article data-testid="tweet" id="banca">
+      <h2>Impuesto a la banca</h2>
+      <p data-testid="tweetText">El 21 de noviembre de 2026, Sánchez anunció que el siguiente Consejo de Ministros prorrogaría a 2027 el impuesto a la banca y estimó una recaudación de 1.400 millones de euros para vivienda.</p>
+    </article>
+    <article data-testid="tweet" id="alquiler">
+      <h2>Vivienda en Barcelona</h2>
+      <p data-testid="tweetText">Barcelona registró 30.789 nuevos contratos de alquiler en 2025 y 51.294 en 2019.</p>
+    </article>
+    <article data-testid="tweet" id="pronostico">
+      <h2>Pronóstico</h2>
+      <p data-testid="tweetText">Voy a hacer una predicción: la primera candidatura de las generales del 29N de 2026 obtendrá más de 180 escaños.</p>
+    </article>
+  </main>
+</body>
+</html>

@@ -1,0 +1,29 @@
+{
+  "facts": [
+    {
+      "id": "es-generales-2026-fecha",
+      "statement": "A 21 de noviembre de 2026, están convocadas en España elecciones al Congreso de los Diputados y al Senado para el domingo 29 de noviembre de 2026, mediante el Real Decreto 806/2026, de 5 de octubre.",
+      "sourceUrl": "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2026-20742"
+    },
+    {
+      "id": "es-generales-2026-madrid-diputados",
+      "statement": "En las elecciones al Congreso de los Diputados convocadas para el 29 de noviembre de 2026, a la circunscripción de Madrid le corresponden 38 diputados, según el anexo del Real Decreto 806/2026.",
+      "sourceUrl": "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2026-20742"
+    },
+    {
+      "id": "es-cera-2026-urna-plazos",
+      "statement": "Para las generales españolas del 29 de noviembre de 2026, el período ordinario de depósito presencial de voto CERA en embajadas, consulados o centros habilitados es del 21 al 26 de noviembre, ambos incluidos.",
+      "sourceUrl": "https://www.lamoncloa.gob.es/serviciosdeprensa/notasprensa/interior/Paginas/voto-extranjero-elecciones-generales-29n.aspx"
+    },
+    {
+      "id": "es-barcelona-contratos-2019-2025",
+      "statement": "La serie oficial municipal de nuevos contratos de alquiler de Barcelona (código 08019), consultada el 21 de noviembre de 2026, registra estos totales anuales: 2019, 51.294; 2020, 40.416; 2021, 57.158; 2022, 47.927; 2023, 38.683; 2024, 32.903; 2025, 30.789. Mide nuevos contratos, no el parque total de viviendas alquiladas.",
+      "sourceUrl": "https://habitatge.gencat.cat/web/.content/home/dades/estadistiques/01_Estadistiques_de_construccio_i_mercat_immobiliari/03_Mercat_de_lloguer/02_Lloguers_per_ambits_geografics/Fitxers_contractes/municipis_trimestral_contractes.xlsx"
+    },
+    {
+      "id": "es-banca-2026-1121-anuncio",
+      "statement": "El 21 de noviembre de 2026, en una entrevista en Onda Cero, Pedro Sánchez anunció que el siguiente Consejo de Ministros prorrogaría a 2027 el impuesto a la banca y estimó una recaudación de 1.400 millones de euros para vivienda protegida, bonificaciones a inquilinos y rehabilitación. La entrevista acredita el anuncio; no acredita su aprobación, recaudación ni ejecución.",
+      "sourceUrl": "https://www.ondacero.es/elecciones/generales/sanchez-anuncia-julia-onda-que-gobierno-prorrogara-impuesto-banca-2027-destinara-recaudacion-politicas-vivienda_202611216b0164a25cb1082f89b15861.html"
+    }
+  ]
+}

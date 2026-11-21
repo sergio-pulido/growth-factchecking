@@ -14,6 +14,13 @@ export function registerLocalRoutes(app: FastifyInstance, backend: MockFactsBack
   app.get('/local.js', async (_request, reply) => reply.type('application/javascript').send(
     await readFile(new URL('../../public/local.js', import.meta.url), 'utf8'),
   ));
+  app.get('/x-demo', async (_request, reply) => reply.type('text/html').send(
+    await readFile(new URL('../../public/x-demo.html', import.meta.url), 'utf8'),
+  ));
+  app.get('/x-demo.js', async (_request, reply) => {
+    const bundle = await readFile(new URL('../../../extension/dist/x-demo.js', import.meta.url), 'utf8');
+    return reply.type('application/javascript').send(bundle);
+  });
   app.get('/api/facts', async () => ({ mode: 'mock', facts: backend.list() }));
   app.post<{ Body: { facts: FactInput[] } }>('/api/facts/ingest', {
     schema: { body: {

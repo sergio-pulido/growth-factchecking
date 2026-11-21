@@ -1,0 +1,47 @@
+:host {
+  display: block;
+  margin-block: 8px 4px;
+  color: inherit;
+  font: 13px/1.4 system-ui, sans-serif;
+}
+
+div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  padding: 6px 10px;
+  border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+  border-radius: 8px;
+  overflow-wrap: anywhere;
+}
+
+span[data-verdict] {
+  border-radius: 4px;
+  padding: 0 4px;
+  font-weight: 600;
+}
+
+span[data-verdict="yes"], span[data-verdict="probably_yes"] {
+  background: #d7f2e2;
+  color: #114c30;
+}
+
+span[data-verdict="no"], span[data-verdict="probably_no"] {
+  background: #fbe0dd;
+  color: #822e24;
+}
+
+a, button {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+button {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}

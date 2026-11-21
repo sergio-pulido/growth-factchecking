@@ -172,3 +172,18 @@ a {
   margin-top: 6px;
   color: #9f342b;
 }
+
+.feed-controls {
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #d7dfdb;
+}
+
+.feed-controls button {
+  padding: 4px 8px;
+  margin-bottom: 4px;
+  font: inherit;
+  font-weight: 650;
+  background: #14533e;
+  color: #fff;
+}
