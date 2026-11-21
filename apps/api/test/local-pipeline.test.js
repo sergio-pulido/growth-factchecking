@@ -55,3 +55,14 @@ test('live ingestion accepts both corpus formats and rejects invalid source reco
   assert.throws(() => parseFacts({ facts: [fact, fact] }), /duplicate ID/);
   assert.throws(() => parseFacts([fact, { ...fact, id: 'other', sourceUrl: 'file:///tmp/source' }]), /HTTP/);
 });
+
+test('the X demo endpoint exposes numeric post IDs from the curated collection', async (t) => {
+  const app = createApp(false);
+  t.after(() => app.close());
+  const response = await app.inject('/api/x-demo/posts');
+  assert.equal(response.statusCode, 200);
+  const { postIds } = response.json();
+  assert.ok(postIds.length >= 5);
+  assert.equal(postIds.length, new Set(postIds).size);
+  assert.ok(postIds.every((id) => typeof id === 'string' && /^\d+$/.test(id)));
+});
