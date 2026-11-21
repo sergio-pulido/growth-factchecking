@@ -1,9 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { JSDOM } from 'jsdom';
-import { popPanel, verdictAlert } from '../test-dist/alerts.js';
+import { pickVideoRect, verdictAlert } from '../test-dist/alerts.js';
 
-test('true and false verdicts alert in colour; neutral does not', () => {
+test('true and false verdicts get a green or red border; neutral gets none', () => {
   assert.deepEqual(verdictAlert('yes'), { color: '#2FD27A', strong: true });
   assert.deepEqual(verdictAlert('probably_yes'), { color: '#2FD27A', strong: false });
   assert.deepEqual(verdictAlert('no'), { color: '#FF5247', strong: true });
@@ -11,32 +10,20 @@ test('true and false verdicts alert in colour; neutral does not', () => {
   assert.equal(verdictAlert('neutral'), null);
 });
 
-function withWindow(reducedMotion, fn) {
-  const { window } = new JSDOM('<!doctype html><aside class="panel bump"></aside>');
-  window.matchMedia = (query) => ({ matches: reducedMotion && query.includes('reduce') });
-  const saved = globalThis.window;
-  globalThis.window = window;
-  try {
-    return fn(window.document.querySelector('.panel'));
-  } finally {
-    globalThis.window = saved;
-  }
-}
+const viewport = { width: 1600, height: 900 };
 
-test('popPanel colours the island and replaces the quiet bump', () => {
-  withWindow(false, (panel) => {
-    assert.equal(popPanel(panel, 'no'), true);
-    assert.equal(panel.style.getPropertyValue('--pc'), '#FF5247');
-    assert.deepEqual([...panel.classList].sort(), ['panel', 'pop']);
-    assert.equal(popPanel(panel, 'probably_yes'), true);
-    assert.equal(panel.classList.contains('soft'), true);
-    assert.equal(popPanel(panel, 'neutral'), false);
-  });
+test('the border goes around the largest visible video', () => {
+  const player = { x: 20, y: 150, width: 1380, height: 776 };
+  const preview = { x: 1430, y: 210, width: 340, height: 190 };
+  assert.deepEqual(pickVideoRect([preview, player], viewport), { x: 20, y: 150, width: 1380, height: 750 });
 });
 
-test('popPanel does nothing when the user prefers reduced motion', () => {
-  withWindow(true, (panel) => {
-    assert.equal(popPanel(panel, 'yes'), false);
-    assert.equal(panel.classList.contains('pop'), false);
-  });
+test('small or off-screen videos are ignored, so the border falls back to the screen', () => {
+  assert.equal(pickVideoRect([], viewport), null);
+  assert.equal(pickVideoRect([{ x: 10, y: 10, width: 200, height: 112 }], viewport), null);
+  assert.equal(pickVideoRect([{ x: 0, y: 1200, width: 1280, height: 720 }], viewport), null);
+});
+
+test('a video partly scrolled out is framed only where it is visible', () => {
+  assert.deepEqual(pickVideoRect([{ x: 0, y: -300, width: 1280, height: 720 }], viewport), { x: 0, y: 0, width: 1280, height: 420 });
 });

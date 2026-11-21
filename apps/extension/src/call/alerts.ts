@@ -1,4 +1,4 @@
-// Verdict alerts while the panel is collapsed: stacked glass bubbles above the pill and an edge glow.
+// Verdict alerts: glass bubbles above the collapsed pill, and a green/red border around the video or the screen.
 import type { Verdict } from '@growth-factcheking/shared';
 import { NO_EVIDENCE, TONES, verdictPill } from './cards.js';
 import { clock, h, icon } from './dom.js';
@@ -19,16 +19,31 @@ export function verdictAlert(verdict: Verdict): VerdictAlert | null {
   return { color: FLASH[verdict], strong: verdict === 'yes' || verdict === 'no' };
 }
 
-/** Makes the island jump and fill with the verdict colour, whether it is open or collapsed. */
-export function popPanel(panel: HTMLElement, verdict: Verdict): boolean {
-  const alert = verdictAlert(verdict);
-  if (!alert || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
-  panel.style.setProperty('--pc', alert.color);
-  panel.classList.remove('pop', 'soft', 'bump');
-  void panel.offsetWidth; // restart the animation when verdicts arrive back to back
-  panel.classList.add('pop');
-  panel.classList.toggle('soft', !alert.strong);
-  return true;
+export type Rect = { x: number; y: number; width: number; height: number };
+export type FrameTarget = 'video' | 'screen';
+
+const MIN_VIDEO = { width: 240, height: 135 };
+const BORDER_MS = 3000;
+
+function clip(rect: Rect, viewport: { width: number; height: number }): Rect {
+  const x = Math.max(0, rect.x);
+  const y = Math.max(0, rect.y);
+  const right = Math.min(viewport.width, rect.x + rect.width);
+  const bottom = Math.min(viewport.height, rect.y + rect.height);
+  return { x, y, width: Math.max(0, right - x), height: Math.max(0, bottom - y) };
+}
+
+/** The largest video visible in the viewport, clipped to it; null when no video is big enough. */
+export function pickVideoRect(rects: readonly Rect[], viewport: { width: number; height: number }): Rect | null {
+  const visible = rects.map((rect) => clip(rect, viewport))
+    .filter(({ width, height }) => width >= MIN_VIDEO.width && height >= MIN_VIDEO.height);
+  if (visible.length === 0) return null;
+  return visible.reduce((best, rect) => (rect.width * rect.height > best.width * best.height ? rect : best));
+}
+
+function findVideoRect(): Rect | null {
+  const rects = Array.from(document.querySelectorAll('video'), (video) => video.getBoundingClientRect());
+  return pickVideoRect(rects, { width: window.innerWidth, height: window.innerHeight });
 }
 
 type Bubble = { id: string; el: HTMLDivElement; height: number; remaining: number; startedAt: number; timer: number };
@@ -123,13 +138,35 @@ export function createBubbles(container: HTMLElement, onOpen: (id: string) => vo
   };
 }
 
-export function flashScreen(el: HTMLElement, verdict: Verdict) {
+/**
+ * Turns the border of what the user is watching green (true) or red (false) for a few seconds: the main video on a
+ * tab (YouTube…), or the screen edge in a call app and when no video is visible. Neutral shows nothing.
+ */
+export function flashFrame(el: HTMLElement, verdict: Verdict, target: FrameTarget): void {
   const alert = verdictAlert(verdict);
-  if (!alert || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (!alert) return;
+  const place = (): void => {
+    const rect = target === 'video' ? findVideoRect() : null;
+    el.classList.toggle('on-video', rect !== null);
+    el.style.left = `${rect?.x ?? 0}px`;
+    el.style.top = `${rect?.y ?? 0}px`;
+    el.style.width = rect ? `${rect.width}px` : '100vw';
+    el.style.height = rect ? `${rect.height}px` : '100vh';
+  };
+  el.getAnimations().forEach((animation) => animation.cancel());
   el.style.setProperty('--fc', alert.color);
+  place();
   const peak = alert.strong ? 1 : 0.75;
-  el.animate(
-    [{ opacity: 0 }, { opacity: peak, offset: 0.2 }, { opacity: peak, offset: 0.45 }, { opacity: 0 }],
-    { duration: 1600, easing: 'ease-in-out' },
+  const animation = el.animate(
+    [{ opacity: 0 }, { opacity: peak, offset: 0.1 }, { opacity: peak, offset: 0.78 }, { opacity: 0 }],
+    { duration: BORDER_MS, easing: 'ease-in-out' },
   );
+  // Follow the video while the border is shown (scroll, resize, theatre mode).
+  let frame = requestAnimationFrame(function follow() {
+    place();
+    if (animation.playState === 'running') frame = requestAnimationFrame(follow);
+  });
+  const stop = (): void => cancelAnimationFrame(frame);
+  animation.addEventListener('finish', stop);
+  animation.addEventListener('cancel', stop);
 }
