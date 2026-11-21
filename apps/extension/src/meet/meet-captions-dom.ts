@@ -1,16 +1,14 @@
 // Reads Meet's visible captions from the DOM.
 //
-// Meet ships obfuscated class names that change without notice. The selectors below come from public
-// caption readers maintained in 2026 (see docs/specs/meet-captions-capture.md) and are NOT verified by us on a
-// live call yet. Everything Meet-specific lives in this file so it can be fixed in one place.
+// Meet-specific selectors are scoped to its caption region. See the capture spec for layouts used in tests.
 import type { CaptionRow } from './caption-consolidator.js';
 
 /** aria-label of the caption region, localized by Meet. */
 const REGION_LABEL = /caption|subt[ií]tulo|legenda|sous-titre|untertitel/i;
 const REGION_FALLBACKS = ['div[jsname="tgaKEf"]', 'div[jsname="YSxPC"]'];
-const ROW_SELECTOR = 'div[jsname="dsyhDe"], div.CNusmb, div.TBMuR';
-const SPEAKER_SELECTOR = 'div.KcIKyf, div.zs7s8d';
-const TEXT_SELECTOR = 'div.bh44bd, div.iTTPOb';
+const ROW_SELECTOR = 'div[jsname="dsyhDe"], div.CNusmb, div.TBMuR, div.nMcdL.bj4p3b';
+const SPEAKER_SELECTOR = '.KcIKyf, .zs7s8d, .NWpY1d';
+const TEXT_SELECTOR = '.bh44bd, .iTTPOb, .ygicle.VbkSUe';
 /** Controls and icon ligatures rendered inside the region (e.g. "arrow_downward Jump to bottom"). */
 const NOISE_SELECTOR = 'button, [role="button"], i, .google-material-icons, .material-icons, .material-symbols-outlined';
 
@@ -48,18 +46,37 @@ export function findCaptionRegion(root: ParentNode): Element | null {
   return null;
 }
 
-/**
- * Visible caption rows, oldest first. Returns null when there is no caption region (captions are off or
- * the layout is unknown). A row without a speaker element keeps an empty speaker.
- */
-export function readCaptionRows(root: ParentNode): CaptionRow[] | null {
-  const region = findCaptionRegion(root);
+function findCaptionRows(region: Element): Element[] {
+  const identified = new Set<Element>();
+  for (const text of Array.from(region.querySelectorAll(TEXT_SELECTOR))) {
+    // Recover a row when Meet changes the wrapper class. Stop before combining text from different speakers.
+    for (let row = text.parentElement; row && row !== region; row = row.parentElement) {
+      if (row.querySelectorAll(TEXT_SELECTOR).length > 1) break;
+      const speakers = row.querySelectorAll(SPEAKER_SELECTOR);
+      if (speakers.length > 1) break;
+      if (speakers.length === 1) {
+        identified.add(row);
+        break;
+      }
+    }
+  }
+
+  // Keep the named pair when its body is also matched by a known row selector.
+  const pairs = Array.from(identified);
+  const known = Array.from(region.querySelectorAll(ROW_SELECTOR));
+  const remaining = known.filter((row) => !pairs.some((pair) => pair.contains(row) || row.contains(pair))
+    && !known.some((other) => other !== row && row.contains(other)));
+  return [...pairs, ...remaining]
+    .sort((a, b) => a.compareDocumentPosition(b) & a.DOCUMENT_POSITION_FOLLOWING ? -1 : 1);
+}
+
+/** Visible caption rows, oldest first. Returns null when the caption markup is absent. */
+export function readCaptionRows(root: Document, pictureInPicture = false): CaptionRow[] | null {
+  // The floating window can render the same caption fields without the labelled full-page region.
+  const region = findCaptionRegion(root) ?? (pictureInPicture && root.body?.querySelector(TEXT_SELECTOR) ? root.body : null);
   if (!region) return null;
 
-  const rows = Array.from(region.querySelectorAll(ROW_SELECTOR)).filter(
-    // Nested matches (a row inside a row) would be read twice.
-    (row, _i, all) => !all.some((other) => other !== row && other.contains(row)),
-  );
+  const rows = findCaptionRows(region);
 
   if (rows.length === 0) {
     // Unknown layout: keep the last non-notice line, without a speaker.

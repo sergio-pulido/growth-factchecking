@@ -33,3 +33,7 @@ La extensión guarda la preferencia en el almacenamiento local de Chrome. **Simu
 ## 008 · Panel de llamadas: subtítulos primero, audio de la pestaña como alternativa
 
 El mismo panel funciona sobre cualquier llamada. En Meet (con el motor de subtítulos de GF-03), Zoom web y Teams web lee los subtítulos de la aplicación, que ya traen el nombre de quien habla y no cuestan transcripción. En cualquier otra pestaña captura su audio con `tabCapture`, lo envía desde un documento offscreen a la transcripción en directo de OpenAI con un permiso temporal emitido por la API local, y la clave de OpenAI nunca sale del servidor. No hay bots que se unan a la llamada ni simulaciones. Especificación: [call-overlay.md](specs/call-overlay.md).
+
+## 009 · Subtítulos en la ventana flotante de Meet
+
+Tras iniciar la captura, la extensión usa los subtítulos de Document Picture-in-Picture cuando Meet los muestra allí. Los cambios del documento flotante y su temporizador alimentan el mismo consolidador de subtítulos. Al cerrar la ventana se vuelve a leer la pestaña dentro de la misma conversación.

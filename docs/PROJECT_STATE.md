@@ -8,6 +8,8 @@ Los vectores son conteos de palabras deterministas; el clasificador devuelve sí
 
 El panel de llamadas (diseño del prototipo FactCheck) se abre con el icono de la extensión en cualquier pestaña y aparece solo en Meet, Zoom web y Teams web. Después de **Empezar a verificar**, lee los subtítulos de la aplicación o, en cualquier otra pestaña, transcribe su audio con OpenAI; guarda la transcripción en PostgreSQL, extrae afirmaciones y muestra los veredictos. Las simulaciones de Meet se han eliminado. El audio se ha probado de extremo a extremo contra OpenAI y PostgreSQL con un audio de prueba; los lectores de subtítulos aún no se han probado en llamadas reales.
 
+La compilación local 0.4.1 lee los subtítulos de la ventana flotante de Meet mientras la pestaña queda en segundo plano. Las pruebas simulan abrir y cerrar esa ventana durante la captura y comprueban que cada intervención se conserva una sola vez. Queda pendiente probar la ventana flotante de una llamada real en Chrome.
+
 ## Próximos hitos
 
 1. Evaluar la recuperación y los veredictos con un corpus revisado de fuentes primarias.
