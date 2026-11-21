@@ -67,7 +67,7 @@
   .kicker .live i { width: 10px; height: 10px; border-radius: 50%; background: var(--bad); animation: blink 1.4s ease-in-out infinite; }
   @keyframes blink { 50% { opacity: .25; } }
 
-  .clip { position: relative; margin-top: 16px; background: var(--sheet); border: 1px solid var(--rule); padding: 30px 40px 32px; min-height: 430px; overflow: hidden; }
+  .clip { position: relative; margin-top: 16px; background: var(--sheet); border: 1px solid var(--rule); padding: 30px 40px 32px; min-height: 0; overflow: hidden; }
   .clip .src { display: flex; flex-wrap: nowrap; align-items: center; gap: 12px; font-size: 20px; font-weight: 600; color: var(--ink-2); white-space: nowrap; }
   .clip .src img, .clip .src svg { width: 30px; height: 30px; border-radius: 6px; }
   .clip .src .context { font-weight: 400; color: var(--ink-3); }
@@ -218,36 +218,35 @@
     .bar .seg i { transition: none !important; }
     .scan.on, .pill.pop, .kicker .live i, .arrow.run i { animation: none; }
   }
+  .clip .src .context { display: none; }
 </style>
 </head>
 <body>
 <main id="stage" class="stage">
   <header>
     <h1 class="in d1">Fact-checked <em>where</em><br>you read it.</h1>
-    <p class="dek in d2">Posts, news articles and live calls, checked against official sources without leaving the page.</p>
   </header>
 
   <section class="demo in d3" aria-label="Live example">
-    <div class="kicker"><span class="live"><i></i>Live</span><span id="counter">example 1 of 4</span></div>
+    <div class="kicker"><span class="live"><i></i>Live</span><span id="counter" hidden>example 1 of 4</span></div>
     <article class="clip">
       <div class="fade" id="scene">
         <div class="src" id="src"></div>
         <p class="claim" id="claim"><span class="scan" id="scan"></span></p>
         <div class="pill" id="pill"></div>
-        <p class="evidence" id="evidence"></p>
+        <p class="evidence" id="evidence" hidden></p>
       </div>
     </article>
     <div class="scene-dots" id="dots"></div>
   </section>
 
   <section class="where" aria-label="Where it works">
-    <div class="kicker in d4">Works where claims show up</div>
     <div class="row in d4">
-      <div><h3>X</h3><p>Politics timeline, posts and bookmarks, checked as you scroll.</p></div>
+      <div><h3>X</h3></div>
       <div class="logos"><span class="logo">{{svg:x.svg:currentColor}}</span></div>
     </div>
     <div class="row in d5">
-      <div><h3>News sites</h3><p>A pill under each sentence and a side rail with every verdict.</p></div>
+      <div><h3>News sites</h3></div>
       <div class="logos">
         <span class="logo" title="Infobae"><img alt="Infobae" src="{{img:logo-infobae.com.gif}}"></span>
         <span class="logo" title="Euronews"><img alt="Euronews" src="{{img:logo-euronews.com.png}}"></span>
@@ -258,7 +257,7 @@
       </div>
     </div>
     <div class="row in d6">
-      <div><h3>Live video<br>&amp; calls</h3><p>Captions on Meet, Zoom and Teams. Any tab with audio, like a YouTube interview.</p></div>
+      <div><h3>Live video<br>&amp; calls</h3></div>
       <div class="logos">
         <span class="logo" title="Google Meet">{{svg:googlemeet.svg:#00897B}}</span>
         <span class="logo" title="Zoom">{{svg:zoom.svg:#0B5CFF}}</span>
@@ -267,55 +266,49 @@
       </div>
     </div>
     <div class="sources in d6">
-      <span>Checked against</span>
+      <span>Sources</span>
       <span class="logos">
         <span class="logo" title="INE"><img alt="INE" src="{{img:logo-ine.es.ico}}"></span>
         <span class="logo" title="BOE"><img alt="BOE" src="{{img:logo-boe.es.ico}}"></span>
         <span class="logo" title="La Moncloa"><img alt="La Moncloa" src="{{img:logo-lamoncloa.gob.es.ico}}"></span>
       </span>
-      <span>INE, BOE, La Moncloa and ministry reports</span>
     </div>
   </section>
 
   <section class="timing in d5" aria-label="Where the time goes for one claim">
-    <div class="sum"><b>≈ 0.5 s</b><span>to check one claim, measured median, built on the OpenAI API</span></div>
+    <div class="sum"><b>≈ 0.5 s</b><span>per claim</span></div>
     <div class="bar reset" id="bar">
-      <div class="lab db"><span class="who">Postgres + pgvector<em>≈ 6 ms</em></span><span class="how">finds the 5 nearest reviewed facts</span></div>
+      <div class="lab db"><span class="who">Postgres + pgvector<em>≈ 6 ms</em></span></div>
       <div class="seg"><i></i></div><div class="seg db"><i></i></div><div class="seg"><i></i></div>
-      <div class="lab"><span class="who">{{svg:openai.svg:currentColor}} OpenAI Embeddings<em>≈ 220 ms</em></span><span class="how"><code>text-embedding-3-small</code> turns the sentence into a vector, so any language finds the same facts</span></div>
-      <div class="lab" style="grid-column: 3"><span class="who">{{svg:openai.svg:currentColor}} OpenAI Decisions<em>≈ 330 ms</em></span><span class="how"><code>gpt-6-luna</code> judges the claim against those facts and picks the verdict</span></div>
+      <div class="lab"><span class="who">{{svg:openai.svg:currentColor}} OpenAI Embeddings<em>≈ 220 ms</em></span></div>
+      <div class="lab" style="grid-column: 3"><span class="who">{{svg:openai.svg:currentColor}} OpenAI Decisions<em>≈ 330 ms</em></span></div>
     </div>
     <button class="next" id="to-tech" type="button">How it works<span class="arr" aria-hidden="true">↓</span></button>
   </section>
 
-  <div class="hint"><kbd>→</kbd> next example · <kbd>↓</kbd> next slide · <kbd>Space</kbd> pause · <kbd>R</kbd> replay</div>
 </main>
 
 <main id="tech" class="stage" hidden>
   <header>
     <h1 class="in d1">One OpenAI round trip<br>per claim, <em>live.</em></h1>
-    <p class="dek in d2">The browser never holds the OpenAI key. Our local API calls OpenAI and returns only the verdict and its sources.</p>
   </header>
 
   <div class="pipe in d3" aria-label="What happens to one claim">
     <div class="node" data-step="0">
       <div class="tag">Browser</div>
       <h3>Claim</h3>
-      <div class="what">A sentence from an X post, a news paragraph or a call caption.</div>
     </div>
     <div class="arrow" data-step="1"><i></i></div>
     <div class="node api" data-step="1">
       <div class="tag">{{svg:openai.svg:currentColor}} Embeddings API</div>
       <h3>Meaning as a vector</h3>
       <code>text-embedding-3-small</code>
-      <div class="what">1,536 numbers. Spanish, Catalan, Italian or English land near the same facts.</div>
       <div class="t">≈ 220 ms</div>
     </div>
     <div class="arrow" data-step="2"><i></i></div>
     <div class="node" data-step="2">
       <div class="tag">Postgres + pgvector</div>
       <h3>Nearest facts</h3>
-      <div class="what">Cosine search over the reviewed facts, embedded once ahead of time. Top 5 kept.</div>
       <div class="t">≈ 6 ms</div>
     </div>
     <div class="arrow" data-step="3"><i></i></div>
@@ -323,7 +316,6 @@
       <div class="tag">{{svg:openai.svg:currentColor}} Decisions API</div>
       <h3>Judge with evidence</h3>
       <code>gpt-6-luna</code>
-      <div class="what">One call answers two choice questions, each with a confidence score.</div>
       <div class="t">≈ 330 ms</div>
     </div>
     <div class="arrow" data-step="4"><i></i></div>
@@ -338,21 +330,20 @@
     </div>
   </div>
 
-  <div class="total in d4"><b id="total">0.00 s</b><span>end to end for one claim, median of 40 timed calls, recomputed on every page load</span></div>
+  <div class="total in d4"><b id="total">0.00 s</b><span>per claim, live</span></div>
 
   <div class="below in d5">
     <div>
       <h4>{{svg:openai.svg:currentColor}} The two questions we ask Decisions</h4>
       <div class="q">source  → which fact addresses the claim? <span class="a">fact_1 … fact_5 or none</span><br>
-      verdict → yes · probably yes · neutral · probably no · no<br>
-      relevance &lt; 0.5 → <span class="a">Not enough info</span> · confidence &lt; 0.6 → <span class="a">“likely”</span></div>
+      verdict → yes · probably yes · neutral · probably no · no</div>
     </div>
     <div class="apis">
-      <p><b>{{svg:openai.svg:currentColor}}Responses API</b> pulls checkable claims out of call captions. <code>gpt-6-luna</code>, low reasoning, strict JSON schema, <code>store: false</code>.</p>
-      <p><b>{{svg:openai.svg:currentColor}}Realtime API</b> transcribes any tab’s audio, like a YouTube interview, with <code>gpt-live-transcribe</code>. The browser gets a 10-minute client secret, never the key.</p>
+      <p><b>{{svg:openai.svg:currentColor}}Responses API</b> claims from live calls</p>
+      <p><b>{{svg:openai.svg:currentColor}}Realtime API</b> any tab’s audio</p>
     </div>
   </div>
-  <div class="hint"><button type="button" id="to-demo">↑ back to the demo</button> · <kbd>R</kbd> replay</div>
+  <div class="hint"><button type="button" id="to-demo">↑ back</button></div>
 </main>
 
 
