@@ -49,6 +49,6 @@ docker compose exec -T db psql -U factcheck -d factcheck -v ON_ERROR_STOP=1 < da
 npm start
 ```
 
-In `chrome://extensions`, enable Developer mode and load the unpacked `apps/extension/dist` directory. Open one of the public X permalinks above. If you already have the extension installed, click Reload on its card (it should read version 0.3.3) and refresh X. Restore the snapshot after `npm run db:migrate`, which adds the `statement_en` column it fills.
+In `chrome://extensions`, enable Developer mode and load the unpacked `apps/extension/dist` directory. Open one of the public X permalinks above. If you already have the extension installed, click Reload on its card (it should read version 0.3.4) and refresh X. Restore the snapshot after `npm run db:migrate`, which adds the `statement_en` column it fills.
 
 `data/demo/x-posts.json` controls the approved Bookmarks posts. Update it and refresh X after editing; the extension loads the list from the local API.

@@ -25,7 +25,9 @@ export function registerLiveFactCheck(app: FastifyInstance, injected?: FactCheck
         decide: createDecider(client, config),
         topK: config.topK,
         thresholds: { minRelevance: config.minRelevance, minConfidence: config.minConfidence },
-        cacheTtlMs: config.cacheTtlMs,
+        // Never reuse a verdict here: every X card and panel check runs the full pipeline, so the demo
+        // shows real latency on each load. FACT_CHECK_CACHE_TTL_MS still applies to conversation capture.
+        cacheTtlMs: 0,
       });
     } else {
       app.log.warn('Live fact-check disabled: set OPENAI_API_KEY and DATABASE_URL.');
