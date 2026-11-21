@@ -160,6 +160,72 @@
       "additionalSourceUrls": [
         "https://www.boe.es/buscar/doc.php?id=BOE-A-2025-15741&lang=es"
       ]
+    },
+    {
+      "id": "es-smi-2027-cuantia",
+      "statement": "On 17 November 2026, Spain's Council of Ministers set the 2027 minimum wage (SMI) at €1,286 a month in 14 payments, or €18,004 a year, from 1 January 2027. That is a 5.3% increase: €65 more a month and €910 more a year.",
+      "sourceUrl": "https://www.lamoncloa.gob.es/consejodeministros/resumenes/paginas/2026/171126-rueda-prensa-consejo-ministros.aspx",
+      "sourceTitle": "La Moncloa — Council of Ministers press conference, 17 November 2026",
+      "additionalSourceUrls": [
+        "https://www.lamoncloa.gob.es/consejodeministros/referencias/Paginas/2026/20261117-referencia-rueda-de-consejo-ministros.aspx"
+      ]
+    },
+    {
+      "id": "es-smi-2027-irpf",
+      "statement": "Royal Decree-law 38/2026 of 17 November adds an income tax (IRPF) deduction of €1,033.58 so that minimum-wage earners, with income up to €18,004 a year, pay no IRPF from 2027 and have no monthly withholding. The deduction tapers to zero at €23,172; the government estimates 2.7 million taxpayers save €1.2 billion.",
+      "sourceUrl": "https://www.lamoncloa.gob.es/consejodeministros/resumenes/paginas/2026/171126-rueda-prensa-consejo-ministros.aspx",
+      "sourceTitle": "La Moncloa — Council of Ministers press conference, 17 November 2026",
+      "additionalSourceUrls": [
+        "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2026-24120"
+      ]
+    },
+    {
+      "id": "es-smi-2018-2027-subida",
+      "statement": "Spain's minimum wage was €735.90 a month in 14 payments in 2018, under Royal Decree 1077/2017. At €1,286 a month in 2027, it is about 74.7% higher than in 2018.",
+      "sourceUrl": "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2017-15848",
+      "sourceTitle": "BOE — Royal Decree 1077/2017, minimum wage for 2018",
+      "additionalSourceUrls": [
+        "https://www.lamoncloa.gob.es/consejodeministros/resumenes/paginas/2026/171126-rueda-prensa-consejo-ministros.aspx"
+      ]
+    },
+    {
+      "id": "es-sector-publico-2027-retribuciones",
+      "statement": "Royal Decree-law 37/2026 of 17 November allows Spanish public-sector pay to rise by a maximum overall 4.5% in 2027, relative to pay at 31 December 2026, with effect from 1 January 2027.",
+      "sourceUrl": "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2026-24119",
+      "sourceTitle": "BOE — Royal Decree-law 37/2026, public-sector pay",
+      "additionalSourceUrls": [
+        "https://www.lamoncloa.gob.es/consejodeministros/referencias/Paginas/2026/20261117-referencia-rueda-de-consejo-ministros.aspx"
+      ]
+    },
+    {
+      "id": "es-financiacion-territorial-2027",
+      "statement": "On 17 November 2026, the Council of Ministers approved Royal Decree-law 38/2026, giving Spain's autonomous communities €185,593 million in 2027 (9.1% more than in 2026) and local authorities €33,773 million (11.5% more). The same decree adds an income tax deduction so that minimum-wage earners pay no IRPF from their first 2027 payslip.",
+      "sourceUrl": "https://www.lamoncloa.gob.es/consejodeministros/referencias/Paginas/2026/20261117-referencia-rueda-de-consejo-ministros.aspx",
+      "sourceTitle": "La Moncloa — Council of Ministers reference, 17 November 2026",
+      "additionalSourceUrls": [
+        "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2026-24120"
+      ]
+    },
+    {
+      "id": "es-icn-2026-sep",
+      "statement": "INE's Industry Turnover Index (ICN) rose 1.9% month on month in September 2026 after removing seasonal and calendar effects. The annual rate was 9.9% in the adjusted series and 11.7% in the original series (published 20 November 2026).",
+      "sourceUrl": "https://www.ine.es/dyngs/Prensa/ICN0926.htm",
+      "sourceTitle": "INE — Industry Turnover Index, September 2026"
+    },
+    {
+      "id": "es-iass-2026-sep",
+      "statement": "INE's Services Sector Activity Indicator (IASS) rose 1.9% month on month in September 2026 after removing seasonal and calendar effects. Annual turnover growth was 7.4% in the adjusted series and 8.5% in the original series (published 20 November 2026).",
+      "sourceUrl": "https://www.ine.es/dyngs/Prensa/IASS0926.htm",
+      "sourceTitle": "INE — Services Sector Activity Indicators, September 2026"
+    },
+    {
+      "id": "es-empresas-2024-demografia",
+      "statement": "INE's harmonised business demography counts 3,552,872 economically active companies in Spain in 2024: 334,789 were created and 269,592 closed, a net rate of 1.8%. 42.4% of companies born in 2019 survived five years (published 13 November 2026).",
+      "sourceUrl": "https://www.ine.es/dyngs/Prensa/DAE2024.htm",
+      "sourceTitle": "INE — Harmonised Business Demography 2024",
+      "additionalSourceUrls": [
+        "https://www.ine.es/dyngs/INEbase/operacion.htm?c=Estadistica_C&cid=1254736161927&idp=1254735576550"
+      ]
     }
   ]
 }

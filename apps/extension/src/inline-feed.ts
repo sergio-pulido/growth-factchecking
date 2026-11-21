@@ -19,6 +19,15 @@ function englishStatement(source: FactCheckResult['sources'][number]) {
   return source.statementEn ?? source.statement;
 }
 
+/** Short link text: the site without "www.", marked when it is a PDF and numbered when a card repeats it. */
+function sourceLabel(sourceUrl: string, seen: Map<string, number>) {
+  const url = new URL(sourceUrl);
+  const label = url.hostname.replace(/^www\./u, '') + (/\.pdf$/iu.test(url.pathname) ? ' (PDF)' : '');
+  const count = (seen.get(label) ?? 0) + 1;
+  seen.set(label, count);
+  return count === 1 ? label : `${label} (${count})`;
+}
+
 type Post = {
   text: HTMLElement;
   claim: string;
@@ -139,12 +148,13 @@ export function startInlineFeed({
     const sources = document.createElement('div');
     sources.className = 'sources';
     sources.setAttribute('aria-label', 'Sources');
+    const labels = new Map<string, number>();
     for (const source of result?.sources ?? []) {
       const link = document.createElement('a');
       link.href = source.sourceUrl;
       link.target = '_blank';
       link.rel = 'noopener noreferrer';
-      link.textContent = new URL(source.sourceUrl).hostname;
+      link.textContent = sourceLabel(source.sourceUrl, labels);
       link.title = englishStatement(source);
       sources.append(link);
     }
