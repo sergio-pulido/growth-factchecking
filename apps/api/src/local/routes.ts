@@ -26,6 +26,11 @@ export function registerLocalRoutes(app: FastifyInstance, backend: MockFactsBack
     const posts: Array<{ postId: string }> = JSON.parse(await readFile(file, 'utf8'));
     return { postIds: posts.map(({ postId }) => postId) };
   });
+  app.get('/api/news-demo/articles', async () => {
+    const file = new URL('../../../../data/demo/news-articles.json', import.meta.url);
+    const articles: Array<{ url: string; claims?: string[] }> = JSON.parse(await readFile(file, 'utf8'));
+    return { articles: articles.map(({ url, claims = [] }) => ({ url, claims })) };
+  });
   app.get('/api/facts', async () => ({ mode: 'mock', facts: backend.list() }));
   app.post<{ Body: { facts: FactInput[] } }>('/api/facts/ingest', {
     schema: { body: {

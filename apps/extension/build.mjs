@@ -5,7 +5,7 @@ import { build } from 'esbuild';
 await rm('dist', { recursive: true, force: true });
 await build({
   entryPoints: [
-    'src/background.ts', 'src/call-content.ts', 'src/offscreen.ts', 'src/x-content.ts', 'src/x-demo.ts',
+    'src/background.ts', 'src/call-content.ts', 'src/offscreen.ts', 'src/x-content.ts', 'src/x-demo.ts', 'src/news-content.ts',
   ],
   bundle: true,
   format: 'iife',

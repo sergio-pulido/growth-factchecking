@@ -25,6 +25,23 @@
       ],
       "js": ["call-content.js"],
       "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://es.euronews.com/*",
+        "https://maldita.es/*",
+        "https://papeleta.es/*",
+        "https://theobjective.com/*",
+        "https://theofficer.es/*",
+        "https://www.eldiario.es/*",
+        "https://www.idealista.com/*",
+        "https://www.infobae.com/*",
+        "https://www.politicaelectoral.com/*",
+        "https://www.que.es/*",
+        "https://www.vozpopuli.com/*"
+      ],
+      "js": ["news-content.js"],
+      "run_at": "document_idle"
     }
   ]
 }

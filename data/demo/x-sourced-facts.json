@@ -226,6 +226,18 @@
       "additionalSourceUrls": [
         "https://www.ine.es/dyngs/INEbase/operacion.htm?c=Estadistica_C&cid=1254736161927&idp=1254735576550"
       ]
+    },
+    {
+      "id": "es-smi-2026-cuantia",
+      "statement": "Royal Decree 126/2026 of 18 February set Spain's 2026 minimum wage (SMI) at €1,221 a month or €40.70 a day, with an annual floor of €17,094 in 14 payments, effective from 1 January 2026. That was a 3.1% increase on the 2025 figure of €1,184 a month.",
+      "sourceUrl": "https://www.boe.es/buscar/act.php?id=BOE-A-2026-3815",
+      "sourceTitle": "BOE — Royal Decree 126/2026, minimum wage for 2026"
+    },
+    {
+      "id": "es-afiliacion-2026-oct-extranjeros",
+      "statement": "In October 2026, Spain had 3,699,878 foreign workers registered with Social Security, 16.4% of the total. At the end of October, 490,586 registered foreign workers came from the extraordinary regularisation, led by people from Colombia (27.6%) and Venezuela (15.7%). Self-employed registrations passed 3.5 million (3,501,598) for the first time.",
+      "sourceUrl": "https://www.lamoncloa.gob.es/serviciosdeprensa/notasprensa/inclusion/Paginas/2026/041126-afiliacion-seguridad-social-octubre.aspx",
+      "sourceTitle": "La Moncloa — Social Security registrations, October 2026"
     }
   ]
 }
