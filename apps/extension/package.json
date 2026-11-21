@@ -3,7 +3,17 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "scripts": { "build": "tsc --noEmit && node build.mjs" },
-  "dependencies": { "@growth-factcheking/shared": "0.1.0" },
-  "devDependencies": { "@types/chrome": "^0.3.7", "esbuild": "^0.28.2" }
+  "scripts": {
+    "build": "tsc --noEmit && node build.mjs",
+    "test": "node build-test.mjs && node --test test/*.test.mjs",
+    "test:e2e": "node build-test.mjs && node --test test/e2e/*.e2e.mjs"
+  },
+  "dependencies": {
+    "@growth-factcheking/shared": "0.1.0"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.3.7",
+    "esbuild": "^0.28.2",
+    "jsdom": "^27.4.0"
+  }
 }

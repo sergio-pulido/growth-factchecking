@@ -1,9 +1,9 @@
 import type { Verdict } from '@growth-factcheking/shared';
 
 export const verdictLabels: Record<Verdict, string> = {
-  yes: 'Sí',
-  probably_yes: 'Probablemente sí',
+  yes: 'True',
+  probably_yes: 'Likely true',
   neutral: 'Neutral',
-  probably_no: 'Probablemente no',
-  no: 'No',
+  probably_no: 'Likely false',
+  no: 'False',
 };
