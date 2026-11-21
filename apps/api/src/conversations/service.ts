@@ -20,7 +20,7 @@ export class ConversationClosedError extends Error {
 
 /** Runs fn over items with at most `limit` in flight; results keep the input order. */
 async function mapLimited<T, R>(items: readonly T[], limit: number, fn: (item: T) => Promise<R>): Promise<R[]> {
-  const results = new Array<R>(items.length);
+  const results: R[] = [];
   let next = 0;
   const worker = async (): Promise<void> => {
     while (next < items.length) {
