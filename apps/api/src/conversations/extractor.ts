@@ -14,6 +14,9 @@ const INSTRUCTIONS = [
   'Rewrite each claim as one standalone sentence: resolve pronouns and references from the transcript,',
   'keep the speaker\'s language and wording, and never add information that was not said.',
   'When a speaker relays a claim from a source ("the slide says X", "I read that X"), extract X itself.',
+  'When "we", "our", "nosotros" or a first-person plural verb refers to an organization named in the transcript,',
+  'make that organization the subject ("Fundamos Lumen Labs en 2021" -> "Lumen Labs se fundó en 2021").',
+  'Do not name the speaker or add people, partners or roles that the transcript does not state.',
   'Reference the item it comes from with its "ref". Return an empty list when there is nothing checkable.',
 ].join(' ');
 
