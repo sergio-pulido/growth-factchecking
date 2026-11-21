@@ -1,6 +1,6 @@
 # Live fact-check pipeline
 
-Status: **Available** at `POST /api/fact-check/live` when configured.
+Status: **implemented** and wired in `createApp` (unit tests 13/13). Agent-run on a real stack (OpenAI + Postgres 17/pgvector) on 2026-11-21: 4/4 smoke checks pass, p50 618 ms total. See [docs/evidence/2026-11-21-live-smoke.md](../evidence/2026-11-21-live-smoke.md). A human re-run makes it **verified**; with that file it becomes **proven**.
 
 ## Flow
 
@@ -34,7 +34,7 @@ The mock route `POST /api/fact-check?scenario=...` stays untouched for the UX de
 ## Run locally
 
 ```bash
-docker compose up -d db
+docker compose up -d db   # if 5432 is taken: FACTCHECK_DB_PORT=55432 and use that port in DATABASE_URL
 cp .env.example .env   # fill OPENAI_API_KEY; DATABASE_URL default matches docker-compose
 npm run build
 npm run db:migrate
@@ -46,7 +46,10 @@ The importer accepts a JSON array or `{"facts":[...]}`. Each entry needs a stabl
 
 ## Open items
 
-2. Extension: switch endpoint to `/api/fact-check/live` behind a setting (mock stays the default for UX work).
-3. Contract: consider adding `confidence` and per-source `similarity` to `FactCheckResult` once the UX needs them.
-4. Calibrate the three thresholds with ~30 labelled claims; measure p50/p95 from `Server-Timing`.
-5. Claim extraction (Meet captions, X posts): a separate step before this pipeline. Not in scope here.
+1. ~~Wire the route in `apps/api/src/app.ts`~~ done in `07946e2`.
+2. Extension: switch endpoint to `/api/fact-check/live` behind a setting (mock stays the default for UX work). Owner: Codex.
+3. Contract: consider adding `confidence` and per-source `similarity` to `FactCheckResult` once the UX needs them (proposal only).
+4. Calibrate the three thresholds with ~30 labelled claims over a real corpus. Defaults are unchanged; the smoke run only exercised 4 claims and a 6-pair probe.
+5. Latency: p50 618 ms meets the 800 ms target; p95 1132 ms is driven by Embeddings outliers. Revisit only if the extension UX needs a tighter tail.
+6. Replace `data/facts.sample.json` (8 placeholder facts) with a real sourced corpus (the importer above validates it).
+7. Claim extraction (Meet captions, X posts): a separate step before this pipeline. Not in scope here.
