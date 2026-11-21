@@ -1,6 +1,5 @@
-// FactCheck call overlay. On Meet, Zoom web, Teams web and YouTube videos it shows the pill as soon as a call or
-// video is on screen and starts checking the captions right away, collapsed. On any other tab it opens in
-// tab-audio mode when the user clicks the toolbar icon, because Chrome only allows tab capture after that click.
+// FactCheck call overlay. Zoom web, Teams web and YouTube start from captions. Meet and other audio
+// sources wait for the user's Start action. The toolbar click grants Chrome tab capture.
 // Spec: docs/specs/call-overlay.md
 import type { UtteranceBatchResult } from '@growth-factcheking/shared';
 import { createAudioSource } from './call/audio-source.js';

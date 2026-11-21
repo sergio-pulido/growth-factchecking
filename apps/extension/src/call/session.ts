@@ -1,8 +1,9 @@
 // One fact-checked call: reads its source (captions or tab audio) after the user presses Start, sends final
 // utterances to the local API in batches and keeps the claims it returns. Spec: docs/specs/call-overlay.md
-import { SPEAKER_MAX, UTTERANCE_BATCH_MAX, UTTERANCE_TEXT_MAX } from '@growth-factcheking/shared';
+import { CLAIM_MAX_LENGTH, SPEAKER_MAX, UTTERANCE_BATCH_MAX, UTTERANCE_TEXT_MAX } from '@growth-factcheking/shared';
 import type { ClaimCheck, UtteranceBatchResult, UtteranceInput } from '@growth-factcheking/shared';
 import { speakerKindOf } from './platforms.js';
+import { normalizeTerms } from './terms.js';
 import { CallTransportError } from './types.js';
 import type {
   CallTransport, CaptureSource, ClaimItem, Segment, SessionSnapshot, SessionState, TranscriptLine,
@@ -77,7 +78,8 @@ export function createCallSession(
     },
   };
 
-  function enqueue({ speaker, text, kind }: Segment) {
+  function enqueue({ speaker, text: raw, kind }: Segment) {
+    const text = normalizeTerms(raw);
     // Call apps sometimes re-render a caption block as a new node with the same words: send them once.
     const name = (speaker || 'Participant').slice(0, SPEAKER_MAX);
     if (transcript.slice(-5).some((line) => line.speaker === name && line.text === text)) return;
@@ -101,7 +103,7 @@ export function createCallSession(
     return {
       id: check.id, claim: check.claim, speaker: check.speaker, at: line?.at ?? elapsed(),
       state: check.status === 'checked' && check.verdict ? 'checked' : 'failed',
-      verdict: check.verdict, sources: check.sources, open: false,
+      verdict: check.verdict, sources: check.sources, open: false, basis: check.basis ?? 'corpus',
     };
   }
 
@@ -272,13 +274,17 @@ export function createCallSession(
     return claims.find((item) => item.id === id);
   }
 
-  async function retry(id: string) {
+  /** Re-checks a claim; with `text`, replaces the claim's wording first (fixes a caption mistake). */
+  async function retry(id: string, text?: string) {
     const item = claims.find((claim) => claim.id === id);
     if (!item || item.state === 'retrying') return;
-    patchClaim(id, { state: 'retrying' });
+    const claim = text?.trim() ? text.trim().slice(0, CLAIM_MAX_LENGTH) : item.claim;
+    patchClaim(id, { state: 'retrying', claim, edited: item.edited || claim !== item.claim });
     try {
-      const result = await transport.recheck(item.claim);
-      const done = patchClaim(id, { state: 'checked', verdict: result.verdict, sources: result.sources });
+      const result = await transport.recheck(claim);
+      const done = patchClaim(id, {
+        state: 'checked', verdict: result.verdict, sources: result.sources, basis: result.basis ?? 'corpus',
+      });
       if (done) events.onVerdict(done);
     } catch (error) {
       notice = message(error);

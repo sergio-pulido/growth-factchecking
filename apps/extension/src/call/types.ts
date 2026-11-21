@@ -36,6 +36,8 @@ export interface CaptureSource {
   readonly label: string;
   /** Shown while the source finds nothing to read. */
   readonly hint: string;
+  /** Limits of the active input, such as an unavailable second audio source. */
+  readonly notice?: string;
   readonly anchorBottom: number;
   /** Spoken-language choice, for sources that transcribe audio. */
   readonly language?: LanguageChoice;
@@ -74,6 +76,10 @@ export type ClaimItem = {
   sources: ClaimCheck['sources'];
   /** Sources section expanded in the panel. */
   open: boolean;
+  /** "general_knowledge": no corpus document, judged against well-established knowledge. */
+  basis?: 'corpus' | 'general_knowledge';
+  /** The user corrected the claim's wording in the panel. */
+  edited?: boolean;
 };
 
 export type SessionSnapshot = {

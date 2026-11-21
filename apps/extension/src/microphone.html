@@ -4,17 +4,24 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>FactCheck microphone setup</title>
-    <style>
-      body { color-scheme: light dark; max-width: 36rem; margin: 12vh auto; padding: 0 1.5rem; font: 1rem/1.5 system-ui, sans-serif; }
-      button { font: inherit; padding: .5rem .9rem; cursor: pointer; }
-    </style>
+    <link rel="stylesheet" href="microphone.css">
   </head>
   <body>
-    <main>
-      <h1>Enable the microphone for FactCheck</h1>
-      <p>FactCheck uses your microphone with the tab audio for live transcription in Google Meet after you press Start checking.</p>
-      <button id="enable" type="button">Enable microphone</button>
-      <p id="status" role="status"></p>
+    <main class="setup" aria-labelledby="title">
+      <div class="brand"><span class="brand-mark" aria-hidden="true"></span>FactCheck</div>
+      <div class="microphone-visual" aria-hidden="true">
+        <div class="wave"><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="microphone-mark"></div>
+        <div class="wave"><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+      <h1 id="title">Enable your microphone</h1>
+      <p id="description">Give FactCheck access to your microphone for live transcription in Google Meet.</p>
+      <aside class="privacy">OpenAI receives your microphone and call audio after you press <strong>Start checking</strong> in Meet.</aside>
+      <div class="actions">
+        <button id="enable" type="button"><span class="button-icon" aria-hidden="true"></span><span id="enable-label">Enable microphone</span></button>
+        <button id="back" type="button" hidden>Back to Google Meet <span aria-hidden="true">↗</span></button>
+        <p id="status" role="status" aria-live="polite">Chrome will ask for permission.</p>
+      </div>
     </main>
     <script src="microphone.js"></script>
   </body>

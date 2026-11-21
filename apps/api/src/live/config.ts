@@ -24,6 +24,10 @@ export type LiveConfig = {
   openaiMaxRetries?: number;
   /** In-memory result cache TTL. 0 disables the cache. */
   cacheTtlMs: number;
+  /** Fall back to general knowledge when the corpus has no evidence. KNOWLEDGE_FALLBACK=0 turns it off. */
+  knowledgeFallback: boolean;
+  /** Minimum confidence for a general-knowledge verdict. */
+  knowledgeMinConfidence: number;
 };
 
 function num(name: string, fallback: number): number {
@@ -53,5 +57,7 @@ export function loadLiveConfig(): LiveConfig | null {
     minConfidence: num('VERDICT_MIN_CONFIDENCE', 0.6),
     openaiTimeoutMs: num('OPENAI_TIMEOUT_MS', 2500),
     cacheTtlMs: num('FACT_CHECK_CACHE_TTL_MS', 10 * 60 * 1000),
+    knowledgeFallback: process.env.KNOWLEDGE_FALLBACK !== '0',
+    knowledgeMinConfidence: num('KNOWLEDGE_MIN_CONFIDENCE', 0.7),
   };
 }

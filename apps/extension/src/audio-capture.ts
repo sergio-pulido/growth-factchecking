@@ -58,13 +58,12 @@ function release() {
   return closing;
 }
 
-export async function startAudio(tabId: number, language?: string, microphone = false): Promise<null> {
+export async function startAudio(tabId: number, language?: string, microphone = false): Promise<'tab' | 'call' | 'microphone'> {
   if (starting) throw new CallTransportError('FactCheck is already connecting. Wait a moment and try again.');
   starting = true;
   try {
     await closing;
-    await startCapture(tabId, language, microphone);
-    return null;
+    return await startCapture(tabId, language, microphone);
   } finally {
     starting = false;
   }
@@ -93,15 +92,21 @@ async function startCapture(tabId: number, language: string | undefined, microph
       }
     }
     const token = await api.transcriptionToken(language);
-    let streamId: string;
+    let streamId: string | undefined;
     try {
       streamId = await chrome.tabCapture.getMediaStreamId({ targetTabId: tabId });
-    } catch {
-      throw new CallTransportError('Chrome did not allow capturing the audio. Click the extension icon on this tab and start again.');
+    } catch (error) {
+      console.info('Chrome tab audio is unavailable.', error);
+      if (!microphone) {
+        throw new CallTransportError('Chrome could not capture this tab. Click the FactCheck toolbar icon on it and start again.');
+      }
     }
     if ((await captured())?.tabId !== tabId) throw new CallTransportError('Listening stopped before it started.');
-    const reply = await command({ target: 'offscreen', kind: 'start', streamId, token: token.value, microphone });
-    if (!reply?.ok) throw new CallTransportError(reply?.message ?? 'Could not capture the tab audio.');
+    const reply = await command(streamId
+      ? { target: 'offscreen', kind: 'start', streamId, token: token.value, microphone }
+      : { target: 'offscreen', kind: 'start', token: token.value, microphone: true });
+    if (!reply?.ok) throw new CallTransportError(reply?.message ?? 'Could not start audio capture.');
+    return streamId ? (microphone ? 'call' : 'tab') : 'microphone';
   } catch (error) {
     if ((await captured())?.tabId === tabId) await release();
     throw error;

@@ -2,7 +2,7 @@
 // Decisions reference: https://developers.openai.com/api/docs/guides/decisions
 import OpenAI from 'openai';
 import type { LiveConfig } from './config.js';
-import type { DecisionOutcome, Decider, Embedder, Fact } from './types.js';
+import type { DecisionOutcome, Decider, Embedder, Fact, KnowledgeDecider } from './types.js';
 import { VERDICT_CHOICES } from './verdict.js';
 
 export function createOpenAIClient(config: LiveConfig): OpenAI {
@@ -111,5 +111,47 @@ export function createDecider(client: OpenAI, config: LiveConfig): Decider {
       }
     }
     return outcome;
+  };
+}
+
+const KNOWLEDGE_INSTRUCTIONS =
+  'You are a neutral, non-partisan fact-checker. No document in the corpus addresses this claim, so judge it only ' +
+  'against well-established, widely documented general knowledge: science, geography, history, definitions and ' +
+  'long-settled facts. Answer yes or no only when the answer is settled and not reasonably disputed. ' +
+  'Answer neutral for opinions, predictions, value judgements, partisan or political positions, contested topics, ' +
+  'recent or ongoing events, and specific figures, rankings or statistics that may have changed or that you cannot ' +
+  'be sure of. The claim may come from speech captions in Spanish or English; judge its meaning, not its wording.';
+
+const KNOWLEDGE_CHOICES = [
+  { value: 'yes', description: 'Well-established knowledge clearly confirms the claim.' },
+  { value: 'probably_yes', description: 'Well-established knowledge mostly supports the claim, with minor imprecision.' },
+  { value: 'neutral', description: 'Not settled by general knowledge, or an opinion, prediction, political position or changing figure.' },
+  { value: 'probably_no', description: 'Well-established knowledge mostly contradicts the claim.' },
+  { value: 'no', description: 'Well-established knowledge clearly contradicts the claim.' },
+];
+
+export function createKnowledgeDecider(client: OpenAI, config: LiveConfig): KnowledgeDecider {
+  return async (claim) => {
+    const decision = await client.decisions.create({
+      model: config.decisionsModel,
+      input: [
+        { role: 'developer', content: KNOWLEDGE_INSTRUCTIONS },
+        { role: 'user', content: [{ type: 'input_json', data: { claim } }] },
+      ],
+      questions: [
+        {
+          type: 'choice',
+          name: 'verdict',
+          instructions: 'Based only on well-established general knowledge, what is the verdict on the claim?',
+          choices: KNOWLEDGE_CHOICES,
+        },
+      ],
+    });
+    for (const answer of decision.answers) {
+      if (answer.type === 'choice' && answer.name === 'verdict') {
+        return { choice: String(answer.choice), confidence: answer.confidence };
+      }
+    }
+    return { choice: null, confidence: null };
   };
 }

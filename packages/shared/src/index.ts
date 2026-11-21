@@ -19,6 +19,13 @@ export type FactCheckResult = {
     statementEn?: string;
     sourceUrl: string;
   }>;
+  /**
+   * What the verdict rests on. "general_knowledge": no document in the corpus addressed the claim, so the model
+   * judged it against well-established general knowledge and no source is cited. Absent means the corpus.
+   */
+  basis?: VerdictBasis;
 };
+
+export type VerdictBasis = 'corpus' | 'general_knowledge';
 
 export * from './conversations.js';

@@ -30,7 +30,10 @@ function browserLanguage(): string {
 
 export function createAudioSource(control: AudioControl, platform: 'web' | 'meet' = 'web'): CaptureSource {
   const microphone = platform === 'meet';
-  const segment = (text: string): Segment => ({ speaker: microphone ? 'Call audio' : AUDIO_SPEAKER, text, kind: 'unknown' });
+  let microphoneOnly = false;
+  const segment = (text: string): Segment => microphoneOnly
+    ? { speaker: 'You (microphone)', text, kind: 'self' }
+    : { speaker: microphone ? 'Call audio' : AUDIO_SPEAKER, text, kind: 'unknown' };
   let sink: SourceSink | null = null;
   let paused = false;
   let buffer = '';
@@ -89,6 +92,9 @@ export function createAudioSource(control: AudioControl, platform: 'web' | 'meet
     platform,
     label: microphone ? 'Google Meet' : 'this tab',
     hint: microphone ? 'Waiting for the microphone and call audio…' : 'Waiting for audio from this tab…',
+    get notice() {
+      return microphoneOnly ? 'Listening to your microphone only. To include other participants, stop and open FactCheck from the toolbar in Meet before starting again.' : undefined;
+    },
     anchorBottom: microphone ? 96 : 24,
     language: {
       options: LANGUAGES,
@@ -101,10 +107,11 @@ export function createAudioSource(control: AudioControl, platform: 'web' | 'meet
       chrome.runtime.onMessage.addListener(onEvent);
       sink = next;
       paused = false;
+      microphoneOnly = false;
       buffer = '';
       streamedItems.clear();
       try {
-        await control({ kind: 'audio-start', ...(language ? { language } : {}), ...(microphone ? { microphone: true } : {}) });
+        microphoneOnly = await control({ kind: 'audio-start', ...(language ? { language } : {}), ...(microphone ? { microphone: true } : {}) }) === 'microphone';
       } catch (error) {
         detach();
         throw error;
