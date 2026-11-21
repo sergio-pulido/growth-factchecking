@@ -15,6 +15,8 @@ export type FactCheckResult = {
   verdict: Verdict;
   sources: Array<{
     statement: string;
+    /** English rendering of `statement`, when the fact is not already in English. */
+    statementEn?: string;
     sourceUrl: string;
   }>;
 };

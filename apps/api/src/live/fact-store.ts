@@ -13,6 +13,7 @@ export function createPool(databaseUrl: string): pg.Pool {
 type FactRow = {
   id: string;
   statement: string;
+  statement_en: string | null;
   source_url: string;
   source_title: string | null;
   additional_source_urls: string[];
@@ -26,7 +27,7 @@ type FactRow = {
 export function createFactSearch(pool: pg.Pool, minSimilarity: number): FactSearch {
   return async (embedding, limit): Promise<Fact[]> => {
     const { rows } = await pool.query<FactRow>(
-      `SELECT id, statement, source_url, source_title, additional_source_urls,
+      `SELECT id, statement, statement_en, source_url, source_title, additional_source_urls,
               1 - (embedding <=> $1::vector) AS similarity
          FROM facts
         ORDER BY embedding <=> $1::vector
@@ -37,6 +38,7 @@ export function createFactSearch(pool: pg.Pool, minSimilarity: number): FactSear
       .map((r) => ({
         id: r.id,
         statement: r.statement,
+        statementEn: r.statement_en,
         sourceUrl: r.source_url,
         sourceTitle: r.source_title,
         additionalSourceUrls: r.additional_source_urls,
@@ -49,6 +51,7 @@ export function createFactSearch(pool: pg.Pool, minSimilarity: number): FactSear
 export type FactInput = {
   id: string;
   statement: string;
+  statementEn?: string;
   sourceUrl: string;
   sourceTitle?: string;
   additionalSourceUrls?: string[];
@@ -56,15 +59,16 @@ export type FactInput = {
 
 export async function upsertFact(db: Pick<pg.PoolClient, 'query'>, fact: FactInput, embedding: number[]): Promise<void> {
   await db.query(
-    `INSERT INTO facts (id, statement, source_url, source_title, embedding, additional_source_urls)
-     VALUES ($1, $2, $3, $4, $5::vector, $6)
+    `INSERT INTO facts (id, statement, source_url, source_title, embedding, additional_source_urls, statement_en)
+     VALUES ($1, $2, $3, $4, $5::vector, $6, $7)
      ON CONFLICT (id) DO UPDATE
         SET statement = EXCLUDED.statement,
+            statement_en = EXCLUDED.statement_en,
             source_url = EXCLUDED.source_url,
             source_title = EXCLUDED.source_title,
             embedding = EXCLUDED.embedding,
             additional_source_urls = EXCLUDED.additional_source_urls,
             updated_at = now()`,
-    [fact.id, fact.statement, fact.sourceUrl, fact.sourceTitle ?? null, toVectorLiteral(embedding), fact.additionalSourceUrls ?? []],
+    [fact.id, fact.statement, fact.sourceUrl, fact.sourceTitle ?? null, toVectorLiteral(embedding), fact.additionalSourceUrls ?? [], fact.statementEn ?? null],
   );
 }

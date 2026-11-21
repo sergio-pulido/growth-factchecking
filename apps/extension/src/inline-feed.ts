@@ -6,7 +6,6 @@ import styles from './inline-feed.css';
 const articleSelector = 'article[data-testid="tweet"]';
 const textSelector = '[data-testid="tweetText"]';
 const concurrentChecks = 2;
-const cacheLimit = 200;
 const verdictLabels: Record<FactCheckResult['verdict'], string> = {
   yes: 'Supported',
   probably_yes: 'Likely supported',
@@ -15,11 +14,26 @@ const verdictLabels: Record<FactCheckResult['verdict'], string> = {
   no: 'Contradicted',
 };
 
+function englishStatement(source: FactCheckResult['sources'][number]) {
+  return source.statementEn ?? source.statement;
+}
+
+/** Short link text: the site without "www.", marked when it is a PDF and numbered when a card repeats it. */
+function sourceLabel(sourceUrl: string, seen: Map<string, number>) {
+  const url = new URL(sourceUrl);
+  const label = url.hostname.replace(/^www\./u, '') + (/\.pdf$/iu.test(url.pathname) ? ' (PDF)' : '');
+  const count = (seen.get(label) ?? 0) + 1;
+  seen.set(label, count);
+  return count === 1 ? label : `${label} (${count})`;
+}
+
 type Post = {
   text: HTMLElement;
   claim: string;
   visible: boolean;
   state: 'idle' | 'checking' | 'checked' | 'failed';
+  /** Round trip of the last check, shown on the card. */
+  elapsedMs?: number;
   card?: HTMLElement;
 };
 
@@ -94,7 +108,6 @@ export function startInlineFeed({
   const posts = new Map<HTMLElement, Post>();
   const waiting = new Set<HTMLElement>();
   const running = new Set<string>();
-  const cache = new Map<string, FactCheckResult>();
   const sheet = new CSSStyleSheet();
   sheet.replaceSync(styles);
   let frame = 0;
@@ -124,24 +137,32 @@ export function startInlineFeed({
       label.textContent = post.state === 'failed' ? 'Could not check' : 'Checking…';
     }
     row.append(title, label);
+    if (result && post.elapsedMs !== undefined) {
+      const timing = document.createElement('span');
+      timing.className = 'timing';
+      timing.textContent = `${(post.elapsedMs / 1000).toFixed(1)} s`;
+      timing.title = 'Time to check this post against the sources';
+      row.append(timing);
+    }
     card.append(row);
 
     if (result?.sources.length) {
       const evidence = document.createElement('p');
       evidence.className = 'evidence';
-      evidence.textContent = result.sources[0].statement;
+      evidence.textContent = englishStatement(result.sources[0]);
       card.append(evidence);
     }
     const sources = document.createElement('div');
     sources.className = 'sources';
     sources.setAttribute('aria-label', 'Sources');
+    const labels = new Map<string, number>();
     for (const source of result?.sources ?? []) {
       const link = document.createElement('a');
       link.href = source.sourceUrl;
       link.target = '_blank';
       link.rel = 'noopener noreferrer';
-      link.textContent = new URL(source.sourceUrl).hostname;
-      link.title = source.statement;
+      link.textContent = sourceLabel(source.sourceUrl, labels);
+      link.title = englishStatement(source);
       sources.append(link);
     }
     if (sources.childElementCount) card.append(sources);
@@ -173,16 +194,14 @@ export function startInlineFeed({
     post.state = 'checking';
     render(post);
     let result: FactCheckResult | undefined;
+    const started = performance.now();
     try {
       result = await request(claim);
-      if (result) {
-        if (cache.size === cacheLimit) cache.delete(cache.keys().next().value!);
-        cache.set(claim, result);
-      }
     } catch {
       // The extension or local API may have restarted.
     } finally {
       running.delete(claim);
+      post.elapsedMs = performance.now() - started;
     }
     if (!stopped && available() && article.isConnected && posts.get(article) === post && accepts(article) && readPost(article)?.claim === claim) {
       complete(post, result);
@@ -204,11 +223,8 @@ export function startInlineFeed({
         scheduleScan();
         continue;
       }
-      const hit = cache.get(post.claim);
-      if (hit) {
-        waiting.delete(article);
-        complete(post, hit);
-      } else if (running.size < concurrentChecks && !running.has(post.claim)) {
+      // No result cache: each post that comes into view is checked again, so the demo shows live latency.
+      if (running.size < concurrentChecks && !running.has(post.claim)) {
         waiting.delete(article);
         void check(article, post);
       }
@@ -274,7 +290,6 @@ export function startInlineFeed({
     if (frame) cancelAnimationFrame(frame);
     for (const [article, post] of posts) forget(article, post);
     visibility.disconnect();
-    cache.clear();
     window.growthFactCheckingFeed = undefined;
   };
   scan();

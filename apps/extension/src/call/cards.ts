@@ -80,7 +80,7 @@ function sourcesSection(item: ClaimItem, onToggle: (id: string) => void) {
       body.append(h('div', { class: 'src-item' },
         h('a', { class: 'chip', href: source.sourceUrl, target: '_blank', rel: 'noopener noreferrer', title: source.sourceUrl },
           favicon(host), h('span', {}, host)),
-        h('p', { class: 'src-statement' }, `“${source.statement}”`)));
+        h('p', { class: 'src-statement' }, `“${source.statementEn ?? source.statement}”`)));
     }
     section.append(body);
   }

@@ -12,6 +12,7 @@ const OFFLINE = 'Could not reach the local API. Check that it is running (npm st
 function isSource(value: unknown): value is FactCheckResult['sources'][number] {
   return typeof value === 'object' && value !== null
     && 'statement' in value && typeof value.statement === 'string'
+    && (!('statementEn' in value) || typeof value.statementEn === 'string')
     && 'sourceUrl' in value && typeof value.sourceUrl === 'string'
     && /^https?:\/\//iu.test(value.sourceUrl) && URL.canParse(value.sourceUrl);
 }
