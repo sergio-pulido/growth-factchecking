@@ -1,0 +1,32 @@
+[
+  {
+    "id": "pitch-mrr-oct-2026",
+    "statement": "El MRR de Prisma Turnos al cierre del 31 de octubre de 2026 fue de 27.800 euros, contando solo suscripciones activas y excluyendo IVA y cuotas únicas de implantación. Las cuotas de implantación fueron 4.200 euros.",
+    "sourceTitle": "[Ficticio] Cierre de MRR de octubre",
+    "sourceUrl": "https://github.com/sergio-pulido/growth-factchecking/blob/codex/pitch-evaluation/data/demo/investor-pitch/sources.md#cierre-de-mrr-de-octubre"
+  },
+  {
+    "id": "pitch-paying-customers-oct-2026",
+    "statement": "Prisma Turnos tenía 42 clientes de pago al 31 de octubre de 2026. El registro cuenta organizaciones con una suscripción activa abonada a la fecha de cierre.",
+    "sourceTitle": "[Ficticio] Registro de clientes activos",
+    "sourceUrl": "https://github.com/sergio-pulido/growth-factchecking/blob/codex/pitch-evaluation/data/demo/investor-pitch/sources.md#registro-de-clientes-activos"
+  },
+  {
+    "id": "pitch-retention-jul-2026",
+    "statement": "La retención a 90 días de la cohorte de pago de julio de 2026 de Prisma Turnos fue del 90 %. Seguían activas y pagando 36 de las 40 organizaciones que activaron su primera suscripción pagada en julio.",
+    "sourceTitle": "[Ficticio] Informe de cohortes a 90 días",
+    "sourceUrl": "https://github.com/sergio-pulido/growth-factchecking/blob/codex/pitch-evaluation/data/demo/investor-pitch/sources.md#informe-de-cohortes-a-90-días"
+  },
+  {
+    "id": "pitch-retention-aug-2026",
+    "statement": "La retención a 90 días de la cohorte de pago de agosto de 2026 de Prisma Turnos fue del 75 %. Seguían activas y pagando 33 de las 44 organizaciones que activaron su primera suscripción pagada en agosto.",
+    "sourceTitle": "[Ficticio] Informe de cohortes a 90 días",
+    "sourceUrl": "https://github.com/sergio-pulido/growth-factchecking/blob/codex/pitch-evaluation/data/demo/investor-pitch/sources.md#informe-de-cohortes-a-90-días"
+  },
+  {
+    "id": "eurostat-cloud-release-2023",
+    "statement": "En su publicación del 8 de diciembre de 2023, Eurostat informó que el 45,2 % de las empresas de la UE de al menos diez personas ocupadas cubiertas por la encuesta compró servicios de computación en la nube en 2023.",
+    "sourceTitle": "Eurostat · Publicación del 8 de diciembre de 2023",
+    "sourceUrl": "https://ec.europa.eu/eurostat/en/web/products-eurostat-news/w/ddn-20231208-1"
+  }
+]

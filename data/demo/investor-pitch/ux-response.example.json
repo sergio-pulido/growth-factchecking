@@ -1,0 +1,91 @@
+{
+  "claims": [
+    {
+      "id": "demo-mrr",
+      "utteranceClientId": "mrr",
+      "speaker": "Leo",
+      "claim": "El MRR de Prisma Turnos al 31 de octubre de 2026 fue de 32.000 euros.",
+      "status": "checked",
+      "verdict": "no",
+      "sources": [
+        {
+          "statement": "[Ficticio] El cierre registra 27.800 € de MRR y 4.200 € de implantación.",
+          "sourceUrl": "https://github.com/sergio-pulido/growth-factchecking/blob/codex/pitch-evaluation/data/demo/investor-pitch/sources.md#cierre-de-mrr-de-octubre"
+        }
+      ],
+      "argumentRelevance": {
+        "status": "assessed",
+        "level": "high",
+        "context": {
+          "utteranceClientId": "pregunta-mrr",
+          "speaker": "Inés",
+          "text": "¿Cuál era vuestro ingreso mensual recurrente al cierre de octubre de 2026, contando solo suscripciones y dejando fuera la implantación y el IVA?"
+        },
+        "reason": "Es la cifra para el periodo y el indicador que pide la inversora."
+      }
+    },
+    {
+      "id": "demo-dato-mercado",
+      "utteranceClientId": "dato-mercado",
+      "speaker": "Leo",
+      "claim": "Eurostat publicó que en 2023 el 45,2 % de las empresas de la UE de su encuesta compró servicios en la nube.",
+      "status": "checked",
+      "verdict": "yes",
+      "sources": [
+        {
+          "statement": "Publicación de Eurostat del 8 de diciembre de 2023 sobre compra de servicios en la nube.",
+          "sourceUrl": "https://ec.europa.eu/eurostat/en/web/products-eurostat-news/w/ddn-20231208-1"
+        }
+      ],
+      "argumentRelevance": {
+        "status": "assessed",
+        "level": "low",
+        "context": {
+          "utteranceClientId": "pregunta-julio",
+          "speaker": "Inés",
+          "text": "De las organizaciones que activaron su primera suscripción pagada en julio de 2026, ¿qué porcentaje seguía pagando 90 días después?"
+        },
+        "reason": "La cifra mide adopción de nube en empresas europeas. La pregunta pide la retención de los clientes de Prisma Turnos."
+      }
+    },
+    {
+      "id": "demo-piloto",
+      "utteranceClientId": "piloto",
+      "speaker": "Leo",
+      "claim": "Prisma Turnos firmó un acuerdo de piloto con el Hospital Mirador en octubre de 2026.",
+      "status": "checked",
+      "verdict": "neutral",
+      "sources": [],
+      "argumentRelevance": {
+        "status": "assessed",
+        "level": "high",
+        "context": {
+          "utteranceClientId": "pregunta-piloto",
+          "speaker": "Inés",
+          "text": "¿Firmasteis algún acuerdo de piloto hospitalario en octubre de 2026? ¿Con quién?"
+        },
+        "reason": "La afirmación responde directamente a la pregunta sobre un acuerdo firmado y su contraparte."
+      }
+    },
+    {
+      "id": "demo-clientes",
+      "utteranceClientId": "clientes",
+      "speaker": "Leo",
+      "claim": "Al 31 de octubre de 2026, Prisma Turnos tenía 42 clientes de pago, contando organizaciones con una suscripción activa abonada.",
+      "status": "checked",
+      "verdict": "yes",
+      "sources": [
+        {
+          "statement": "[Ficticio] Prisma Turnos tenía 42 clientes de pago al 31 de octubre de 2026. El registro cuenta organizaciones con una suscripción activa abonada a la fecha de cierre.",
+          "sourceUrl": "https://github.com/sergio-pulido/growth-factchecking/blob/codex/pitch-evaluation/data/demo/investor-pitch/sources.md#registro-de-clientes-activos"
+        }
+      ],
+      "argumentRelevance": {
+        "status": "insufficient_context",
+        "level": null,
+        "context": null,
+        "reason": "La inversora todavía no ha planteado una pregunta concreta."
+      }
+    }
+  ]
+}

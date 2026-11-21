@@ -8,6 +8,8 @@ Los vectores son conteos de palabras deterministas; el clasificador devuelve sí
 
 La simulación de Meet reproduce una conversación ficticia entre una inversora y un emprendedor. Extrae cuatro afirmaciones con reglas específicas del guion y admite veredictos simulados o una llamada a OpenAI Decisions con el mismo corpus ficticio.
 
+El piloto de Prisma Turnos añade un corpus y una evaluación reproducible con GF‑02. La [propuesta para Jaume y UX/UI](specs/argument-relevance-proposal.md) separa el veredicto con fuentes de la relevancia respecto de la pregunta o tesis activa del pitch.
+
 ## Próximos hitos
 
 1. Evaluar la recuperación y los veredictos con un corpus revisado de fuentes primarias.
