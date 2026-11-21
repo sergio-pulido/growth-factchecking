@@ -5,7 +5,8 @@
   z-index: 1;
   overflow: hidden;
   pointer-events: none;
-  --scan: #2f7cf6;
+  /* Tailwind CSS v4 blue-500. */
+  --scan: oklch(62.3% 0.214 259.815);
 }
 
 div {

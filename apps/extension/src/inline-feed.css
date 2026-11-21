@@ -3,52 +3,220 @@
   margin-block: 8px 4px;
   color: inherit;
   font: 13px/1.4 system-ui, sans-serif;
+  --line: color-mix(in srgb, currentColor 18%, transparent);
+  --muted: color-mix(in srgb, currentColor 62%, transparent);
+  /* Tailwind CSS v4 palette: green-600, amber-600, red-600, zinc-500, blue-500. */
+  --ok: oklch(62.7% 0.194 149.214);
+  --warn: oklch(66.6% 0.179 58.318);
+  --bad: oklch(57.7% 0.245 27.325);
+  --none: oklch(55.2% 0.016 285.938);
+  --scan: oklch(62.3% 0.214 259.815);
 }
 
 section {
-  padding: 7px 10px;
-  border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
-  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 100%;
+  padding: 3px 11px 3px 4px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: none;
+  color: inherit;
+  font: 600 13px/1.3 system-ui, sans-serif;
+  white-space: nowrap;
+}
+
+button.pill {
+  cursor: pointer;
+}
+
+button.pill:hover {
+  background: color-mix(in srgb, currentColor 6%, transparent);
+}
+
+button.pill:focus-visible {
+  outline: 2px solid var(--scan);
+  outline-offset: 2px;
+}
+
+.icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  color: #fff;
+}
+
+.icon svg {
+  width: 11px;
+  height: 11px;
+}
+
+.icon[data-tone="ok"] { background: var(--ok); }
+.icon[data-tone="warn"] { background: var(--warn); }
+.icon[data-tone="bad"] { background: var(--bad); }
+.icon[data-tone="none"] { background: var(--none); }
+
+.icon.spinner {
+  box-sizing: border-box;
+  border: 2px solid color-mix(in srgb, var(--scan) 25%, transparent);
+  border-top-color: var(--scan);
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.busy {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.divider {
+  width: 1px;
+  height: 14px;
+  margin-inline: 1px;
+  background: var(--line);
+}
+
+.avatars {
+  display: flex;
+  flex: none;
+}
+
+.avatars span {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1.5px var(--ring, #fff);
+  color: #fff;
+  font: 700 9px/1 system-ui, sans-serif;
+  text-transform: uppercase;
+}
+
+.avatars span.has-icon {
+  background: #fff;
+}
+
+.avatars img {
+  width: 12px;
+  height: 12px;
+  object-fit: contain;
+}
+
+.avatars span + span {
+  margin-left: -5px;
+}
+
+.count {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.chevron {
+  width: 12px;
+  height: 12px;
+  margin-left: -2px;
+  color: var(--muted);
+  transition: transform 0.2s;
+}
+
+button[aria-expanded="true"] .chevron {
+  transform: rotate(180deg);
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 100%;
+  margin-left: 12px;
+  padding: 2px 0 2px 12px;
+  border-left: 2px solid var(--line);
   overflow-wrap: anywhere;
 }
 
-.summary, .sources {
+.evidence {
+  margin: 0;
+  color: var(--muted);
+}
+
+.sources {
   display: flex;
   flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  display: inline-flex;
   align-items: center;
-  gap: 4px 10px;
+  gap: 7px;
+  max-width: min(260px, 100%);
+  padding: 4px 11px 4px 5px;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 7%, transparent);
+  color: inherit;
+  font: 500 13px/1.3 system-ui, sans-serif;
+  text-decoration: none;
 }
 
-.evidence {
-  margin: 4px 0;
+.chip:hover {
+  background: color-mix(in srgb, currentColor 12%, transparent);
 }
 
-span[data-verdict] {
+.chip.more {
+  padding-inline: 11px;
+  cursor: pointer;
+}
+
+.chip .label {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.mark {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  overflow: hidden;
   border-radius: 4px;
-  padding: 0 4px;
-  font-weight: 600;
+  background: #fff;
+  color: #fff;
+  font: 700 10px/1 system-ui, sans-serif;
+  text-transform: uppercase;
 }
 
-span[data-verdict="yes"], span[data-verdict="probably_yes"] {
-  background: #d7f2e2;
-  color: #114c30;
+.mark img {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
 }
 
-span[data-verdict="no"], span[data-verdict="probably_no"] {
-  background: #fbe0dd;
-  color: #822e24;
-}
-
-a, button {
+a {
   color: inherit;
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
-button {
-  padding: 0;
-  border: 0;
-  background: none;
-  font: inherit;
-  cursor: pointer;
+@media (prefers-reduced-motion: reduce) {
+  .icon.spinner { animation: none; }
+  .chevron { transition: none; }
 }

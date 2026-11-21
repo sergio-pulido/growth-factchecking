@@ -7,11 +7,13 @@ await build({
     'capture-session': 'src/meet/capture-session.ts',
     'capture-controller': 'src/meet/capture-controller.ts',
     'meet-captions-dom': 'src/meet/meet-captions-dom.ts',
+    'inline-feed': 'src/inline-feed.ts',
   },
   bundle: true,
   format: 'esm',
   platform: 'node',
   target: 'node22',
   outdir: 'test-dist',
+  loader: { '.css': 'text' },
   logLevel: 'warning',
 });

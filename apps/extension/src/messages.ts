@@ -16,3 +16,5 @@ export type MeetDemoResponse = LocalResponse<MeetCheckResult>;
 
 export type DemoPostsRequest = { kind: 'x-demo-posts' };
 export type DemoPostsResponse = { postIds: string[] };
+export type FaviconRequest = { kind: 'favicon'; host: string };
+export type FaviconResponse = { dataUrl?: string };

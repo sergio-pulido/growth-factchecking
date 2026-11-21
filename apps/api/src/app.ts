@@ -8,6 +8,7 @@ import { createPitchDecider } from './meet/decisions.js';
 import { registerMeetDemo } from './meet/route.js';
 import { registerLiveFactCheck } from './live/route.js';
 import { registerConversations } from './conversations/route.js';
+import { registerFavicons } from './favicons.js';
 
 export function createApp(logger = true, backend = new MockFactsBackend()) {
   const app = Fastify({ logger, ajv: { customOptions: { coerceTypes: false, removeAdditional: false } } });
@@ -51,6 +52,7 @@ export function createApp(logger = true, backend = new MockFactsBackend()) {
   registerMeetDemo(app, apiKey ? createPitchDecider(apiKey) : undefined);
   registerLiveFactCheck(app);
   registerConversations(app);
+  registerFavicons(app);
 
   return app;
 }
