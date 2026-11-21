@@ -1,0 +1,14 @@
+[
+  {
+    "id": "meet-demo-lumen-founding",
+    "statement": "Según el registro mercantil ficticio de la demo, Lumen Labs se fundó en 2021 en Barcelona.",
+    "sourceUrl": "https://example.org/demo/lumen-labs/registro-mercantil",
+    "sourceTitle": "Registro mercantil ficticio (demo)"
+  },
+  {
+    "id": "meet-demo-lumen-mrr-october",
+    "statement": "El cierre contable ficticio de octubre de 2026 registra 31.200 euros de ingresos recurrentes mensuales para Lumen Labs.",
+    "sourceUrl": "https://example.org/demo/lumen-labs/cierre-octubre-2026",
+    "sourceTitle": "Cierre contable ficticio (demo)"
+  }
+]

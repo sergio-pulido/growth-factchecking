@@ -13,6 +13,11 @@
       "matches": ["https://x.com/home*", "https://x.com/*/status/*", "https://x.com/i/bookmarks*", "https://x.com/i/history*"],
       "js": ["x-content.js"],
       "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://meet.google.com/*"],
+      "js": ["meet-capture.js"],
+      "run_at": "document_idle"
     }
   ]
 }
