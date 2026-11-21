@@ -2,7 +2,7 @@
 
 Post texts checked against the live corpus on 21 November 2026. Use the public permalinks below in Chrome with the extension loaded. The cards appear under the original post and on the Politics timeline. Approved posts also render in **History → Bookmarks** when saved there.
 
-The fact checker compares each post with the corpus and shows the specific evidence statement. **Insufficient information** means it found no direct evidence. **Inconclusive** can still show a source when the post mixes a supported fact with claims or framing the corpus does not settle.
+The fact checker compares each post with the corpus and shows the specific evidence statement, in English. Facts written in Spanish carry a reviewed English `statement_en` for display; retrieval and verdicts still use the original text. **Insufficient information** means it found no direct evidence. **Inconclusive** can still show a source when the post mixes a supported fact with claims or framing the corpus does not settle.
 
 ## Supported examples
 
@@ -49,6 +49,6 @@ docker compose exec -T db psql -U factcheck -d factcheck -v ON_ERROR_STOP=1 < da
 npm start
 ```
 
-In `chrome://extensions`, enable Developer mode and load the unpacked `apps/extension/dist` directory. Open one of the public X permalinks above. If you already have the extension installed, click Reload on its card and refresh X.
+In `chrome://extensions`, enable Developer mode and load the unpacked `apps/extension/dist` directory. Open one of the public X permalinks above. If you already have the extension installed, click Reload on its card (it should read version 0.3.3) and refresh X. Restore the snapshot after `npm run db:migrate`, which adds the `statement_en` column it fills.
 
 `data/demo/x-posts.json` controls the approved Bookmarks posts. Update it and refresh X after editing; the extension loads the list from the local API.

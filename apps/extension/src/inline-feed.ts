@@ -15,6 +15,10 @@ const verdictLabels: Record<FactCheckResult['verdict'], string> = {
   no: 'Contradicted',
 };
 
+function englishStatement(source: FactCheckResult['sources'][number]) {
+  return source.statementEn ?? source.statement;
+}
+
 type Post = {
   text: HTMLElement;
   claim: string;
@@ -129,7 +133,7 @@ export function startInlineFeed({
     if (result?.sources.length) {
       const evidence = document.createElement('p');
       evidence.className = 'evidence';
-      evidence.textContent = result.sources[0].statement;
+      evidence.textContent = englishStatement(result.sources[0]);
       card.append(evidence);
     }
     const sources = document.createElement('div');
@@ -141,7 +145,7 @@ export function startInlineFeed({
       link.target = '_blank';
       link.rel = 'noopener noreferrer';
       link.textContent = new URL(source.sourceUrl).hostname;
-      link.title = source.statement;
+      link.title = englishStatement(source);
       sources.append(link);
     }
     if (sources.childElementCount) card.append(sources);
