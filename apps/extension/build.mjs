@@ -2,7 +2,7 @@ import { copyFile } from 'node:fs/promises';
 import { build } from 'esbuild';
 
 await build({
-  entryPoints: ['src/background.ts', 'src/overlay.ts', 'src/x-demo.ts'],
+  entryPoints: ['src/background.ts', 'src/overlay.ts', 'src/x-content.ts', 'src/x-demo.ts'],
   bundle: true,
   format: 'iife',
   outdir: 'dist',

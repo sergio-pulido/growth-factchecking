@@ -64,7 +64,7 @@ Mock embeddings are normalized 256-dimensional hashed word counts with a fixed s
 
 ## Verificación en el feed de X
 
-Con la API local en marcha y un corpus real importado, abre **Inicio** de X en Chrome y elige la pestaña **Politics**. Pulsa el icono de la extensión y **Verificar publicaciones en X**. Aparecen verificaciones y enlaces a las fuentes debajo de las publicaciones visibles con texto completo. Las publicaciones sin evidencia directa muestran **Información insuficiente**. Al desplazarte, la extensión comprueba las publicaciones que entran en pantalla. Para parar, abre el panel y pulsa **Desactivar verificaciones en X**.
+Con la API local en marcha y un corpus real importado, abre **Inicio** de X en Chrome y elige la pestaña **Politics**. La extensión comprueba automáticamente el texto completo de las publicaciones visibles a través de la API local y OpenAI. Si acabas de cargar o recargar la extensión, actualiza la página de X. Los veredictos y las fuentes aparecen debajo de las publicaciones. Las publicaciones sin evidencia directa muestran **Información insuficiente**. Al desplazarte, la extensión comprueba las publicaciones que entran en pantalla. Para parar, abre el panel y pulsa **Desactivar verificaciones en X**.
 
 La [demo local de publicaciones](http://127.0.0.1:3000/x-demo) usa el mismo renderizador y la API real sin instalar la extensión. Para cargar los hechos que necesita, ejecuta `npm run seed -- data/demo/x-politics.json` después de migrar la base de datos. Reinicia la API para limpiar los veredictos guardados.
 

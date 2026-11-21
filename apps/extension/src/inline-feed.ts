@@ -206,7 +206,13 @@ export function startInlineFeed({ available = isXHome, request = requestInExtens
   }
 
   const mutations = new MutationObserver(scheduleScan);
-  mutations.observe(document.body, { subtree: true, childList: true, characterData: true });
+  mutations.observe(document.body, {
+    attributes: true,
+    attributeFilter: ['aria-selected'],
+    childList: true,
+    characterData: true,
+    subtree: true,
+  });
   window.growthFactCheckingFeed = () => {
     stopped = true;
     mutations.disconnect();
