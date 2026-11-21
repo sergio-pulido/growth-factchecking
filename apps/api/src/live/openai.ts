@@ -59,9 +59,12 @@ export function createDecider(client: OpenAI, config: LiveConfig): Decider {
         {
           type: 'predicate',
           name: 'evidence_addresses_claim',
+          // Must say "same property", not "same assertion": the latter reads as "agrees with",
+          // which scored contradicting evidence as irrelevant (see docs/evidence/2026-11-21-live-smoke.md).
           instructions:
-            'Does at least one evidence item address the same subject and the same assertion as the claim, ' +
-            'so that it could confirm or contradict it?',
+            'Is at least one evidence item about the same subject and the same property as the claim ' +
+            '(for example the same entity and its location, date, quantity or attribute), so that it confirms ' +
+            'or contradicts the claim? Answer true when the evidence contradicts the claim.',
         },
         {
           type: 'choice',
