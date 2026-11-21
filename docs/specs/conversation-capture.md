@@ -81,6 +81,12 @@ and posts only the final transcript text back. The API key stays on the server.
   adding information. A relayed claim ("the slide says X") is extracted as X. References to unknown utterances
   are dropped; at most 20 claims per batch.
 
+## Fact-checks during a call
+
+Each extracted claim goes through the live pipeline with its own OpenAI client: `CLAIM_CHECK_TIMEOUT_MS` (default
+5000) and `CLAIM_CHECK_RETRIES` (default 1), up to `CLAIM_CHECK_CONCURRENCY` (4) at once. The interactive route
+`/api/fact-check/live` keeps 2.5 s and no retries. Evidence: `docs/evidence/2026-11-21-call-check-timeouts.md`.
+
 ## Data (`db/migrations/002_conversations.sql`)
 
 `conversations` (uuid) → `utterances` (unique `conversation_id, client_id`) → `claims` (verdict, sources jsonb,
