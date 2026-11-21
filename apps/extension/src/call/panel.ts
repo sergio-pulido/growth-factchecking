@@ -1,5 +1,5 @@
 // The FactCheck island over a call: a pill that morphs into the panel. Spec: docs/specs/call-overlay.md
-import { createBubbles, flashScreen } from './alerts.js';
+import { createBubbles, flashScreen, popPanel } from './alerts.js';
 import { analyzingCard, claimCard, ORDER, TONES, transcriptLine } from './cards.js';
 import { clock, h, icon } from './dom.js';
 import styles from './call.css';
@@ -61,7 +61,8 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
     h('div', { class: 'summary' }, h('div', { class: 'sum-line' }, sumText, sumAttention), distbar),
     h('div', { class: 'tabs' }, tabButtons.all, tabButtons.attention, tabButtons.transcript),
     notice, feed, foot);
-  const panel = h('aside', { class: 'panel', 'aria-label': 'Panel de FactCheck' }, face, body);
+  const tint = h('div', { class: 'verdict-tint', 'aria-hidden': 'true' });
+  const panel = h('aside', { class: 'panel', 'aria-label': 'Panel de FactCheck' }, face, body, tint);
   shadow.append(flash, h('div', { class: 'dock' }, bubbleList), panel);
 
   let open = false;
@@ -81,11 +82,15 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
     if (!item.verdict) return;
     flashScreen(flash, item.verdict);
     if (ATTENTION.has(item.verdict)) flashIds = new Set([...flashIds, item.id]);
+    // True / false: the island pops in the verdict colour, open or collapsed. Neutral keeps the quiet bump.
+    const popped = popPanel(panel, item.verdict);
     if (!open) {
       bubbles.push(item);
-      panel.classList.remove('bump');
-      void panel.offsetWidth;
-      panel.classList.add('bump');
+      if (!popped) {
+        panel.classList.remove('bump');
+        void panel.offsetWidth;
+        panel.classList.add('bump');
+      }
     }
   }
 

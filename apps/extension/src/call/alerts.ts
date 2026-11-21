@@ -11,6 +11,26 @@ const FLASH: Record<Verdict, string> = {
   yes: '#2FD27A', probably_yes: '#2FD27A', neutral: '#F7B63C', probably_no: '#FF5247', no: '#FF5247',
 };
 
+export type VerdictAlert = { color: string; strong: boolean };
+
+/** Colour alert for a verdict: true / false (and their "probably" forms) alert; neutral does not. */
+export function verdictAlert(verdict: Verdict): VerdictAlert | null {
+  if (verdict === 'neutral') return null;
+  return { color: FLASH[verdict], strong: verdict === 'yes' || verdict === 'no' };
+}
+
+/** Makes the island jump and fill with the verdict colour, whether it is open or collapsed. */
+export function popPanel(panel: HTMLElement, verdict: Verdict): boolean {
+  const alert = verdictAlert(verdict);
+  if (!alert || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
+  panel.style.setProperty('--pc', alert.color);
+  panel.classList.remove('pop', 'soft', 'bump');
+  void panel.offsetWidth; // restart the animation when verdicts arrive back to back
+  panel.classList.add('pop');
+  panel.classList.toggle('soft', !alert.strong);
+  return true;
+}
+
 type Bubble = { id: string; el: HTMLDivElement; height: number; remaining: number; startedAt: number; timer: number };
 
 export function createBubbles(container: HTMLElement, onOpen: (id: string) => void) {
@@ -104,11 +124,12 @@ export function createBubbles(container: HTMLElement, onOpen: (id: string) => vo
 }
 
 export function flashScreen(el: HTMLElement, verdict: Verdict) {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  el.style.setProperty('--fc', FLASH[verdict]);
-  const peak = verdict === 'yes' || verdict === 'no' ? 1 : 0.7;
+  const alert = verdictAlert(verdict);
+  if (!alert || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  el.style.setProperty('--fc', alert.color);
+  const peak = alert.strong ? 1 : 0.75;
   el.animate(
-    [{ opacity: 0 }, { opacity: peak, offset: 0.25 }, { opacity: peak, offset: 0.42 }, { opacity: 0 }],
-    { duration: 1300, easing: 'ease-in-out' },
+    [{ opacity: 0 }, { opacity: peak, offset: 0.2 }, { opacity: peak, offset: 0.45 }, { opacity: 0 }],
+    { duration: 1600, easing: 'ease-in-out' },
   );
 }
