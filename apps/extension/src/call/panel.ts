@@ -222,8 +222,6 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
   }
 
   function consent() {
-    const start = h('button', { class: 'btn primary', type: 'button' }, 'Start checking');
-    start.addEventListener('click', () => void session.start());
     const usesMicrophone = source.platform === 'meet' && source.capture === 'audio';
     const reads = source.capture === 'captions'
       ? h('li', {}, `reads the ${source.label} captions in this tab, with the speaker's name;`)
@@ -238,8 +236,8 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
         h('li', {}, 'checks each claim against the source corpus.')),
       h('span', {}, 'Tell the participants before you start. You can pause, stop and delete the conversation at any time.'));
     if (usesMicrophone) consentBlock.append(h('span', {}, 'Use Pause or Stop here to stop sending audio. Meet’s mute button controls Meet only.'));
-    if (source.language) consentBlock.append(languagePicker(source.language));
-    consentBlock.append(start);
+    // The language choice and "Start checking" live in the fixed footer (renderFoot), so they are never hidden
+    // below the scroll area when the consent text is longer than the panel.
     if (options.onCheckSelection) {
       const selection = h('button', { class: 'link', type: 'button' }, 'Check the text selected on the page');
       // Keep the page selection: a click on a button would otherwise clear it.
@@ -326,8 +324,16 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
   }
 
   function renderFoot(snap: SessionSnapshot) {
-    const buttons: HTMLButtonElement[] = [];
-    if (snap.state === 'live' || snap.state === 'paused') {
+    const buttons: HTMLElement[] = [];
+    if (snap.state === 'idle') {
+      const start = h('button', { class: 'btn primary wide', type: 'button' }, 'Start checking');
+      start.addEventListener('click', () => void session.start());
+      if (source.language) buttons.push(languagePicker(source.language));
+      buttons.push(start);
+    } else if (snap.state === 'starting') {
+      const starting = h('button', { class: 'btn primary wide', type: 'button', disabled: '' }, 'Starting…');
+      buttons.push(starting);
+    } else if (snap.state === 'live' || snap.state === 'paused') {
       const stop = h('button', { class: 'btn danger', type: 'button' }, 'Stop');
       stop.addEventListener('click', () => void session.stop());
       buttons.push(stop);
@@ -339,6 +345,7 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
       buttons.push(erase, again);
     }
     foot.hidden = buttons.length === 0;
+    foot.classList.toggle('stack', snap.state === 'idle' && Boolean(source.language));
     foot.replaceChildren(...buttons);
   }
 
