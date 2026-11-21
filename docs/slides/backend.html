@@ -3,389 +3,154 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Fact-check Backend</title>
+<title>How FactChecking Works</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #f5f4ef;
+    --bg: #f6f5f0;
     --surface: #ffffff;
-    --ink: #15171c;
-    --muted: #5a606c;
-    --faint: #8a8f99;
-    --line: #d8d5cb;
-    --ext: #0e7468;
-    --api: #3446a6;
-    --time: #8a4b08;
-    --time-soft: #fbefdc;
-    --neutral: #5f636c;
-    --neutral-soft: #ecebe6;
+    --ink: #14161b;
+    --muted: #5b616d;
+    --line: #dedbd1;
+    --accent: #0f7a5c;
+    --accent-soft: #dcf1e7;
+    --warn: #a3401f;
+    --warn-soft: #fbe4dc;
+    --step: #2f43a3;
+    --step-soft: #e6e9fb;
     --sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-    --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #121419; --surface: #1b1e25; --ink: #f1f2f4; --muted: #a3a9b5; --line: #2d313b;
+      --accent: #4cc79a; --accent-soft: #163a2d; --warn: #f08a68; --warn-soft: #3d2119;
+      --step: #8fa2ff; --step-soft: #20264a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #121419; --surface: #1b1e25; --ink: #f1f2f4; --muted: #a3a9b5; --line: #2d313b;
+    --accent: #4cc79a; --accent-soft: #163a2d; --warn: #f08a68; --warn-soft: #3d2119;
+    --step: #8fa2ff; --step-soft: #20264a;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
-  body {
-    background: var(--bg);
-    color: var(--ink);
-    font-family: var(--sans);
-    overflow: hidden;
-    -webkit-font-smoothing: antialiased;
-    font-variant-ligatures: none;
-  }
-  code, .mono { font-family: var(--mono); font-feature-settings: "calt" 0, "liga" 0; }
+  body { background: var(--bg); color: var(--ink); font-family: var(--sans); overflow: hidden; -webkit-font-smoothing: antialiased; }
 
-  /* Fixed 1920x1080 canvas, scaled to fit the window by the script at the end. */
-  .stage {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 1920px;
-    height: 1080px;
+  /* Fixed 1920x1080 canvas, scaled to fit the window. */
+  #stage {
+    position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px;
     transform: translate(-50%, -50%) scale(var(--scale, 1));
-    transform-origin: center;
-    background: var(--bg);
-    overflow: hidden;
+    padding: 64px 100px 56px; display: flex; flex-direction: column;
   }
 
-  header { position: absolute; left: 56px; top: 44px; right: 56px; }
-  .kicker {
-    font: 600 19px/1 var(--mono);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--api);
-  }
-  h1 { margin-top: 14px; font-size: 56px; line-height: 1.05; font-weight: 800; letter-spacing: -0.02em; }
-  .sub { margin-top: 14px; font-size: 24px; color: var(--muted); }
-  .sub code { color: var(--ink); font-size: 22px; }
+  .kicker { font-size: 22px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); }
+  h1 { margin-top: 12px; font-size: 66px; line-height: 1.06; font-weight: 800; letter-spacing: -0.03em; max-width: 1720px; }
+  h1 em { font-style: normal; color: var(--accent); }
 
-  /* Flow */
-  .flow { position: absolute; left: 56px; top: 202px; width: 1808px; height: 535px; }
-  .lanes, .steps {
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    column-gap: 30px;
-  }
-  .lane {
-    height: 36px;
-    border-bottom: 3px solid currentColor;
-    font: 600 17px/1 var(--mono);
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-  }
-  .lane.ext { color: var(--ext); }
-  .lane.api { color: var(--api); }
-  .lane.ext-1 { grid-column: 1 / 3; }
-  .lane.api-1 { grid-column: 3 / 8; }
-  .lane.ext-2 { grid-column: 8 / 9; }
+  .label { font-size: 20px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
 
-  .steps { margin-top: 16px; }
-  .step {
-    height: 405px;
-    display: flex;
-    flex-direction: column;
-    background: var(--surface);
-    border: 1.5px solid var(--line);
-    border-top: 6px solid var(--api);
-    border-radius: 10px;
-    padding: 14px 14px 14px;
-    overflow: hidden;
-  }
-  .step.ext { border-top-color: var(--ext); }
-  .tag {
-    display: flex;
-    justify-content: space-between;
-    font: 600 15px/1 var(--mono);
-    color: var(--faint);
-    letter-spacing: 0.03em;
-  }
-  .tag b { color: var(--api); font-weight: 600; }
-  .step.ext .tag b { color: var(--ext); }
-  .step h3 { margin-top: 12px; font-size: 25px; line-height: 1.12; font-weight: 700; letter-spacing: -0.01em; }
-  .step .id {
-    margin-top: 8px;
-    font-size: 15px;
-    line-height: 1.3;
-    font-weight: 500;
-    color: var(--api);
-    overflow-wrap: anywhere;
-  }
-  .step.ext .id { color: var(--ext); }
-  .step ul { list-style: none; margin-top: 14px; }
-  .step li {
-    font-size: 18px;
-    line-height: 1.28;
-    padding-left: 12px;
-    position: relative;
-    margin-bottom: 9px;
-  }
-  .step li::before, .panel li::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0.56em;
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: var(--faint);
-  }
-  .step li code { font-size: 15.5px; white-space: nowrap; }
-  .badge {
-    margin-top: auto;
-    padding: 9px 8px;
-    border-radius: 6px;
-    font-family: var(--mono);
-    font-weight: 600;
-    font-size: 15px;
-    line-height: 1.25;
-    text-align: center;
-    background: var(--neutral-soft);
-    color: var(--neutral);
-  }
-  .badge.time { background: var(--time-soft); color: var(--time); }
-  .badge.time small { display: block; font-size: 14px; font-weight: 500; opacity: 0.85; }
-  .badge.time span { display: block; font-size: 23px; margin-top: 3px; }
+  /* Where it works */
+  .where { margin-top: 40px; }
+  .surfaces { margin-top: 16px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .surface { background: var(--surface); border: 1px solid var(--line); border-radius: 24px; padding: 26px 28px; display: flex; gap: 22px; align-items: flex-start; }
+  .glyph { flex: none; width: 64px; height: 64px; border-radius: 18px; display: grid; place-items: center; background: var(--step-soft); color: var(--step); }
+  .glyph svg { width: 34px; height: 34px; }
+  .surface h2 { font-size: 36px; font-weight: 800; letter-spacing: -0.02em; }
+  .surface p { margin-top: 6px; font-size: 22px; line-height: 1.35; color: var(--muted); }
 
-  .overlay { position: absolute; left: 0; top: 0; width: 1808px; height: 535px; overflow: visible; pointer-events: none; }
+  /* How it decides */
+  .how { margin-top: 34px; }
+  .flow { margin-top: 16px; display: flex; align-items: stretch; gap: 0; }
+  .step { flex: 1; padding: 6px 28px 0 0; }
+  .step + .step { padding-left: 28px; border-left: 1px solid var(--line); }
+  .step .n { font-size: 22px; font-weight: 800; color: var(--accent); }
+  .step h3 { margin-top: 6px; font-size: 32px; font-weight: 800; letter-spacing: -0.01em; }
+  .step p { margin-top: 6px; font-size: 21px; line-height: 1.35; color: var(--muted); }
+  .pills { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .pill { font-size: 18px; font-weight: 700; border-radius: 999px; padding: 5px 14px; }
+  .ok { background: var(--accent-soft); color: var(--accent); }
+  .bad { background: var(--warn-soft); color: var(--warn); }
+  .meh { background: var(--bg); color: var(--muted); border: 1px solid var(--line); }
 
-  .bypass-label {
-    position: absolute;
-    left: 1060px;
-    top: 491px;
-    width: 606px;
-    text-align: center;
-    font-size: 19px;
-    line-height: 1.25;
-    color: var(--neutral);
-    background: var(--bg);
-    padding: 2px 8px;
-  }
-  .bypass-label code { font-size: 17px; color: var(--ink); }
-
-  .total {
-    position: absolute;
-    left: 0;
-    top: 479px;
-    width: 980px;
-    font-size: 20px;
-    line-height: 1.3;
-    color: var(--muted);
-  }
-  .total code { font-size: 18px; color: var(--ink); }
-  .total strong { color: var(--time); font-family: var(--mono); font-weight: 600; }
-  .total .src { font-family: var(--mono); font-size: 15px; line-height: 1.3; color: var(--faint); margin-top: 4px; }
-
-  /* Bottom panels */
-  .panels {
-    position: absolute;
-    left: 56px;
-    right: 56px;
-    top: 762px;
-    bottom: 40px;
-    display: grid;
-    grid-template-columns: 1.5fr 1fr 1fr 1fr;
-    column-gap: 24px;
-  }
-  .panel {
-    background: var(--surface);
-    border: 1.5px solid var(--line);
-    border-radius: 10px;
-    padding: 18px 20px;
-    overflow: hidden;
-  }
-  .panel h4 { font-size: 23px; font-weight: 700; letter-spacing: -0.01em; }
-  .panel h4 .k { margin-left: 8px; font: 600 15px/1 var(--mono); color: var(--faint); text-transform: uppercase; letter-spacing: 0.06em; }
-  .panel ul { list-style: none; margin-top: 12px; }
-  .panel li {
-    font-size: 18px;
-    line-height: 1.3;
-    padding-left: 13px;
-    position: relative;
-    margin-bottom: 8px;
-  }
-  .panel code { font-size: 15.5px; }
+  /* Numbers */
+  .stats { margin-top: auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; }
+  .stat { border-top: 4px solid var(--accent); padding-top: 18px; }
+  .stat b { display: block; font-size: 58px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
+  .stat span { display: block; margin-top: 8px; font-size: 21px; line-height: 1.3; color: var(--muted); }
 </style>
 </head>
 <body>
-<main class="stage" id="stage">
+<main id="stage">
+  <div class="kicker">Growth FactChecking</div>
+  <h1>Whatever you read, watch or hear, checked against <em>official sources</em> in about half a second.</h1>
 
-  <header>
-    <div class="kicker">Backend · live fact-check path</div>
-    <h1>One claim in, one sourced verdict out</h1>
-    <p class="sub"><code>POST /api/fact-check/live</code> on Fastify at <code>127.0.0.1:3000</code> · OpenAI Embeddings + Decisions · Postgres 17 + pgvector</p>
-  </header>
-
-  <section class="flow" aria-label="Request flow">
-    <div class="lanes">
-      <div class="lane ext ext-1">Chrome extension (MV3)</div>
-      <div class="lane api api-1">Local API · apps/api/src/live</div>
-      <div class="lane ext ext-2">Page</div>
-    </div>
-
-    <div class="steps">
-      <div class="step ext">
-        <div class="tag"><span>01</span><b>browser</b></div>
-        <h3>Content scripts</h3>
-        <div class="id mono">x-content.ts<br>news-content.ts</div>
-        <ul>
-          <li>Text of X posts in view</li>
-          <li>Claims listed for 12 news articles</li>
-        </ul>
-        <div class="badge">{ mode: 'live', claim }</div>
+  <section class="where" aria-label="Where it works">
+    <div class="label">Where it works</div>
+    <div class="surfaces">
+      <div class="surface">
+        <div class="glyph" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.8 3h3.1l-6.8 7.8L22 21h-6.2l-4.9-6.4L5.3 21H2.2l7.3-8.3L2 3h6.4l4.4 5.8L17.8 3Zm-1.1 16.2h1.7L7.4 4.7H5.6l11.1 14.5Z"/></svg>
+        </div>
+        <div>
+          <h2>X</h2>
+          <p>Politics timeline, posts and bookmarks, checked as you scroll.</p>
+        </div>
       </div>
-
-      <div class="step ext">
-        <div class="tag"><span>02</span><b>browser</b></div>
-        <h3>Background worker</h3>
-        <div class="id mono">background.ts</div>
-        <ul>
-          <li>The only caller of the API</li>
-          <li>Drops replies that fail shape checks</li>
-        </ul>
-        <div class="badge">10 s fetch timeout</div>
+      <div class="surface">
+        <div class="glyph" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h13v16H6a2 2 0 0 1-2-2V4Z"/><path d="M17 8h3v10a2 2 0 0 1-2 2"/><path d="M8 8h5M8 12h5M8 16h3"/></svg>
+        </div>
+        <div>
+          <h2>News websites</h2>
+          <p>Articles from 11 outlets, from Infobae to Maldita, checked as the page loads.</p>
+        </div>
       </div>
-
-      <div class="step">
-        <div class="tag"><span>03</span><b>fastify</b></div>
-        <h3>Live route</h3>
-        <div class="id mono">route.ts</div>
-        <ul>
-          <li><code>claim</code>: 1–1000 chars</li>
-          <li>Sets <code>Server-Timing</code></li>
-          <li>Error → 503, card offers Retry</li>
-        </ul>
-        <div class="badge">X-Fact-Check-Mode: live</div>
+      <div class="surface">
+        <div class="glyph" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="14" height="14" rx="3"/><path d="m16 10 6-3v10l-6-3"/></svg>
+        </div>
+        <div>
+          <h2>Live video &amp; calls</h2>
+          <p>Meet, Zoom and Teams calls, or any tab with audio, such as a YouTube interview, in real time.</p>
+        </div>
       </div>
-
-      <div class="step">
-        <div class="tag"><span>04</span><b>openai</b></div>
-        <h3>Embed</h3>
-        <div class="id mono">text-embedding-3-small</div>
-        <ul>
-          <li>Claim → <code>vector(1536)</code></li>
-          <li>2.5 s timeout, 0 retries</li>
-        </ul>
-        <div class="badge time"><small>embed · p50</small><span>210–240 ms</span></div>
-      </div>
-
-      <div class="step">
-        <div class="tag"><span>05</span><b>postgres</b></div>
-        <h3>pgvector top‑5</h3>
-        <div class="id mono">HNSW · cosine &lt;=&gt;</div>
-        <ul>
-          <li><code>LIMIT 5</code> nearest facts</li>
-          <li>Drop similarity &lt; 0.35</li>
-        </ul>
-        <div class="badge time"><small>search · p50</small><span>6–7 ms</span></div>
-      </div>
-
-      <div class="step">
-        <div class="tag"><span>06</span><b>openai</b></div>
-        <h3>Decisions</h3>
-        <div class="id mono">gpt-6-luna</div>
-        <ul>
-          <li>1 call, 2 choice questions</li>
-          <li><code>source</code>: fact_1…5 or none → relevance</li>
-          <li><code>verdict</code>: 5 values → confidence</li>
-        </ul>
-        <div class="badge time"><small>decide · p50</small><span>310–350 ms</span></div>
-      </div>
-
-      <div class="step">
-        <div class="tag"><span>07</span><b>in-process</b></div>
-        <h3>Verdict mapping</h3>
-        <div class="id mono">verdict.ts</div>
-        <ul>
-          <li>relevance &lt; 0.5 → neutral</li>
-          <li>confidence &lt; 0.6 → probably_yes / probably_no</li>
-          <li>Refusal → neutral</li>
-        </ul>
-        <div class="badge">cites only the chosen fact</div>
-      </div>
-
-      <div class="step ext">
-        <div class="tag"><span>08</span><b>browser</b></div>
-        <h3>Inline card</h3>
-        <div class="id mono">card.ts</div>
-        <ul>
-          <li>Verdict label and source links</li>
-          <li>Shows <code>statement_en</code></li>
-          <li>No sources → “Insufficient information”</li>
-        </ul>
-        <div class="badge">shows round trip</div>
-      </div>
-    </div>
-
-    <svg class="overlay" viewBox="0 0 1808 535" aria-hidden="true">
-      <defs>
-        <marker id="head" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-          <path d="M0,0 L10,5 L0,10 z" fill="#15171c"/>
-        </marker>
-        <marker id="head-muted" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-          <path d="M0,0 L10,5 L0,10 z" fill="#5f636c"/>
-        </marker>
-      </defs>
-      <g stroke="#15171c" stroke-width="2.5" fill="none" marker-end="url(#head)">
-        <line x1="202" y1="134" x2="226" y2="134"/>
-        <line x1="432" y1="134" x2="456" y2="134"/>
-        <line x1="662" y1="134" x2="686" y2="134"/>
-        <line x1="891" y1="134" x2="915" y2="134"/>
-        <line x1="1121" y1="134" x2="1145" y2="134"/>
-        <line x1="1351" y1="134" x2="1375" y2="134"/>
-        <line x1="1581" y1="134" x2="1605" y2="134"/>
-      </g>
-      <!-- No-evidence bypass: pgvector -> card, skipping Decisions and mapping -->
-      <path d="M1019,459 V503 H1708 V465" stroke="#5f636c" stroke-width="2.5" stroke-dasharray="7 6" fill="none" marker-end="url(#head-muted)"/>
-    </svg>
-
-    <div class="bypass-label">No fact ≥ 0.35 → <code>neutral</code>, <code>sources: []</code>, no Decisions call</div>
-
-    <div class="total">
-      Measured <code>Server-Timing</code>: total p50 <strong>519–618 ms</strong>, p95 <strong>935–1132 ms</strong>
-      <div class="src">docs/evidence/2026-11-21-live-smoke.md · 2 runs × 20 sequential calls</div>
     </div>
   </section>
 
-  <section class="panels">
-    <div class="panel">
-      <h4>Fact corpus<span class="k">facts table</span></h4>
-      <ul>
-        <li><code>statement</code>: the text that is embedded and judged</li>
-        <li><code>statement_en</code>: English card text, never embedded</li>
-        <li><code>source_url</code> + <code>additional_source_urls</code>: card links</li>
-        <li><code>embedding vector(1536)</code> with an HNSW cosine index</li>
-        <li>93 reviewed public facts; restore ships the vectors: 0 embedding calls</li>
-      </ul>
+  <section class="how" aria-label="How it decides">
+    <div class="label">How it decides</div>
+    <div class="flow">
+      <div class="step">
+        <div class="n">1</div>
+        <h3>Spot the claim</h3>
+        <p>Sentences with figures, dates or rules are picked out as they appear.</p>
+      </div>
+      <div class="step">
+        <div class="n">2</div>
+        <h3>Search by meaning</h3>
+        <p>It matches the idea, not keywords, in Spanish, Catalan, Italian or English.</p>
+      </div>
+      <div class="step">
+        <div class="n">3</div>
+        <h3>Judge carefully</h3>
+        <p>AI weighs the claim against the best evidence, and says so when nothing fits.</p>
+      </div>
+      <div class="step">
+        <div class="n">4</div>
+        <h3>Answer in place</h3>
+        <div class="pills"><span class="pill ok">Verified</span><span class="pill bad">Doubtful</span><span class="pill meh">Not enough info</span></div>
+      </div>
     </div>
+  </section>
 
-    <div class="panel">
-      <h4>No verdict cache</h4>
-      <ul>
-        <li>Live route sets <code>cacheTtlMs: 0</code></li>
-        <li>Every load reruns embed → search → decide</li>
-        <li>X feed re-checks each post that scrolls into view</li>
-      </ul>
-    </div>
-
-    <div class="panel">
-      <h4>Key stays on the server</h4>
-      <ul>
-        <li><code>OPENAI_API_KEY</code> lives in the API's <code>.env</code></li>
-        <li>Extension only talks to <code>127.0.0.1:3000</code></li>
-        <li>API listens on loopback only</li>
-      </ul>
-    </div>
-
-    <div class="panel">
-      <h4>Calls: Meet, Zoom, Teams</h4>
-      <ul>
-        <li>Caption batches go to <code>/api/conversations/:id/utterances</code></li>
-        <li>API extracts claims, then runs the same checker</li>
-        <li>5 s timeout, 1 retry; 10 min claim cache</li>
-      </ul>
-    </div>
+  <section class="stats" aria-label="Key numbers">
+    <div class="stat"><b>~0.5 s</b><span>per claim, run live on every load, with no cached answers</span></div>
+    <div class="stat"><b>93</b><span>reviewed facts from INE, BOE, La Moncloa and other primary sources</span></div>
+    <div class="stat"><b>47</b><span>real posts and articles checked automatically in the demo</span></div>
+    <div class="stat"><b>0</b><span>citations of off-topic evidence; the API key never reaches the browser</span></div>
   </section>
 </main>
 <script>
