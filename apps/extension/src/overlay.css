@@ -49,7 +49,7 @@ section.is-min {
   padding-bottom: 12px;
 }
 
-section.is-min > :not(header) {
+section.is-min > :not(header):not(.toast-stack) {
   display: none !important;
 }
 
@@ -317,4 +317,227 @@ a:hover {
   color: #fff;
   font-size: 14px;
   font-weight: 600;
+}
+
+/* Tomas's prototype: live caption, summary, tabs, skipped claims, retry, toasts. */
+.live-caption {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, .35);
+  font-size: 14px;
+}
+
+.live-caption strong {
+  display: block;
+  margin-bottom: 2px;
+  color: #a9adb8;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.live-caption mark {
+  background: none;
+  color: inherit;
+  border-bottom: 2px solid currentColor;
+}
+
+.live-caption mark[data-verdict="yes"], .live-caption mark[data-verdict="probably_yes"] { color: #86e3ae; }
+.live-caption mark[data-verdict="neutral"] { color: #f7d18a; }
+.live-caption mark[data-verdict="probably_no"] { color: #f6c27c; }
+.live-caption mark[data-verdict="no"] { color: #ff9f94; }
+
+.check-summary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 8px;
+  margin-top: 12px;
+  font-size: 13px;
+}
+
+.summary-attention {
+  color: #ff9f94;
+  font-weight: 600;
+}
+
+.distribution {
+  display: flex;
+  flex-basis: 100%;
+  gap: 2px;
+  height: 4px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, .08);
+}
+
+.distribution span[data-verdict="yes"], .verdict-scale span[data-verdict="yes"] { background: #3ccb78; }
+.distribution span[data-verdict="probably_yes"], .verdict-scale span[data-verdict="probably_yes"] { background: #8bd36f; }
+.distribution span[data-verdict="neutral"], .verdict-scale span[data-verdict="neutral"] { background: #9aa19d; }
+.distribution span[data-verdict="probably_no"], .verdict-scale span[data-verdict="probably_no"] { background: #f0a63a; }
+.distribution span[data-verdict="no"], .verdict-scale span[data-verdict="no"] { background: #f06a60; }
+
+.feed-tabs {
+  display: flex;
+  gap: 4px;
+  margin-top: 10px;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .06);
+}
+
+.feed-tabs button {
+  flex: 1;
+  height: 28px;
+  padding: 0 8px;
+  background: transparent;
+  color: #c9cbd3;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.feed-tabs button[aria-pressed="true"] {
+  background: rgba(255, 255, 255, .16);
+  color: #fff;
+  font-weight: 600;
+}
+
+.feed-tabs button span {
+  margin-left: 2px;
+  color: #a9adb8;
+}
+
+.feed-empty:not(:empty) {
+  margin-top: 12px;
+  color: #a9adb8;
+  font-size: 13px;
+}
+
+.check-quote {
+  font-weight: 500;
+}
+
+.meet-check > .check-note,
+.meet-check > .verdict-row,
+.meet-check > .verdict-pill {
+  margin-top: 6px;
+}
+
+.verdict-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.verdict-scale {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.verdict-scale span {
+  width: 14px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, .16);
+}
+
+.meet-check.is-skipped {
+  background: transparent;
+  border: 1px dashed rgba(255, 255, 255, .18);
+  color: #c9cbd3;
+}
+
+.meet-check[data-state="error"] .verdict-pill {
+  background: rgba(255, 255, 255, .08);
+  color: #c9cbd3;
+}
+
+.shimmer {
+  width: 70%;
+  height: 8px;
+  margin-top: 8px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .2), rgba(255, 255, 255, .06));
+  background-size: 200% 100%;
+  animation: factchecking-shimmer 1.2s linear infinite;
+}
+
+@keyframes factchecking-shimmer {
+  to { background-position: -200% 0; }
+}
+
+.link-button {
+  margin-top: 6px;
+  padding: 2px 0;
+  background: transparent;
+  color: #8fb4ff;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.link-button:hover {
+  background: transparent;
+  text-decoration: underline;
+}
+
+.check-ask {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(47, 100, 232, .16);
+  font-size: 13px;
+}
+
+.check-ask p {
+  flex: 1;
+}
+
+.check-ask small {
+  display: block;
+  color: #b9ccff;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.check-ask .link-button {
+  margin-top: 0;
+}
+
+.source-domain {
+  color: #a9adb8;
+  font-size: 12px;
+}
+
+.toast-stack {
+  display: none;
+}
+
+section.is-min > .toast-stack {
+  display: grid;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.toast {
+  display: grid;
+  justify-items: start;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .08);
+  text-align: start;
+  animation: factchecking-toast-in .35s ease-out;
+}
+
+.toast strong {
+  font-size: 14px;
+}
+
+@keyframes factchecking-toast-in {
+  from { opacity: 0; transform: translateY(-8px) scale(.96); }
 }

@@ -112,7 +112,14 @@ function mountOverlay() {
   sources.append(sourceTitle, sourceList);
   const scenarioView = document.createElement('div');
   scenarioView.append(demo, quote, form, status, sources);
-  const meet = createInterviewDemo((busy) => host.toggleAttribute('data-busy', busy));
+  const meet = createInterviewDemo((busy) => host.toggleAttribute('data-busy', busy), {
+    isMinimised: () => panel.classList.contains('is-min'),
+    expand: () => {
+      panel.classList.remove('is-min');
+      minimise.setAttribute('aria-pressed', 'false');
+      showMeet(true);
+    },
+  });
   const changeView = document.createElement('button');
   changeView.type = 'button';
   changeView.className = 'meet-switch';
@@ -150,7 +157,7 @@ function mountOverlay() {
     feed.append(toggle, note);
     scenarioView.prepend(feed);
   }
-  panel.append(changeView, scenarioView, meet.view);
+  panel.append(meet.toasts, changeView, scenarioView, meet.view);
 
   let mode: FactCheckMode = 'mock';
   let busy = true;
@@ -261,7 +268,7 @@ function mountOverlay() {
 
   const previousFocus = document.activeElement;
   function dismiss() {
-    meet.stop();
+    meet.destroy();
     host.remove();
     window.growthFactCheckingOverlay = undefined;
     if (previousFocus instanceof HTMLElement) previousFocus.focus();
