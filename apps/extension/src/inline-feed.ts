@@ -1,31 +1,10 @@
 import { CLAIM_MAX_LENGTH } from '@growth-factcheking/shared';
 import type { FactCheckResult } from '@growth-factcheking/shared';
-import type { FactCheckMessage, FactCheckResponse } from './messages.js';
-import styles from './inline-feed.css';
+import { createCardHost, renderCard, requestInExtension } from './card.js';
 
 const articleSelector = 'article[data-testid="tweet"]';
 const textSelector = '[data-testid="tweetText"]';
 const concurrentChecks = 2;
-const verdictLabels: Record<FactCheckResult['verdict'], string> = {
-  yes: 'Supported',
-  probably_yes: 'Likely supported',
-  neutral: 'Inconclusive',
-  probably_no: 'Likely contradicted',
-  no: 'Contradicted',
-};
-
-function englishStatement(source: FactCheckResult['sources'][number]) {
-  return source.statementEn ?? source.statement;
-}
-
-/** Short link text: the site without "www.", marked when it is a PDF and numbered when a card repeats it. */
-function sourceLabel(sourceUrl: string, seen: Map<string, number>) {
-  const url = new URL(sourceUrl);
-  const label = url.hostname.replace(/^www\./u, '') + (/\.pdf$/iu.test(url.pathname) ? ' (PDF)' : '');
-  const count = (seen.get(label) ?? 0) + 1;
-  seen.set(label, count);
-  return count === 1 ? label : `${label} (${count})`;
-}
 
 type Post = {
   text: HTMLElement;
@@ -88,11 +67,6 @@ function readPost(article: HTMLElement) {
   return { text, claim };
 }
 
-async function requestInExtension(claim: string) {
-  const response = await chrome.runtime.sendMessage<FactCheckMessage, FactCheckResponse>({ mode: 'live', claim });
-  if (response.ok && response.result.mode === 'live') return response.result.check;
-}
-
 type FeedOptions = {
   available?: () => boolean;
   accepts?: (article: HTMLElement) => boolean;
@@ -108,79 +82,26 @@ export function startInlineFeed({
   const posts = new Map<HTMLElement, Post>();
   const waiting = new Set<HTMLElement>();
   const running = new Set<string>();
-  const sheet = new CSSStyleSheet();
-  sheet.replaceSync(styles);
   let frame = 0;
   let stopped = false;
 
   function render(post: Post, result?: FactCheckResult) {
-    const host = post.card ?? document.createElement('div');
     if (!post.card) {
-      post.card = host;
-      host.dataset.growthFactchecking = '';
-      host.attachShadow({ mode: 'open' }).adoptedStyleSheets = [sheet];
-      host.addEventListener('click', (event) => event.stopPropagation());
-      post.text.after(host);
+      post.card = createCardHost();
+      post.text.after(post.card);
     }
-
-    const card = document.createElement('section');
-    const row = document.createElement('div');
-    row.className = 'summary';
-    const title = document.createElement('strong');
-    title.textContent = 'FactChecking';
-    const label = document.createElement('span');
-    if (result) {
-      const hasSources = result.sources.length > 0;
-      label.textContent = hasSources ? verdictLabels[result.verdict] : 'Insufficient information';
-      label.dataset.verdict = hasSources ? result.verdict : 'neutral';
-    } else {
-      label.textContent = post.state === 'failed' ? 'Could not check' : 'Checking…';
-    }
-    row.append(title, label);
-    if (result && post.elapsedMs !== undefined) {
-      const timing = document.createElement('span');
-      timing.className = 'timing';
-      timing.textContent = `${(post.elapsedMs / 1000).toFixed(1)} s`;
-      timing.title = 'Time to check this post against the sources';
-      row.append(timing);
-    }
-    card.append(row);
-
-    if (result?.sources.length) {
-      const evidence = document.createElement('p');
-      evidence.className = 'evidence';
-      evidence.textContent = englishStatement(result.sources[0]);
-      card.append(evidence);
-    }
-    const sources = document.createElement('div');
-    sources.className = 'sources';
-    sources.setAttribute('aria-label', 'Sources');
-    const labels = new Map<string, number>();
-    for (const source of result?.sources ?? []) {
-      const link = document.createElement('a');
-      link.href = source.sourceUrl;
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
-      link.textContent = sourceLabel(source.sourceUrl, labels);
-      link.title = englishStatement(source);
-      sources.append(link);
-    }
-    if (sources.childElementCount) card.append(sources);
-
-    if (post.state === 'failed') {
-      const retry = document.createElement('button');
-      retry.type = 'button';
-      retry.textContent = 'Retry';
-      retry.addEventListener('click', () => {
+    renderCard(post.card, {
+      state: post.state === 'idle' ? 'checking' : post.state,
+      result,
+      elapsedMs: post.elapsedMs,
+      onRetry: () => {
         post.state = 'idle';
         for (const [article, entry] of posts) {
           if (entry === post && entry.visible) waiting.add(article);
         }
         drain();
-      });
-      row.append(retry);
-    }
-    host.shadowRoot?.replaceChildren(card);
+      },
+    });
   }
 
   function complete(post: Post, result?: FactCheckResult) {

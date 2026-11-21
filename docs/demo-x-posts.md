@@ -53,6 +53,25 @@ The post repeats the official figure but claims the real rate is above 10%. The 
 
 - [Contradicted: "real" inflation above 10%](https://x.com/ORamosBets/status/2121214434433712356) — [Primary source](https://www.ine.es/dyngs/Prensa/IPC1026.htm), [Corroborating source 1](https://www.ine.es/dyngs/Prensa/IPC1026.pdf).
 
+## News articles
+
+The extension also checks approved news pages on load, with no button to press. `data/demo/news-articles.json` lists each article and the exact sentences to check; the API serves it at `GET /api/news-demo/articles`. Each card sits under the paragraph that contains its sentence and is checked again on every reload. An article with no listed sentences falls back to its headline and the first paragraphs that state a figure. A new site also needs its origin in the `news-content.js` matches of `apps/extension/manifest.json`.
+
+- [Qué! — Q3 employment survey](https://www.que.es/2026/10/27/epa-tercer-trimestre-2026-paro/) — 3 claims.
+- [Euronews — Canary Islands arrivals](https://es.euronews.com/2026/11/16/canarias-recibe-mas-de-11000-inmigrantes-irregulares) — 3 claims.
+- [Vozpópuli — irregular arrivals in 2026](https://www.vozpopuli.com/espana/las-cifras-que-desnudan-la-gestion-migratoria-de-sanchez-se-disparan-un-394-las-llegadas-irregulares-en-2026.html) — 3 claims.
+- [elDiario.es — experts' minimum-wage proposal (superseded)](https://www.eldiario.es/economia/expertos-trabajo-recomiendan-salario-minimo-suba-4-9-2027-1-281-euros-mes_1_13636267.html) — 3 claims.
+- [Qué! — October inflation](https://www.que.es/2026/11/15/ipc-octubre-2026-inflacion-espana/) — 2 claims.
+- [The Objective — October Social Security enrolment](https://theobjective.com/economia/2026-11-04/seguridad-social-sumo-186-612-afiliados-octubre/) — 3 claims.
+- [idealista — Q2 house prices](https://www.idealista.com/news/inmobiliario/vivienda/2026/09/07/912933-el-precio-de-la-vivienda-modera-su-ascenso-al-12-2-en-el-segundo-trimestre-segun-el) — 3 claims.
+- [Política Electoral — how CERA voting works](https://www.politicaelectoral.com/es/espana/conceptos-politicos/voto-cera) — 3 claims.
+- [Infobae — the 2027 minimum wage](https://www.infobae.com/espana/2026/11/17/asi-queda-la-subida-del-salario-minimo-para-2027-a-quien-le-afecta-y-como-cambia-la-nomina-y-los-impuestos-a-pagar/) — 4 claims.
+- [Maldita.es — the CERA census and the Ley de Nietos](https://maldita.es/desinfo/20261110/el-censo-para-las-elecciones-del-29-de-noviembre-es-el-cerrado-a-1-de-agosto-antes-de-que-el-supremo-paralizara-la-ley-de-nietos/) — 2 claims.
+- [The Officer — business demography 2024](https://theofficer.es/las-empresas-nacidas-en-2019-sobrevivieron-solo-un-424-tras-cinco-anos/) — 2 claims.
+- [papeleta.es — Sánchez–Feijóo debate claims](https://papeleta.es/verificador/cara-a-cara) — 5 claims.
+
+Most cards return **Supported** or **Likely supported**. The elDiario.es headline on the experts' 4.9% proposal returns **Insufficient information**: the corpus records only the 5.3% the Government approved. On papeleta.es, Sánchez's claim that irregular migration is "39% below that peak" returns **Likely contradicted** against Interior's +39.4% for 2026, and two other debate quotes return **Inconclusive**.
+
 ## Restore the demo corpus
 
 The pgvector snapshot contains the public-source facts and their existing 1,536-dimensional `text-embedding-3-small` vectors. It upserts by fact ID and requires no embedding API calls during import. Live claims still need a project OpenAI key for query embeddings and Decisions.
@@ -67,6 +86,6 @@ docker compose exec -T db psql -U factcheck -d factcheck -v ON_ERROR_STOP=1 < da
 npm start
 ```
 
-In `chrome://extensions`, enable Developer mode and load the unpacked `apps/extension/dist` directory. Open one of the public X permalinks above. If you already have the extension installed, click Reload on its card (it should read version 0.3.4) and refresh X. Restore the snapshot after `npm run db:migrate`, which adds the `statement_en` column it fills.
+In `chrome://extensions`, enable Developer mode and load the unpacked `apps/extension/dist` directory. Open one of the public X permalinks above. If you already have the extension installed, click Reload on its card (it should read version 0.4.0) and refresh X. Restore the snapshot after `npm run db:migrate`, which adds the `statement_en` column it fills.
 
 `data/demo/x-posts.json` controls the approved Bookmarks posts. Update it and refresh X after editing; the extension loads the list from the local API.

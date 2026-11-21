@@ -1,6 +1,6 @@
 import { CLAIM_MAX_LENGTH, DEMO_SCENARIOS, FACT_CHECK_PATH, MEET_DEMO_PATH, MEET_JUDGES, MEET_TRANSCRIPT, VERDICTS } from '@growth-factcheking/shared';
 import type { FactCheckResult, MeetCheckResult } from '@growth-factcheking/shared';
-import type { DemoPostsResponse, FactCheckMessage, FactCheckResponse, MeetDemoRequest, MeetDemoResponse } from './messages.js';
+import type { DemoPostsResponse, FactCheckMessage, FactCheckResponse, MeetDemoRequest, MeetDemoResponse, NewsArticle, NewsArticlesResponse } from './messages.js';
 
 chrome.action.onClicked.addListener(async ({ id }) => {
   if (id === undefined) return;
@@ -123,8 +123,32 @@ async function getDemoPosts(): Promise<DemoPostsResponse> {
   return { postIds: [] };
 }
 
+async function getNewsArticles(): Promise<NewsArticlesResponse> {
+  try {
+    const response = await fetch(new URL('/api/news-demo/articles', apiOrigin), { signal: AbortSignal.timeout(3000), redirect: 'error' });
+    if (response.ok) {
+      const result = await response.json() as Partial<NewsArticlesResponse>;
+      if (Array.isArray(result.articles)) {
+        return {
+          articles: result.articles.filter((article): article is NewsArticle =>
+            typeof article?.url === 'string' && URL.canParse(article.url)
+            && Array.isArray(article.claims) && article.claims.every((claim) => typeof claim === 'string')),
+        };
+      }
+    }
+  } catch (error) {
+    console.warn('Could not load the news demo articles.', error);
+  }
+  return { articles: [] };
+}
+
 chrome.runtime.onMessage.addListener((message: unknown, sender, respond) => {
   if (sender.id !== chrome.runtime.id || !sender.tab) return;
+  if (sender.url?.startsWith('https://') && typeof message === 'object' && message !== null
+    && 'kind' in message && message.kind === 'news-demo-articles') {
+    void getNewsArticles().then(respond);
+    return true;
+  }
   if (sender.url?.startsWith('https://x.com/') && typeof message === 'object' && message !== null
     && 'kind' in message && message.kind === 'x-demo-posts') {
     void getDemoPosts().then(respond);

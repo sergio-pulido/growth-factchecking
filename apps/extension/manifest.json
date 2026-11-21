@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Growth FactChecking",
   "description": "Panel de fact-checking sobre la pestaña activa.",
-  "version": "0.3.4",
+  "version": "0.4.0",
   "minimum_chrome_version": "120",
   "action": { "default_title": "Abrir Growth FactChecking" },
   "background": { "service_worker": "background.js" },
@@ -12,6 +12,23 @@
     {
       "matches": ["https://x.com/home*", "https://x.com/*/status/*", "https://x.com/i/bookmarks*", "https://x.com/i/history*"],
       "js": ["x-content.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://es.euronews.com/*",
+        "https://maldita.es/*",
+        "https://papeleta.es/*",
+        "https://theobjective.com/*",
+        "https://theofficer.es/*",
+        "https://www.eldiario.es/*",
+        "https://www.idealista.com/*",
+        "https://www.infobae.com/*",
+        "https://www.politicaelectoral.com/*",
+        "https://www.que.es/*",
+        "https://www.vozpopuli.com/*"
+      ],
+      "js": ["news-content.js"],
       "run_at": "document_idle"
     }
   ]

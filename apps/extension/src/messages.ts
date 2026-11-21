@@ -16,3 +16,8 @@ export type MeetDemoResponse = LocalResponse<MeetCheckResult>;
 
 export type DemoPostsRequest = { kind: 'x-demo-posts' };
 export type DemoPostsResponse = { postIds: string[] };
+
+/** An approved news article and the sentences on it to check; no sentences means automatic picks. */
+export type NewsArticle = { url: string; claims: string[] };
+export type NewsArticlesRequest = { kind: 'news-demo-articles' };
+export type NewsArticlesResponse = { articles: NewsArticle[] };
