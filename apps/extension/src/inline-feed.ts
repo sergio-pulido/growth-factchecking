@@ -1,13 +1,19 @@
 import { CLAIM_MAX_LENGTH } from '@growth-factcheking/shared';
 import type { FactCheckResult } from '@growth-factcheking/shared';
 import type { FactCheckMessage, FactCheckResponse } from './messages.js';
-import { verdictLabels } from './verdict-labels.js';
 import styles from './inline-feed.css';
 
 const articleSelector = 'article[data-testid="tweet"]';
 const textSelector = '[data-testid="tweetText"]';
 const concurrentChecks = 2;
 const cacheLimit = 200;
+const verdictLabels: Record<FactCheckResult['verdict'], string> = {
+  yes: 'Supported',
+  probably_yes: 'Likely supported',
+  neutral: 'Inconclusive',
+  probably_no: 'Likely contradicted',
+  no: 'Contradicted',
+};
 
 type Post = {
   text: HTMLElement;
@@ -27,7 +33,38 @@ export function isXHome() {
   return location.hostname === 'x.com' && /^\/home\/?$/.test(location.pathname);
 }
 
+function xStatusId(path: string) {
+  return /^\/(?:[a-z0-9_]+|i\/web)\/status\/(\d+)\/?$/iu.exec(path)?.[1];
+}
+
+export function isXPost() {
+  return location.hostname === 'x.com' && Boolean(xStatusId(location.pathname));
+}
+
+export function isXBookmarks() {
+  if (location.hostname !== 'x.com') return false;
+  if (/^\/i\/bookmarks(?:\/|$)/.test(location.pathname)) return true;
+  return /^\/i\/history\/?$/.test(location.pathname)
+    && Array.from(document.querySelectorAll('[role="tab"][aria-selected="true"]')).some(
+      (tab) => /^(bookmarks|marcadores|guardados)$/iu.test(tab.textContent?.trim() ?? ''),
+    );
+}
+
+export function isXFactCheckPage() {
+  return isXHome() || isXPost() || isXBookmarks();
+}
+
+export function articleStatusId(article: HTMLElement) {
+  for (const time of Array.from(article.querySelectorAll('time'))) {
+    const permalink = time.closest('a');
+    if (!permalink || permalink.parentElement?.closest('[role="link"]')) continue;
+    const id = xStatusId(permalink.pathname);
+    if (id) return id;
+  }
+}
+
 function readPost(article: HTMLElement) {
+  if (isXPost() && articleStatusId(article) !== xStatusId(location.pathname)) return;
   const text = Array.from(article.querySelectorAll<HTMLElement>(textSelector)).find((candidate) =>
     candidate.closest(articleSelector) === article && !candidate.closest('[role="link"]'),
   );
@@ -44,10 +81,15 @@ async function requestInExtension(claim: string) {
 
 type FeedOptions = {
   available?: () => boolean;
+  accepts?: (article: HTMLElement) => boolean;
   request?: (claim: string) => Promise<FactCheckResult | undefined>;
 };
 
-export function startInlineFeed({ available = isXHome, request = requestInExtension }: FeedOptions = {}) {
+export function startInlineFeed({
+  available = isXFactCheckPage,
+  accepts = () => true,
+  request = requestInExtension,
+}: FeedOptions = {}) {
   if (!available() || window.growthFactCheckingFeed) return;
   const posts = new Map<HTMLElement, Post>();
   const waiting = new Set<HTMLElement>();
@@ -68,33 +110,46 @@ export function startInlineFeed({ available = isXHome, request = requestInExtens
       post.text.after(host);
     }
 
+    const card = document.createElement('section');
     const row = document.createElement('div');
+    row.className = 'summary';
     const title = document.createElement('strong');
     title.textContent = 'FactChecking';
     const label = document.createElement('span');
     if (result) {
       const hasSources = result.sources.length > 0;
-      label.textContent = hasSources ? verdictLabels[result.verdict] : 'Información insuficiente';
+      label.textContent = hasSources ? verdictLabels[result.verdict] : 'Insufficient information';
       label.dataset.verdict = hasSources ? result.verdict : 'neutral';
     } else {
-      label.textContent = post.state === 'failed' ? 'No se pudo verificar' : 'Comprobando…';
+      label.textContent = post.state === 'failed' ? 'Could not check' : 'Checking…';
     }
     row.append(title, label);
+    card.append(row);
 
     if (result?.sources.length) {
-      const source = result.sources[0];
+      const evidence = document.createElement('p');
+      evidence.className = 'evidence';
+      evidence.textContent = result.sources[0].statement;
+      card.append(evidence);
+    }
+    const sources = document.createElement('div');
+    sources.className = 'sources';
+    sources.setAttribute('aria-label', 'Sources');
+    for (const source of result?.sources ?? []) {
       const link = document.createElement('a');
       link.href = source.sourceUrl;
       link.target = '_blank';
       link.rel = 'noopener noreferrer';
       link.textContent = new URL(source.sourceUrl).hostname;
       link.title = source.statement;
-      row.append(link);
+      sources.append(link);
     }
+    if (sources.childElementCount) card.append(sources);
+
     if (post.state === 'failed') {
       const retry = document.createElement('button');
       retry.type = 'button';
-      retry.textContent = 'Reintentar';
+      retry.textContent = 'Retry';
       retry.addEventListener('click', () => {
         post.state = 'idle';
         for (const [article, entry] of posts) {
@@ -104,7 +159,7 @@ export function startInlineFeed({ available = isXHome, request = requestInExtens
       });
       row.append(retry);
     }
-    host.shadowRoot?.replaceChildren(row);
+    host.shadowRoot?.replaceChildren(card);
   }
 
   function complete(post: Post, result?: FactCheckResult) {
@@ -129,7 +184,7 @@ export function startInlineFeed({ available = isXHome, request = requestInExtens
     } finally {
       running.delete(claim);
     }
-    if (!stopped && available() && article.isConnected && posts.get(article) === post && readPost(article)?.claim === claim) {
+    if (!stopped && available() && article.isConnected && posts.get(article) === post && accepts(article) && readPost(article)?.claim === claim) {
       complete(post, result);
     }
     drain();
@@ -143,7 +198,7 @@ export function startInlineFeed({ available = isXHome, request = requestInExtens
         waiting.delete(article);
         continue;
       }
-      const current = readPost(article);
+      const current = accepts(article) ? readPost(article) : undefined;
       if (current?.claim !== post.claim || current.text !== post.text) {
         waiting.delete(article);
         scheduleScan();
@@ -186,14 +241,14 @@ export function startInlineFeed({ available = isXHome, request = requestInExtens
       return;
     }
     for (const [article, post] of posts) {
-      const current = article.isConnected ? readPost(article) : undefined;
+      const current = article.isConnected && accepts(article) ? readPost(article) : undefined;
       if (!current || current.text !== post.text || current.claim !== post.claim
         || (post.card && post.card.previousElementSibling !== post.text)) {
         forget(article, post);
       }
     }
     for (const article of Array.from(document.querySelectorAll<HTMLElement>(articleSelector))) {
-      if (posts.has(article)) continue;
+      if (posts.has(article) || !accepts(article)) continue;
       const current = readPost(article);
       if (!current) continue;
       posts.set(article, { ...current, visible: false, state: 'idle' });

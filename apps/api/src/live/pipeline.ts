@@ -66,7 +66,9 @@ export function createFactChecker(deps: PipelineDeps): FactChecker {
       value = {
         result: {
           verdict: mapped.verdict,
-          sources: source ? [{ statement: source.statement, sourceUrl: source.sourceUrl }] : [],
+          sources: source
+            ? [source.sourceUrl, ...source.additionalSourceUrls].map((sourceUrl) => ({ statement: source.statement, sourceUrl }))
+            : [],
         },
         meta: {
           verdict: mapped.verdict,

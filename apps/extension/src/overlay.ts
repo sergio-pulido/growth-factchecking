@@ -1,7 +1,7 @@
 import { CLAIM_MAX_LENGTH, DEMO_SCENARIOS } from '@growth-factcheking/shared';
 import type { DemoScenario } from '@growth-factcheking/shared';
 import type { FactCheckMessage, FactCheckMode, FactCheckResponse } from './messages.js';
-import { isXHome, startInlineFeed } from './inline-feed.js';
+import { isXFactCheckPage, startInlineFeed } from './inline-feed.js';
 import { createMeetDemo } from './meet-demo.js';
 import styles from './overlay.css';
 import { verdictLabels } from './verdict-labels.js';
@@ -94,20 +94,20 @@ function mountOverlay() {
 
   showMeet(window.location.hostname === 'meet.google.com');
   changeView.addEventListener('click', () => showMeet(meet.view.hidden));
-  if (isXHome()) {
+  if (isXFactCheckPage()) {
     const active = Boolean(window.growthFactCheckingFeed);
     const feed = document.createElement('div');
     feed.className = 'feed-controls';
 
     const toggle = document.createElement('button');
     toggle.type = 'button';
-    toggle.textContent = active ? 'Desactivar verificaciones en X' : 'Verificar publicaciones en X';
+    toggle.textContent = active ? 'Pause inline checks' : 'Start inline checks';
 
     const note = document.createElement('p');
     note.className = 'demo-label';
     note.textContent = active
-      ? 'Las verificaciones están activas en esta pestaña.'
-      : 'Envía el texto de las publicaciones visibles a OpenAI a través de la API local.';
+      ? 'Inline checks are active in this tab.'
+      : 'Checks the text of visible posts through the local API and OpenAI.';
 
     toggle.addEventListener('click', () => {
       if (window.growthFactCheckingFeed) window.growthFactCheckingFeed();
