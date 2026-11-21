@@ -95,11 +95,12 @@ Design and UI contribution for the browser extension by Michella and Tomás. Tom
 
 ### Use case 1: video meeting
 
-A person in a video call (for example an investor meeting a founder on Google Meet) keeps the panel open beside the call. As each person speaks, the extension takes the spoken sentences, separates checkable statements (figures, dates, agreements) from questions, opinions and projections, and checks each statement against the documents available for that meeting. The panel shows the verdict, the evidence, and a suggested follow-up question the listener can ask while the call is still going. Nothing is said in the call by the extension; it only informs the person using it.
+A person in a video call keeps the panel open beside the call. As each person speaks, the extension takes the spoken sentences, separates checkable statements (figures, dates, agreements) from questions, opinions and projections, and checks each statement against the documents available for that meeting, such as the founder's pitch deck. The panel shows the verdict, the evidence, and a suggested follow-up question the listener can ask while the call is still going. The extension does not speak in the call; it only informs the person using it.
 
-- Example used for this scenario: a fictional startup, Nébula Salud. Clara, an investor, asks Mateo, the founder, about traction; his figures on customers, revenue, retention and a hospital pilot are checked against fictional company records.
+- Example: a founder pitches on a video call hosted by itnig, with OpenAI in the role of the investor. While the founder presents, the investor checks the figures they say (customers, revenue, retention, signed pilots) against the numbers in the founder's pitch deck and the documents shared before the call. Where the spoken figure and the deck differ, the panel flags it and suggests a question to ask.
+- This example is **illustrative and hypothetical**. itnig and OpenAI are named only to describe the setting of the hackathon demo; it does not describe a real meeting and implies no affiliation, partnership or endorsement.
 - Tomás's prototype shows this flow end to end with captions, the collapsed panel and verdict cards.
-- In the repository, the simulated call is `apps/extension/src/meet-demo.ts` with the API endpoint `POST /api/meet/demo/check` (see "Simulación de Google Meet" below). Sources and verdicts are fictional.
+- In the repository, the simulated call is `apps/extension/src/meet-demo.ts` with the API endpoint `POST /api/meet/demo/check` (see "Simulación de Google Meet" below). Its company, people, sources and verdicts are fictional.
 
 ### Use case 2: video interview
 
