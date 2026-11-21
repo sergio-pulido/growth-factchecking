@@ -26,13 +26,21 @@ function isUtterance(value: unknown): boolean {
     && typeof u.spokenAt === 'string' && !Number.isNaN(Date.parse(u.spokenAt));
 }
 
-/** The page URL sent with a conversation must be the page the message came from. */
-function samePage(pageUrl: unknown, senderUrl: string | undefined) {
+/**
+ * The page URL sent with a conversation must belong to the site the message came from. Only the origin is
+ * compared: single-page apps (YouTube, Meet, Teams) change the path without a page load, and the sender URL
+ * Chrome reports can lag behind it.
+ */
+function sameSite(pageUrl: unknown, senderUrl: string | undefined) {
   if (pageUrl === undefined) return true;
   if (typeof pageUrl !== 'string' || !senderUrl || !URL.canParse(pageUrl) || !URL.canParse(senderUrl)) return false;
-  const page = new URL(pageUrl);
-  const sender = new URL(senderUrl);
-  return page.origin === sender.origin && page.pathname === sender.pathname;
+  return new URL(pageUrl).origin === new URL(senderUrl).origin;
+}
+
+/** A message meant for the call overlay relay, valid or not. */
+export function looksLikeCallRequest(message: unknown): boolean {
+  return typeof message === 'object' && message !== null && 'kind' in message && typeof message.kind === 'string'
+    && /^(call|audio)-/u.test(message.kind);
 }
 
 export function isCallRequest(message: unknown, senderUrl: string | undefined): message is CallRequest {
@@ -42,7 +50,7 @@ export function isCallRequest(message: unknown, senderUrl: string | undefined): 
     case 'call-start':
       return typeof m.platform === 'string' && platform.test(m.platform)
         && CAPTURE_METHODS.some((method) => method === m.capture)
-        && optionalText(m.title, 300) && optionalText(m.pageUrl, 2048) && samePage(m.pageUrl, senderUrl);
+        && optionalText(m.title, 300) && optionalText(m.pageUrl, 2048) && sameSite(m.pageUrl, senderUrl);
     case 'call-send':
       return isId(m.id) && Array.isArray(m.utterances) && m.utterances.length > 0
         && m.utterances.length <= UTTERANCE_BATCH_MAX && m.utterances.every(isUtterance);

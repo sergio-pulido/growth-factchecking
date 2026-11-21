@@ -17,6 +17,11 @@ export type LiveConfig = {
   minConfidence: number;
   /** Per-call timeout for OpenAI requests. Real-time path: fail fast, no retries. */
   openaiTimeoutMs: number;
+  /**
+   * SDK retries per OpenAI call (timeouts, connection errors, 429, 5xx). Unset = 0 so the interactive route fails
+   * fast; conversation capture sets its own value (CLAIM_CHECK_RETRIES).
+   */
+  openaiMaxRetries?: number;
   /** In-memory result cache TTL. 0 disables the cache. */
   cacheTtlMs: number;
 };

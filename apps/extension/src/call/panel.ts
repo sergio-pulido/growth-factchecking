@@ -1,5 +1,5 @@
 // The FactCheck island over a call: a pill that morphs into the panel. Spec: docs/specs/call-overlay.md
-import { createBubbles, flashScreen } from './alerts.js';
+import { createBubbles, flashFrame } from './alerts.js';
 import { analyzingCard, claimCard, ORDER, TONES, transcriptLine } from './cards.js';
 import { clock, h, icon } from './dom.js';
 import styles from './call.css';
@@ -79,7 +79,8 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
 
   function onVerdict(item: ClaimItem) {
     if (!item.verdict) return;
-    flashScreen(flash, item.verdict);
+    // True / false: the border of the video (tab audio) or of the screen (call apps) turns green or red.
+    flashFrame(flash, item.verdict, source.capture === 'audio' ? 'video' : 'screen');
     if (ATTENTION.has(item.verdict)) flashIds = new Set([...flashIds, item.id]);
     if (!open) {
       bubbles.push(item);

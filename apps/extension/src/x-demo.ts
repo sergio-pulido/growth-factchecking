@@ -15,4 +15,8 @@ startInlineFeed({
       return await response.json() as FactCheckResult;
     }
   },
+  favicon: async (host) => {
+    const response = await fetch(`/api/favicon?host=${encodeURIComponent(host)}`, { signal: AbortSignal.timeout(10_000) });
+    if (response.ok) return URL.createObjectURL(await response.blob());
+  },
 });
