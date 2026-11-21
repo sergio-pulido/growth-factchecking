@@ -68,6 +68,14 @@ label {
   grid-column: 1 / -1;
 }
 
+.factchecking-mode {
+  grid-column: 1 / -1;
+}
+
+.factchecking-live-submit {
+  grid-column: 2;
+}
+
 select, button[type="submit"] {
   padding: 4px 8px;
   font: inherit;

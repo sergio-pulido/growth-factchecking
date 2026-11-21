@@ -6,6 +6,10 @@ La extensión de Chrome muestra una afirmación seleccionada o un texto de ejemp
 
 `POST /api/fact-check` acepta una afirmación y un parámetro de consulta opcional `scenario`. Sin escenario, recorre el corpus local simulado: genera un vector determinista, recupera coincidencias y devuelve sí solo para una afirmación textual idéntica; en el resto devuelve neutral. La ingestión local acepta lotes de hechos con ID estable, texto y URL. El sandbox en la raíz de la API permite importar y consultar el corpus sin credenciales. El resultado de cada escenario es fijo. Las fuentes son ficticias y usan dominios de ejemplo. La demo arranca sin credenciales ni base de datos.
 
+## Verificación de texto seleccionado
+
+El panel guarda en Chrome la fuente de verificación. **Simulado** es el valor inicial y conserva los escenarios de prueba. **Real** usa el texto seleccionado de la página y lo envía a `POST /api/fact-check/live`. El resultado muestra el veredicto y las fuentes devueltas por la API. Si el servicio falla, el panel permite cambiar de modo y volver a probar.
+
 ## Primer flujo funcional
 
 1. El usuario elige una afirmación desde la extensión.

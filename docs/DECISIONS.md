@@ -25,3 +25,7 @@ La extensión y la API comparten el guion ficticio. La extensión envía el ID d
 ## 006 · Pila local completamente simulada
 
 Primero se valida el flujo completo sin servicios externos. Cada instancia de la API tiene un corpus en memoria, vectores deterministas y clasificación simulada. La ingestión es idempotente por ID y conserva la fuente. El sandbox web permite importar y consultar datos; la ruta de verificación consulta ese mismo corpus cuando la solicitud no elige un escenario fijo. Los escenarios existentes siguen disponibles para errores y estados de interfaz. La similitud nunca determina un veredicto afirmativo: solo la coincidencia textual exacta produce el sí simulado.
+
+## 007 · Fuente de verificación elegida en Chrome
+
+La extensión guarda la preferencia en el almacenamiento local de Chrome. **Simulado** es el valor inicial. **Real** requiere texto seleccionado y el botón **Verificar** para enviarlo al backend. El panel comprueba el modo indicado por la API antes de presentar el resultado.

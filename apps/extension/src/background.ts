@@ -1,6 +1,6 @@
 import { CLAIM_MAX_LENGTH, DEMO_SCENARIOS, FACT_CHECK_PATH, MEET_DEMO_PATH, MEET_JUDGES, MEET_TRANSCRIPT, VERDICTS } from '@growth-factcheking/shared';
 import type { FactCheckResult, MeetCheckResult } from '@growth-factcheking/shared';
-import type { DemoRequest, DemoResponse, MeetDemoRequest, MeetDemoResponse } from './messages.js';
+import type { FactCheckMessage, FactCheckResponse, MeetDemoRequest, MeetDemoResponse } from './messages.js';
 
 chrome.action.onClicked.addListener(async ({ id }) => {
   if (id === undefined) return;
@@ -14,11 +14,14 @@ chrome.action.onClicked.addListener(async ({ id }) => {
   }
 });
 
-function isDemoRequest(message: unknown): message is DemoRequest {
-  return typeof message === 'object' && message !== null
-    && 'claim' in message && typeof message.claim === 'string'
-    && message.claim.trim().length > 0 && message.claim.length <= CLAIM_MAX_LENGTH
-    && 'scenario' in message && DEMO_SCENARIOS.some((scenario) => scenario === message.scenario);
+function isFactCheckMessage(message: unknown): message is FactCheckMessage {
+  if (typeof message !== 'object' || message === null || !('mode' in message)
+    || !('claim' in message) || typeof message.claim !== 'string'
+    || !message.claim.trim() || message.claim.length > CLAIM_MAX_LENGTH) {
+    return false;
+  }
+  return message.mode === 'live' || (message.mode === 'mock'
+    && 'scenario' in message && DEMO_SCENARIOS.some((scenario) => scenario === message.scenario));
 }
 
 function isMeetDemoRequest(message: unknown): message is MeetDemoRequest {
@@ -76,43 +79,51 @@ function isMeetCheckResult(value: unknown): value is MeetCheckResult {
     );
 }
 
-async function checkDemo({ claim, scenario }: DemoRequest): Promise<DemoResponse> {
-  const url = new URL(FACT_CHECK_PATH, apiOrigin);
-  url.searchParams.set('scenario', scenario);
+async function checkClaim(request: FactCheckMessage): Promise<FactCheckResponse> {
+  const url = new URL(request.mode === 'live' ? `${FACT_CHECK_PATH}/live` : FACT_CHECK_PATH, apiOrigin);
+  if (request.mode === 'mock') url.searchParams.set('scenario', request.scenario);
 
-  const response = await postJson(url, { claim }, 5000);
+  const response = await postJson(url, { claim: request.claim }, request.mode === 'live' ? 10_000 : 5000);
+  const mode = response.headers.get('X-Fact-Check-Mode');
 
   if (!response.ok) {
-    return {
-      ok: false,
-      message: response.status === 503 && response.headers.get('X-Fact-Check-Mode') === 'mock'
-        ? 'Error simulado. Elige otro escenario o vuelve a intentarlo.'
-        : 'La API local devolvió un error.',
-    };
+    if (response.status === 503 && mode === 'mock') {
+      return { ok: false, message: 'Error simulado. Elige otro escenario o vuelve a intentarlo.' };
+    }
+    if (response.status === 503 && request.mode === 'live') {
+      return { ok: false, message: 'La verificación real no está disponible. Comprueba la conexión de la API local con OpenAI y PostgreSQL.' };
+    }
+    if (response.status === 404 && request.mode === 'live') {
+      return { ok: false, message: 'Reinicia la API local con npm start para cargar la verificación real.' };
+    }
+    return { ok: false, message: 'La API local devolvió un error.' };
   }
 
+  if (mode !== request.mode) {
+    return { ok: false, message: 'La API local respondió en un modo distinto del seleccionado.' };
+  }
   const data: unknown = await response.json();
   if (!isFactCheckResult(data)) {
     return { ok: false, message: 'La API local devolvió un resultado inválido.' };
   }
-  return { ok: true, result: data };
+  return { ok: true, result: { check: data, mode } };
 }
 
 chrome.runtime.onMessage.addListener((message: unknown, sender, respond) => {
   if (sender.id !== chrome.runtime.id || !sender.tab) return;
 
-  let request: Promise<DemoResponse | MeetDemoResponse>;
+  let request: Promise<FactCheckResponse | MeetDemoResponse>;
   if (isMeetDemoRequest(message)) {
     request = checkMeetDemo(message);
-  } else if (isDemoRequest(message)) {
-    request = checkDemo(message);
+  } else if (isFactCheckMessage(message)) {
+    request = checkClaim(message);
   } else {
     return;
   }
 
   void request.then(respond, (error: unknown) => {
-    console.warn('Falló la solicitud de demostración.', error);
-    respond({ ok: false, message: 'No se pudo completar la solicitud. Comprueba que la API local esté en marcha.' } satisfies DemoResponse);
+    console.warn('Falló la solicitud a la API local.', error);
+    respond({ ok: false, message: 'No se pudo completar la solicitud. Comprueba que la API local esté en marcha.' } satisfies FactCheckResponse);
   });
   return true;
 });

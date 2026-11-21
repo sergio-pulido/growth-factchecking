@@ -46,10 +46,8 @@ The importer accepts a JSON array or `{"facts":[...]}`. Each entry needs a stabl
 
 ## Open items
 
-1. ~~Wire the route in `apps/api/src/app.ts`~~ done in `07946e2`.
-2. Extension: switch endpoint to `/api/fact-check/live` behind a setting (mock stays the default for UX work). Owner: Codex.
-3. Contract: consider adding `confidence` and per-source `similarity` to `FactCheckResult` once the UX needs them (proposal only).
-4. Calibrate the three thresholds with ~30 labelled claims over a real corpus. Defaults are unchanged; the smoke run only exercised 4 claims and a 6-pair probe.
-5. Latency: p50 618 / 519 ms meets the 800 ms target; p95 1132 / 935 ms comes from OpenAI variance (Embeddings in one run, Decisions in the other). Revisit only if the extension UX needs a tighter tail.
-6. Replace `data/facts.sample.json` (8 placeholder facts) with a real sourced corpus (the importer above validates it).
-7. Claim extraction (Meet captions, X posts): a separate step before this pipeline. Not in scope here.
+1. Contract: consider adding `confidence` and per-source `similarity` to `FactCheckResult` once the UX needs them (proposal only).
+2. Calibrate the thresholds with about 30 labelled claims over a sourced corpus. The initial smoke tests used four claims and a six-pair probe.
+3. Revisit latency if the extension UX needs a tighter tail. The measured p50 values of 618 and 519 ms met the 800 ms target. The p95 values of 1132 and 935 ms came from Embeddings in one run and Decisions in the other.
+4. Replace `data/facts.sample.json` (eight placeholder facts) with a sourced corpus.
+5. Add claim extraction for Meet captions and X posts before this pipeline.

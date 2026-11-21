@@ -4,8 +4,8 @@ Punto de partida para una extensión de Chrome que mostrará verificaciones sobr
 
 | Espacio de trabajo | Contenido inicial |
 | --- | --- |
-| `apps/extension` | Extensión Manifest V3 con escenarios de verificación y simulación de una conversación de Google Meet. |
-| `apps/api` | API local con `GET /health`, `POST /api/fact-check` y `POST /api/meet/demo/check`. |
+| `apps/extension` | Extensión Manifest V3 con verificación real, escenarios simulados y una conversación ficticia de Google Meet. |
+| `apps/api` | API local con `GET /health`, `POST /api/fact-check`, `POST /api/fact-check/live` y `POST /api/meet/demo/check`. |
 | `packages/shared` | Contrato TypeScript compartido por la extensión y la API. |
 
 ## Arranque local
@@ -23,7 +23,13 @@ En otra terminal, comprueba que la API responde.
 curl -fsS http://127.0.0.1:3000/health
 ```
 
-Para abrir el panel, entra en `chrome://extensions`, activa **Modo de desarrollador**, pulsa **Cargar descomprimida** y selecciona `apps/extension/dist`. Abre una página web y pulsa el icono de la extensión. Opcionalmente, selecciona texto antes de abrirla. En el panel, elige un escenario y pulsa **Probar**.
+Para abrir el panel, entra en `chrome://extensions`, activa **Modo de desarrollador**, pulsa **Cargar descomprimida** y selecciona `apps/extension/dist`. Abre una página web y pulsa el icono de la extensión.
+
+## Fuente de verificación
+
+Chrome recuerda la opción elegida en el panel. **Simulado** es la opción inicial y permite elegir un escenario de prueba. Para usar **Real**, selecciona una afirmación en la página, abre el panel y pulsa **Verificar**. La API busca evidencia en el corpus de PostgreSQL y envía los casos con evidencia a OpenAI Decisions.
+
+Configura `OPENAI_API_KEY` y `DATABASE_URL` en `.env`. Para preparar la base de datos e importar hechos con fuentes, sigue las [instrucciones del backend real](docs/specs/live-pipeline.md).
 
 ## Local mocked stack
 
@@ -101,6 +107,6 @@ Afirmación → Extensión → API
                           └─ OpenAI Decisions clasifica la afirmación con esos hechos
 ```
 
-La captura de conversaciones reales y la búsqueda de evidencia en PostgreSQL forman parte del flujo previsto.
+La captura de conversaciones reales forma parte del flujo previsto.
 
 [Especificación inicial](docs/specs/fact-checking-mvp.md) · [Estado del proyecto](docs/PROJECT_STATE.md) · [Decisiones de arquitectura](docs/DECISIONS.md)
