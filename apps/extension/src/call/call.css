@@ -32,14 +32,15 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .spacer { flex: 1; }
 
 /* ---------- Glass surfaces ---------- */
-/* Liquid glass: the backdrop is blurred, brightened and bent at the edges by the #gf-lens SVG filter (Chromium),
-   with a specular sheen on top and a light rim that is brighter where the light comes from (top left). */
+/* Liquid glass: the backdrop is blurred, then bent at the edges by the #gf-lens SVG filter (Chromium), then brightened.
+   Blur must come before url(): with the lens first, Chrome loses most of the blur and text behind shows through.
+   A specular sheen sits on top, with a light rim that is brighter where the light comes from (top left). */
 .panel, .bubble {
   position: absolute;
   color: var(--ink);
   background: var(--glass-tint);
   -webkit-backdrop-filter: blur(14px) saturate(190%) brightness(1.08);
-  backdrop-filter: url(#gf-lens) blur(14px) saturate(190%) brightness(1.08);
+  backdrop-filter: blur(14px) url(#gf-lens) saturate(190%) brightness(1.08);
   box-shadow:
     inset 1.5px 1.5px 0 -0.5px rgba(255,255,255,.55), inset -1px -1px 0 -0.5px rgba(255,255,255,.22),
     inset 0 0 18px rgba(255,255,255,.08), inset 0 -10px 22px -14px rgba(255,255,255,.25),
@@ -129,7 +130,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 @keyframes label-in { from { opacity: 0; filter: blur(4px); } }
 @media (prefers-reduced-motion: reduce) { .pf-checking { animation: none; color: var(--t2); } }
 .pf-btn {
-  width: 28px; height: 28px; border-radius: 50%; border: 0; display: grid; place-items: center; flex: none;
+  width: 28px; height: 28px; padding: 0; border-radius: 50%; border: 0; display: grid; place-items: center; flex: none;
   transition: transform .2s cubic-bezier(.32,.72,0,1), background .2s;
 }
 .pf-btn:hover { transform: scale(1.08); }
@@ -150,7 +151,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .live.off i { background: var(--t3); }
 @keyframes pulse { 50% { opacity: .3; } }
 .icon-btn {
-  border: 0; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
+  border: 0; padding: 0; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
   color: var(--t2); background: var(--surface-2);
 }
 .icon-btn:hover { color: var(--ink); }
@@ -296,7 +297,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .b-top .pill i { width: 5px; height: 5px; }
 .b-meta { font-size: 10.5px; color: var(--t3); flex: 1; }
 .b-x {
-  border: 0; width: 16px; height: 16px; border-radius: 50%; display: grid; place-items: center;
+  border: 0; padding: 0; width: 16px; height: 16px; border-radius: 50%; display: grid; place-items: center; flex: none;
   background: var(--surface-2); color: var(--t2); opacity: 0; transition: opacity .2s;
 }
 .bubble:hover .b-x, .b-x:focus-visible { opacity: 1; }
