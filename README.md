@@ -62,11 +62,11 @@ Mock embeddings are normalized 256-dimensional hashed word counts with a fixed s
 
 `npm run lint` and `npm run typecheck` are local checks. CI builds and runs the complete API tests. See the [live backend instructions](docs/specs/live-pipeline.md) to run PostgreSQL, import a sourced corpus and call `/api/fact-check/live`.
 
-## Verificación en el feed de X
+## Live fact checks on X
 
-Con la API local en marcha y un corpus real importado, abre **Inicio** de X en Chrome y elige la pestaña **Politics**. La extensión comprueba automáticamente el texto completo de las publicaciones visibles a través de la API local y OpenAI. Si acabas de cargar o recargar la extensión, actualiza la página de X. Los veredictos y las fuentes aparecen debajo de las publicaciones. Las publicaciones sin evidencia directa muestran **Información insuficiente**. Al desplazarte, la extensión comprueba las publicaciones que entran en pantalla. Para parar, abre el panel y pulsa **Desactivar verificaciones en X**.
+Open the **Politics** timeline, X **Bookmarks** with demo posts saved, or an individual post from the [curated demo](docs/demo-x-posts.md). After installing or reloading the extension, refresh the X page. The extension checks complete, visible post text through the local API and OpenAI. It shows verdicts and source links below posts, and **Insufficient information** when the local corpus lacks direct evidence. On a post page it checks the linked post and skips the replies. Use **Pause inline checks** in the toolbar panel to stop.
 
-La [demo local de publicaciones](http://127.0.0.1:3000/x-demo) usa el mismo renderizador y la API real sin instalar la extensión. Para cargar los hechos que necesita, ejecuta `npm run seed -- data/demo/x-politics.json` después de migrar la base de datos. Reinicia la API para limpiar los veredictos guardados.
+La [demo local de publicaciones](http://127.0.0.1:3000/x-demo) usa el mismo renderizador y la API real sin instalar la extensión. Para cargar los hechos que necesita, ejecuta `npm run seed -- data/demo/x-politics.json` después de migrar la base de datos. Reinicia la API para limpiar los veredictos guardados. To load the sourced facts for the real X posts instead, run `npm run seed -- data/demo/x-sourced-facts.json`.
 
 ## Simulación de Google Meet
 

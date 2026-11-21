@@ -6,7 +6,7 @@ import { mapVerdict } from '../dist/live/verdict.js';
 import { registerLiveFactCheck, LIVE_FACT_CHECK_PATH } from '../dist/live/route.js';
 
 const thresholds = { minRelevance: 0.5, minConfidence: 0.6 };
-const fact = { id: 'f1', statement: 'Water boils at 100 C at sea level.', sourceUrl: 'https://example.org/f1', sourceTitle: null, similarity: 0.8 };
+const fact = { id: 'f1', statement: 'Water boils at 100 C at sea level.', sourceUrl: 'https://example.org/f1', sourceTitle: null, additionalSourceUrls: ['https://example.net/f1'], similarity: 0.8 };
 
 function deps(overrides = {}) {
   const calls = { embed: 0, search: 0, decide: 0 };
@@ -41,12 +41,15 @@ test('no evidence returns neutral without calling Decisions', async () => {
   assert.equal(calls.decide, 0);
 });
 
-test('evidence + decision returns the verdict and only the selected evidence', async () => {
+test('the verdict includes all links for the selected fact and no unrelated links', async () => {
   const otherwiseRelevant = { ...fact, id: 'f2', statement: 'Water freezes at 0 C.' };
   const { deps: d } = deps({ search: async () => [otherwiseRelevant, fact] });
   const out = await createFactChecker(d)('Water boils at 100 degrees');
   assert.equal(out.result.verdict, 'yes');
-  assert.deepEqual(out.result.sources, [{ statement: fact.statement, sourceUrl: fact.sourceUrl }]);
+  assert.deepEqual(out.result.sources, [fact.sourceUrl, ...fact.additionalSourceUrls].map((sourceUrl) => ({
+    statement: fact.statement,
+    sourceUrl,
+  })));
 });
 
 test('retrieved facts that do not address the claim are not cited', async () => {

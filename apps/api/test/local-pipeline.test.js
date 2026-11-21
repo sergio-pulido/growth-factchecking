@@ -49,6 +49,9 @@ test('invalid batches are rejected before any writes; fixed demo scenarios still
 test('live ingestion accepts both corpus formats and rejects invalid source records', () => {
   assert.deepEqual(parseFacts({ facts: [fact] }), [fact]);
   assert.deepEqual(parseFacts([fact]), [fact]);
+  const corroborated = { ...fact, additionalSourceUrls: ['https://example.org/other-source'] };
+  assert.deepEqual(parseFacts([corroborated]), [corroborated]);
+  assert.throws(() => parseFacts([{ ...fact, additionalSourceUrls: [fact.sourceUrl] }]), /duplicate source/);
   assert.throws(() => parseFacts({ facts: [fact, fact] }), /duplicate ID/);
   assert.throws(() => parseFacts([fact, { ...fact, id: 'other', sourceUrl: 'file:///tmp/source' }]), /HTTP/);
 });
