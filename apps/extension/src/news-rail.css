@@ -8,11 +8,11 @@
   width: 300px;
   font: 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
   color-scheme: light;
-  --bg: #ffffff;
+  --bg: rgb(255 255 255 / 72%);
   --ink: #18181b;
   --muted: #71717a;
-  --line: #e4e4e7;
-  --hover: #f4f4f5;
+  --line: rgb(24 24 27 / 10%);
+  --hover: rgb(24 24 27 / 6%);
   /* Tailwind CSS v4 palette: green-600, amber-600, red-600, zinc-500, blue-500. */
   --ok: oklch(62.7% 0.194 149.214);
   --warn: oklch(66.6% 0.179 58.318);
@@ -24,11 +24,11 @@
 @media (prefers-color-scheme: dark) {
   :host {
     color-scheme: dark;
-    --bg: #18181b;
+    --bg: rgb(24 24 27 / 70%);
     --ink: #f4f4f5;
     --muted: #a1a1aa;
-    --line: #3f3f46;
-    --hover: #27272a;
+    --line: rgb(255 255 255 / 12%);
+    --hover: rgb(255 255 255 / 8%);
   }
 }
 
@@ -41,6 +41,8 @@
   border: 1px solid var(--line);
   border-radius: 16px;
   background: var(--bg);
+  -webkit-backdrop-filter: blur(16px) saturate(1.6);
+  backdrop-filter: blur(16px) saturate(1.6);
   color: var(--ink);
   box-shadow: 0 12px 32px rgb(0 0 0 / 14%), 0 2px 6px rgb(0 0 0 / 8%);
   overflow: hidden;
