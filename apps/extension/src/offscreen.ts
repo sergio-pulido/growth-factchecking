@@ -72,7 +72,7 @@ async function connect(current: Capture, token: string) {
   });
   if (!response.ok) {
     peer.close();
-    throw new Error(`OpenAI rechazó la transcripción en directo (${response.status}).`);
+    throw new Error(`OpenAI rejected the live transcription (${response.status}).`);
   }
   const answer = await response.text();
   // Stopped while the call was being set up: do not leave an open connection behind.
@@ -87,7 +87,7 @@ async function reconnect(current: Capture) {
   current.peer?.close();
   current.peer = null;
   if (current.reconnects >= MAX_RECONNECTS) {
-    emit({ source: 'offscreen', kind: 'error', message: 'Se perdió la conexión con la transcripción en directo.' });
+    emit({ source: 'offscreen', kind: 'error', message: 'The connection to the live transcription was lost.' });
     return;
   }
   current.reconnects += 1;
@@ -98,7 +98,7 @@ async function reconnect(current: Capture) {
     const reply = await chrome.runtime.sendMessage<OffscreenEvent, { ok: boolean; token?: string }>(
       { source: 'offscreen', kind: 'token-needed' },
     );
-    if (!reply?.ok || !reply.token) throw new Error('Sin permiso de transcripción.');
+    if (!reply?.ok || !reply.token) throw new Error('No transcription token.');
     if (current.stopping || capture !== current) return;
     await connect(current, reply.token);
     current.reconnects = 0;
@@ -151,7 +151,7 @@ chrome.runtime.onMessage.addListener((message: unknown, sender, respond) => {
   if (command.kind === 'start') {
     start(command.streamId, command.token).then(
       () => respond({ ok: true }),
-      (error: unknown) => respond({ ok: false, message: error instanceof Error ? error.message : 'No se pudo capturar el audio.' }),
+      (error: unknown) => respond({ ok: false, message: error instanceof Error ? error.message : 'Could not capture the audio.' }),
     );
     return true;
   }

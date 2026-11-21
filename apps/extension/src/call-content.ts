@@ -4,10 +4,12 @@
 import type { UtteranceBatchResult } from '@growth-factcheking/shared';
 import { createAudioSource } from './call/audio-source.js';
 import { createCaptionSource } from './call/caption-source.js';
-import { isBatchResult, isFactCheckResult } from './call/http-transport.js';
+import { isBatchResult, isClaimCheck, isFactCheckResult } from './call/http-transport.js';
 import { mountCallPanel } from './call/panel.js';
 import type { CallPanel } from './call/panel.js';
-import { platformOf } from './call/platforms.js';
+import { createMeetSource } from './call/meet-source.js';
+import { MEET, platformOf } from './call/platforms.js';
+import type { CaptionPlatform, CallPlatform } from './call/platforms.js';
 import { CallTransportError } from './call/types.js';
 import type { CallTransport, CaptureSource } from './call/types.js';
 import type { CallReply, CallRequest } from './messages.js';
@@ -26,9 +28,9 @@ async function relay(request: CallRequest): Promise<unknown> {
   try {
     reply = await chrome.runtime.sendMessage<CallRequest, CallReply>(request);
   } catch {
-    throw new CallTransportError('La extensión se ha recargado. Actualiza esta pestaña.');
+    throw new CallTransportError('The extension was reloaded. Refresh this tab.');
   }
-  if (!reply) throw new CallTransportError('La extensión no respondió.');
+  if (!reply) throw new CallTransportError('The extension did not respond.');
   if (!reply.ok) throw new CallTransportError(reply.message, reply.code);
   return reply.result;
 }
@@ -37,13 +39,13 @@ const transport: CallTransport = {
   async start(input) {
     const result = await relay({ kind: 'call-start', ...input });
     if (typeof result !== 'object' || result === null || !('id' in result) || typeof result.id !== 'string') {
-      throw new CallTransportError('La API local no devolvió un identificador de conversación.');
+      throw new CallTransportError('The local API did not return a conversation id.');
     }
     return { id: result.id };
   },
   async send(id, utterances): Promise<UtteranceBatchResult> {
     const result = await relay({ kind: 'call-send', id, utterances });
-    if (!isBatchResult(result)) throw new CallTransportError('La API local devolvió afirmaciones inválidas.');
+    if (!isBatchResult(result)) throw new CallTransportError('The local API returned invalid claims.');
     return result;
   },
   async end(id) {
@@ -54,7 +56,12 @@ const transport: CallTransport = {
   },
   async recheck(claim) {
     const result = await relay({ kind: 'call-recheck', claim });
-    if (!isFactCheckResult(result)) throw new CallTransportError('La API local devolvió un resultado inválido.');
+    if (!isFactCheckResult(result)) throw new CallTransportError('The local API returned an invalid result.');
+    return result;
+  },
+  async claims(id) {
+    const result = await relay({ kind: 'call-claims', id });
+    if (!Array.isArray(result) || !result.every(isClaimCheck)) throw new CallTransportError('The local API returned invalid claims.');
     return result;
   },
   badge(count) {
@@ -75,13 +82,17 @@ function mount(source: CaptureSource): CallPanel {
   return panel;
 }
 
+function captionSource(platform: CallPlatform | CaptionPlatform): CaptureSource {
+  return platform === MEET ? createMeetSource() : createCaptionSource(platform as CaptionPlatform);
+}
+
 /** Shows or removes the pill on call apps as the user joins or leaves a call. */
 function sync() {
   const platform = platformOf(location);
   const panel = window.growthFactCheckingCall;
   if (!platform || panel?.capture === 'audio') return;
   const inCall = platform.isCall(location, document);
-  if (inCall && !panel) mount(createCaptionSource(platform));
+  if (inCall && !panel) mount(captionSource(platform));
   else if (!inCall && panel) {
     panel.destroy();
     window.growthFactCheckingCall = undefined;

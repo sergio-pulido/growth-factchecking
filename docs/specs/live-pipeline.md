@@ -42,7 +42,7 @@ npm run seed -- /absolute/path/to/demo-facts.json
 npm run start:live --workspace @growth-factcheking/api
 ```
 
-The importer accepts a JSON array or `{"facts":[...]}`. Each entry needs a stable `id`, a `statement`, and an HTTP(S) `sourceUrl`. The optional `sourceTitle` identifies the original publication. The importer validates the full file and commits it in one transaction. Reusing an ID replaces the stored fact. Restart the API after importing while it is running to clear cached verdicts. Use sourced demo facts in place of the placeholder `data/facts.sample.json`.
+The importer accepts a JSON array or `{"facts":[...]}`. Each entry needs a stable `id`, a `statement`, and an HTTP(S) `sourceUrl`. The optional `sourceTitle` identifies the original publication. Add up to five corroborating `additionalSourceUrls` for the same statement. A verdict cites links attached to the selected fact. The importer validates the full file and commits it in one transaction. Reusing an ID replaces the stored fact. Restart the API after importing while it is running to clear cached verdicts. Use sourced demo facts in place of the placeholder `data/facts.sample.json`.
 
 ## Open items
 

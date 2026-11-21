@@ -11,6 +11,8 @@ export interface CallTransport {
   end(conversationId: string): Promise<void>;
   remove(conversationId: string): Promise<void>;
   recheck(claim: string): Promise<FactCheckResult>;
+  /** Every claim stored for the conversation (to recover claims whose batch response was lost). */
+  claims(conversationId: string): Promise<ClaimCheck[]>;
   /** Number of claims that need attention, for the toolbar badge. */
   badge?(count: number): void;
 }
@@ -30,7 +32,7 @@ export type SourceSink = {
 export interface CaptureSource {
   readonly capture: CaptureMethod;
   readonly platform: string;
-  /** "Google Meet", "esta pestaña"… */
+  /** "Google Meet", "this tab"… */
   readonly label: string;
   /** Shown while the source finds nothing to read. */
   readonly hint: string;

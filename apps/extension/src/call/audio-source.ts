@@ -5,7 +5,7 @@ import type { TabEvent } from '../messages.js';
 import { takeSentences } from './segmenter.js';
 import type { CaptureSource, Segment, SourceSink } from './types.js';
 
-export const AUDIO_SPEAKER = 'Audio de la pestaña';
+export const AUDIO_SPEAKER = 'Tab audio';
 // The live model sends text in bursts and trickles out the last words of a turn seconds apart: a finished
 // sentence is cut after a short silence, an unfinished one only after a long one.
 const QUIET_FINISHED_MS = 1500;
@@ -21,7 +21,7 @@ const segment = (text: string): Segment => ({ speaker: AUDIO_SPEAKER, text, kind
 const LANGUAGES = [
   { value: 'es', label: 'Español' },
   { value: 'en', label: 'English' },
-  { value: '', label: 'Otro' },
+  { value: '', label: 'Other' },
 ] as const;
 
 /** Default spoken language: the browser's, when offered. The hint fixes most misheard words. */
@@ -87,8 +87,8 @@ export function createAudioSource(control: AudioControl): CaptureSource {
   return {
     capture: 'audio',
     platform: 'web',
-    label: 'esta pestaña',
-    hint: 'Esperando audio de esta pestaña…',
+    label: 'this tab',
+    hint: 'Waiting for audio from this tab…',
     anchorBottom: 24,
     language: {
       options: LANGUAGES,

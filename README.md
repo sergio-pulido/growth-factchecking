@@ -1,11 +1,11 @@
 # Growth FactChecking
 
-Extensión de Chrome que verifica en directo lo que se dice en Google Meet, Zoom, Teams o cualquier pestaña con audio, y las publicaciones de X.
+Chrome extension that fact-checks what is said live on Google Meet, Zoom, Teams or any tab with audio, and posts on X.
 
 | Espacio de trabajo | Contenido inicial |
 | --- | --- |
-| `apps/extension` | Extensión Manifest V3: panel de verificación en llamadas, verificación del texto seleccionado y del feed de X. |
-| `apps/api` | API local con `GET /health`, `POST /api/fact-check`, `POST /api/fact-check/live`, conversaciones (`/api/conversations`) y `POST /api/transcription/token`. |
+| `apps/extension` | Manifest V3 extension: call overlay, selected-text checks and X checks. |
+| `apps/api` | Local API: `GET /health`, `POST /api/fact-check`, `POST /api/fact-check/live`, conversations (`/api/conversations`) and `POST /api/transcription/token`. |
 | `packages/shared` | Contrato TypeScript compartido por la extensión y la API. |
 
 ## Arranque local
@@ -62,24 +62,44 @@ Mock embeddings are normalized 256-dimensional hashed word counts with a fixed s
 
 `npm run lint` and `npm run typecheck` are local checks. CI builds and runs the complete API tests. See the [live backend instructions](docs/specs/live-pipeline.md) to run PostgreSQL, import a sourced corpus and call `/api/fact-check/live`.
 
-## Verificación en el feed de X
+## Live fact checks on X
 
-Con la API local en marcha y un corpus real importado, abre **Inicio** de X en Chrome y elige la pestaña **Politics**. La extensión comprueba automáticamente el texto completo de las publicaciones visibles a través de la API local y OpenAI. Si acabas de cargar o recargar la extensión, actualiza la página de X. Los veredictos y las fuentes aparecen debajo de las publicaciones. Las publicaciones sin evidencia directa muestran **Información insuficiente**. Al desplazarte, la extensión comprueba las publicaciones que entran en pantalla. Para parar, abre el panel y pulsa **Desactivar verificaciones en X**.
+Open the **Politics** timeline, X **Bookmarks** with demo posts saved, or an individual post from the [curated demo](docs/demo-x-posts.md). After installing or reloading the extension, refresh the X page. The extension checks complete, visible post text through the local API and OpenAI. It shows verdicts and source links below posts, and **Insufficient information** when the local corpus lacks direct evidence. On a post page it checks the linked post and skips the replies. Use **Pause inline checks** in the toolbar panel to stop.
 
-La [demo local de publicaciones](http://127.0.0.1:3000/x-demo) usa el mismo renderizador y la API real sin instalar la extensión. Para cargar los hechos que necesita, ejecuta `npm run seed -- data/demo/x-politics.json` después de migrar la base de datos. Reinicia la API para limpiar los veredictos guardados.
+La [demo local de publicaciones](http://127.0.0.1:3000/x-demo) usa el mismo renderizador y la API real sin instalar la extensión. Para cargar los hechos que necesita, ejecuta `npm run seed -- data/demo/x-politics.json` después de migrar la base de datos. Reinicia la API para limpiar los veredictos guardados. To restore the public-source corpus with its existing embeddings, follow the [snapshot instructions](docs/demo-x-posts.md#restore-the-demo-corpus). To regenerate only the real X demo facts, run `npm run seed -- data/demo/x-sourced-facts.json`.
 
-## Verificación en directo de llamadas
+## Overlay design (Michella and Tomás)
 
-Pulsa el icono de la extensión en la pestaña de la llamada para abrir el panel de FactCheck. En Google Meet, Zoom (cliente web) y Microsoft Teams (web), el botón **Verificar esta llamada** también aparece solo, abajo a la derecha, al entrar en la llamada. El panel explica qué va a hacer; avisa a los participantes y pulsa **Empezar a verificar**.
+Design and UI contribution for the browser extension by Michella and Tomás. Tomás built the interactive prototype (`FactCheck Prototype.html`); its interaction model is the call overlay described below.
 
-- **Meet, Zoom web y Teams web:** la extensión lee los subtítulos de la propia aplicación, con el nombre de quien habla. Si están apagados, intenta activarlos; si no puede, el panel indica cómo hacerlo.
-- **Cualquier otra pestaña** (otro servicio de vídeo, un webinar, YouTube…): la extensión escucha el audio de la pestaña y lo transcribe con OpenAI. Elige el idioma de la conversación antes de empezar. El audio no se guarda y los participantes aparecen sin nombre. Tu propio micrófono no forma parte del audio de la pestaña.
+**Goal.** Show fact checks next to the content a person is already watching, reading or listening to, in a panel that stays out of the way: each claim with a verdict and links to its sources, without leaving the page.
 
-Cada frase se guarda en la API local, que extrae las afirmaciones verificables y las contrasta con el corpus. Con el panel recogido, cada veredicto aparece como una burbuja sobre el botón y tiñe los bordes de la pantalla. **Pausar** deja de enviar lo que se dice, **Detener** cierra la conversación y **Borrar conversación** la elimina de la base de datos. Desde el panel también puedes verificar el texto seleccionado en la página.
+**Selection panel** (`apps/extension/src/overlay.css`, `overlay.ts`): floating glass panel, movable by its header, minimisable, with a soft glow while a check runs; English verdict labels (True, Likely true, Neutral, Likely false, False) and source links with their domain. It checks the text selected on a page and controls the X checks.
 
-Necesita la API con `OPENAI_API_KEY` y `DATABASE_URL`, la base de datos migrada y un corpus importado. Las aplicaciones de escritorio de Zoom o Teams quedan fuera del alcance de una extensión de Chrome: usa su versión web.
+**Call overlay** (`apps/extension/src/call/`), from Tomás's prototype:
 
-[Especificación del panel de llamadas](docs/specs/call-overlay.md)
+- A collapsed pill with live waves, pause and stop, that morphs into a glass panel.
+- Summary line (checked, in progress, needs attention) with a bar showing the mix of verdicts.
+- Tabs: All, Needs attention (False and Likely false) and Transcript.
+- Each claim card: speaker, minute, 5-step verdict scale, a one-line reading of the verdict and its sources; "Not checked" with Retry when the check fails.
+- The screen edge briefly tints with the verdict colour when a result arrives; with the panel collapsed, new verdicts appear as bubbles above the pill, and clicking one opens the panel on that claim.
+
+## Live fact-checking on calls
+
+Click the extension icon on the call's tab to open the FactCheck overlay. On Google Meet, Zoom (web client) and Microsoft Teams (web), the **Check this call** pill also appears on its own once you are in a call. The panel says what it will do; tell the participants, then press **Start checking**.
+
+- **Meet, Zoom web and Teams web:** the extension reads the app's own captions, with the speaker's name, and turns them on if they are off. Meet captions go through the GF-03 caption engine ([spec](docs/specs/meet-captions-capture.md)).
+- **Any other tab** (another video service, a webinar, a YouTube interview…): the extension captures the tab's audio and transcribes it with OpenAI. Pick the conversation language before starting. Audio is never stored and speakers are not named. Your own microphone is not part of the tab's audio.
+
+Each sentence is stored by the local API, which extracts the checkable claims and checks them against the corpus. **Pause** stops sending what is said, **Stop** ends the conversation and **Delete conversation** erases it from the database. There are no simulated calls: the overlay only runs over real pages.
+
+**Use case 1: video meeting.** An investor meeting a founder on Google Meet keeps the pill in the corner. As each person speaks, the founder's figures, dates and agreements are checked against the documents in the corpus and flagged when the sources contradict them. Nothing is said in the call by the extension; it only informs the person using it.
+
+**Use case 2: video interview.** Someone watching a long-form interview on YouTube clicks the extension icon and checks the audio of that tab. Verdicts describe whether the available sources support a statement; they do not evaluate the speaker, a party or a policy.
+
+It needs the API with `OPENAI_API_KEY` and `DATABASE_URL`, a migrated database and an imported corpus. The Zoom and Teams desktop apps are out of reach for a Chrome extension: use their web versions. The Meet acceptance test runs a scripted caption timeline against the real API: `API_ORIGIN=http://127.0.0.1:3000 npm run test:e2e --workspace @growth-factcheking/extension` (corpus: `data/demo/meet-startup.json`).
+
+[Call overlay spec](docs/specs/call-overlay.md)
 
 ## Escenarios de prueba
 
@@ -110,6 +130,6 @@ Afirmación → Extensión → API
                           └─ OpenAI Decisions clasifica la afirmación con esos hechos
 ```
 
-Las conversaciones se capturan desde los subtítulos de Meet, Zoom web y Teams web, o desde el audio de cualquier pestaña.
+Conversations are captured from Meet, Zoom web and Teams web captions, or from any tab's audio.
 
 [Especificación inicial](docs/specs/fact-checking-mvp.md) · [Estado del proyecto](docs/PROJECT_STATE.md) · [Decisiones de arquitectura](docs/DECISIONS.md)

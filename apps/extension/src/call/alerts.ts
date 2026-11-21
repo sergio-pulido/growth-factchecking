@@ -56,7 +56,7 @@ export function createBubbles(container: HTMLElement, onOpen: (id: string) => vo
 
   function push(item: ClaimItem) {
     if (!item.verdict) return;
-    const close = h('button', { class: 'b-x', type: 'button', 'aria-label': 'Descartar' }, icon('close'));
+    const close = h('button', { class: 'b-x', type: 'button', 'aria-label': 'Dismiss' }, icon('close'));
     const evidence = item.sources[0]?.statement ?? NO_EVIDENCE;
     const el = h('div', { class: 'bubble', role: 'status' },
       h('div', { class: 'b-content' },

@@ -1,16 +1,16 @@
 {
   "manifest_version": 3,
   "name": "Growth FactChecking",
-  "description": "Verifica en directo lo que se dice en Google Meet, Zoom, Teams o cualquier pestaña con audio.",
-  "version": "0.3.0",
+  "description": "Live fact-checking for what is said on Google Meet, Zoom, Teams or any tab with audio.",
+  "version": "0.4.0",
   "minimum_chrome_version": "120",
-  "action": { "default_title": "Abrir Growth FactChecking" },
+  "action": { "default_title": "Open Growth FactChecking" },
   "background": { "service_worker": "background.js" },
   "permissions": ["activeTab", "scripting", "storage", "tabCapture", "offscreen"],
   "host_permissions": ["http://127.0.0.1/*"],
   "content_scripts": [
     {
-      "matches": ["https://x.com/home*"],
+      "matches": ["https://x.com/home*", "https://x.com/*/status/*", "https://x.com/i/bookmarks*", "https://x.com/i/history*"],
       "js": ["x-content.js"],
       "run_at": "document_idle"
     },

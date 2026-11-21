@@ -1,13 +1,19 @@
-// Caption readers for web call apps. Each app ships obfuscated or test-id markup that changes without notice,
-// so every reader has a structural fallback. Selectors are best-effort: check them first if capture stops.
+// Web call apps the overlay knows. Meet captions are read by the GF-03 engine (meet-source.ts); Zoom and Teams
+// use the generic readers below. Each app's markup changes without notice, so every reader has a structural
+// fallback. Selectors are best-effort: check them first if capture stops.
 import type { SpeakerKind } from '@growth-factcheking/shared';
 import type { CaptionLine } from './segmenter.js';
 
-export type CaptionPlatform = {
+export type CallPlatform = {
   id: 'meet' | 'zoom' | 'teams';
   label: string;
   /** True when the page is a call (not a lobby, chat or landing page). */
   isCall(location: Location, root: ParentNode): boolean;
+};
+
+/** A call app read by the generic caption reader. */
+export type CaptionPlatform = CallPlatform & {
+  id: 'zoom' | 'teams';
   findRegion(root: ParentNode): HTMLElement | null;
   readLines(region: HTMLElement): CaptionLine[];
   /** Hint shown when captions are not on screen. */
@@ -69,25 +75,14 @@ export function turnOnCaptions(root: ParentNode): boolean {
   return true;
 }
 
-const meet: CaptionPlatform = {
+export const MEET: CallPlatform = {
   id: 'meet',
   label: 'Google Meet',
   isCall: ({ hostname, pathname }) => hostname === 'meet.google.com' && /^\/[a-z]{3,4}-[a-z]{4}-[a-z]{3,4}(?:\/|$)/u.test(pathname),
-  findRegion: (root) => first(root, [
-    'div[role="region"][jsname="dsyhDe"]',
-    'div[jsname="dsyhDe"]',
-    'div[role="region"][aria-label="Captions" i]',
-    'div[role="region"][aria-label="Subtítulos" i]',
-    'div[role="region"][aria-label*="caption" i]',
-    'div[role="region"][aria-label*="subtítulo" i]',
-  ]),
-  readLines: (region) => readBlocks(region, { block: '.nMcdL', speaker: '.NWpY1d, .KcIKyf', text: '.ygicle, .bh44bd, .iTTPOb' }),
-  hint: 'Activa los subtítulos (CC) de Meet: FactCheck lee lo que muestran.',
-  anchorBottom: 96,
 };
 
 // Zoom web client (app.zoom.us/wc/...). Its captions do not always name the speaker.
-const zoom: CaptionPlatform = {
+export const ZOOM: CaptionPlatform = {
   id: 'zoom',
   label: 'Zoom',
   isCall: ({ hostname, pathname }) => /(^|\.)zoom\.us$/u.test(hostname) && pathname.startsWith('/wc/'),
@@ -102,12 +97,12 @@ const zoom: CaptionPlatform = {
     speaker: '[class*="subtitle__name"], [class*="speaker-name"]',
     text: '[class*="subtitle__text"], .live-transcription-subtitle__item-text',
   }),
-  hint: 'Activa los subtítulos de Zoom (Captions › Show Captions): FactCheck lee lo que muestran.',
+  hint: 'Turn on Zoom captions (Captions › Show Captions): FactCheck reads what they show.',
   anchorBottom: 90,
 };
 
 // Microsoft Teams on the web (work and personal).
-const teams: CaptionPlatform = {
+export const TEAMS: CaptionPlatform = {
   id: 'teams',
   label: 'Microsoft Teams',
   isCall: ({ hostname }, root) => /^teams\.(microsoft\.com|live\.com|cloud\.microsoft)$/u.test(hostname)
@@ -122,16 +117,14 @@ const teams: CaptionPlatform = {
     speaker: '[data-tid="author"]',
     text: '[data-tid="closed-caption-text"]',
   }),
-  hint: 'Activa los subtítulos en directo de Teams (Más › Idioma y voz › Mostrar subtítulos en directo).',
+  hint: 'Turn on Teams live captions (More › Language and speech › Show live captions).',
   anchorBottom: 24,
 };
 
-export const PLATFORMS: readonly CaptionPlatform[] = [meet, zoom, teams];
-
 /** The call app this page belongs to, whether or not a call is running. */
-export function platformOf({ hostname }: Location): CaptionPlatform | null {
-  if (hostname === 'meet.google.com') return meet;
-  if (/(^|\.)zoom\.us$/u.test(hostname)) return zoom;
-  if (/^teams\.(microsoft\.com|live\.com|cloud\.microsoft)$/u.test(hostname)) return teams;
+export function platformOf({ hostname }: Location): CallPlatform | CaptionPlatform | null {
+  if (hostname === 'meet.google.com') return MEET;
+  if (/(^|\.)zoom\.us$/u.test(hostname)) return ZOOM;
+  if (/^teams\.(microsoft\.com|live\.com|cloud\.microsoft)$/u.test(hostname)) return TEAMS;
   return null;
 }

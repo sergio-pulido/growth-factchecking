@@ -1,0 +1,152 @@
+{
+  "facts": [
+    {
+      "id": "es-cera-2026-correo-consulado",
+      "statement": "For Spain's 29 November 2026 general election, eligible CERA voters sending their postal vote from abroad to their consular office must dispatch it no later than 24 November 2026.",
+      "sourceUrl": "https://www.lamoncloa.gob.es/serviciosdeprensa/notasprensa/interior/Paginas/voto-extranjero-elecciones-generales-29n.aspx",
+      "sourceTitle": "Interior / La Moncloa — voting from abroad, 20 November 2026",
+      "additionalSourceUrls": [
+        "https://www.exteriores.gob.es/Consulados/boston/es/Comunicacion/Noticias/Paginas/Articulos/ELECCIONES-GENERALES-DE-29-DE-NOVIEMBRE-DE-2026.aspx",
+        "https://www.exteriores.gob.es/Consulados/boston/es/Comunicacion/Noticias/Documents/Calendario%20de%20votaciones-Elecciones_Generales_2026.pdf"
+      ]
+    },
+    {
+      "id": "es-barcelona-contratos-2019-2025",
+      "statement": "Registered new residential rental contracts in Barcelona municipality fell from 51,294 in 2019 to 30,789 in 2025, a decrease of about 40.0% relative to 2019.",
+      "sourceUrl": "https://habitatge.gencat.cat/web/.content/home/dades/estadistiques/01_Estadistiques_de_construccio_i_mercat_immobiliari/03_Mercat_de_lloguer/02_Lloguers_per_ambits_geografics/Fitxers_contractes/municipis_trimestral_contractes.xlsx",
+      "sourceTitle": "Generalitat de Catalunya — municipal rental-contract workbook",
+      "additionalSourceUrls": [
+        "https://www.idescat.cat/indicadors/?col=1&id=aec&n=15708&t=202000",
+        "https://beteve.cat/economia/nous-contractes-cauen-40-per-cent-barcelona/"
+      ]
+    },
+    {
+      "id": "ar-tesla-2026-1120-local",
+      "statement": "Tesla's first store in Argentina was inaugurated on 20 November 2026, as recorded in the official Casa Rosada launch address.",
+      "sourceUrl": "https://www.casarosada.gob.ar/slider-principal/51440-discurso-del-presidente-javier-milei-en-el-lanzamiento-oficial-de-tesla-en-la-argentina/amp",
+      "sourceTitle": "Casa Rosada — Tesla launch address, 20 November 2026",
+      "additionalSourceUrls": [
+        "https://www.tesla.com/es_ar/event/tesla-is-coming-to-argentina"
+      ]
+    },
+    {
+      "id": "es-atenea-2026-guia-voto",
+      "statement": "As of 21 November 2026, Atenea had published a November 2026 report titled 'Votar con criterio', presented as a voting guide for Spain's 29 November election.",
+      "sourceUrl": "https://atenea.org/medios/informes/votar-con-criterio/guia-voto-votar-con-criterio-atenea-2026-actualizada-21-noviembre.pdf",
+      "sourceTitle": "Atenea — Votar con criterio, November 2026 edition",
+      "additionalSourceUrls": [
+        "https://atenea.org/informes"
+      ]
+    },
+    {
+      "id": "es-banca-2026-1121-anuncio",
+      "statement": "On 21 November 2026, Pedro Sánchez announced that the next Council of Ministers would extend the bank tax into 2027, projecting €1.4 billion in revenue to be allocated to housing policies.",
+      "sourceUrl": "https://www.ondacero.es/elecciones/generales/sanchez-anuncia-julia-onda-que-gobierno-prorrogara-impuesto-banca-2027-destinara-recaudacion-politicas-vivienda_202611216b0164a25cb1082f89b15861.html",
+      "sourceTitle": "Onda Cero — Sánchez interview, 21 November 2026",
+      "additionalSourceUrls": [
+        "https://www.rtve.es/noticias/20261121/sanchez-prorroga-banca-para-recaudacion-vivienda/17324621.shtml"
+      ]
+    },
+    {
+      "id": "es-epa-2026t3-ocupacion",
+      "statement": "En España, la EPA del tercer trimestre de 2026 estima 22.852.600 personas ocupadas de 16 o más años; son estimaciones de encuesta, no el número de afiliaciones a la Seguridad Social.",
+      "sourceUrl": "https://www.ine.es/dyngs/Prensa/EPA3T26.htm",
+      "additionalSourceUrls": [
+        "https://www.mites.gob.es/ficheros/ministerio/sec_trabajo/analisis_mercado_trabajo/EPA/2026/Tercer_trimestre/EPA-2026-T3-MITES-SGEAS.pdf"
+      ]
+    },
+    {
+      "id": "es-generales-2026-censo",
+      "statement": "Según la nota del INE del 9 de octubre de 2026, en las elecciones generales españolas del 29 de noviembre de 2026 podrán votar 38.728.356 electores: 35.958.711 residentes en España y 2.769.645 residentes en el extranjero. Son cifras de electores, no de votos emitidos ni de participación.",
+      "sourceUrl": "https://www.ine.es/dyngs/Prensa/es/EG2026.htm",
+      "additionalSourceUrls": [
+        "https://www.ine.es/dyngs/Prensa/EG2026.pdf"
+      ]
+    },
+    {
+      "id": "es-debate-2026-1123-anuncio",
+      "statement": "A 21 de noviembre de 2026, RTVE anuncia un debate parlamentario con portavoces de ocho formaciones para el lunes 23 de noviembre a las 22:00, moderado por Xabier Fortes. Es un acontecimiento anunciado para una fecha futura respecto al corte.",
+      "sourceUrl": "https://www.rtve.es/temas/debates-electorales-en-rtve/125810/",
+      "additionalSourceUrls": [
+        "https://www.rtve.es/rtve/20261113/rtve-organiza-23n-debate-parlamentario-elecciones-29-noviembre-2026/17312014.shtml"
+      ]
+    },
+    {
+      "id": "es-cera-2026-urna-plazos",
+      "statement": "Para las generales españolas del 29 de noviembre de 2026, el período ordinario de depósito presencial de voto CERA en embajadas, consulados o centros habilitados es del 21 al 26 de noviembre, ambos incluidos.",
+      "sourceUrl": "https://www.lamoncloa.gob.es/serviciosdeprensa/notasprensa/interior/Paginas/voto-extranjero-elecciones-generales-29n.aspx",
+      "additionalSourceUrls": [
+        "https://www.exteriores.gob.es/Consulados/boston/es/Comunicacion/Noticias/Paginas/Articulos/ELECCIONES-GENERALES-DE-29-DE-NOVIEMBRE-DE-2026.aspx"
+      ]
+    },
+    {
+      "id": "es-afiliacion-2026-oct-media",
+      "statement": "El Ministerio de Inclusión registra en octubre de 2026 una afiliación media de 22.624.165 en la serie original de la Seguridad Social, 186.612 más que en septiembre y 784.573 más que en octubre de 2025. Es un registro administrativo y una media mensual; no la estimación trimestral de ocupados de la EPA.",
+      "sourceUrl": "https://bibliovirtual.inclusion.gob.es/documents/20121/0/20261104%2BNP%2BAfiliacionSS%2BOCT26.pdf/18bf662b-3dc3-614a-c455-4c36795ed2ce?t=1793777562757",
+      "additionalSourceUrls": [
+        "https://inclusion.gob.es/documents/20121/0/202610%2BAfiliaci%C3%B3n%2Boct-26.pdf/427aa2e0-10cd-41c0-2815-84423e8f782c?t=1795158405710"
+      ]
+    },
+    {
+      "id": "es-generales-2026-fecha",
+      "statement": "A 21 de noviembre de 2026, están convocadas en España elecciones al Congreso de los Diputados y al Senado para el domingo 29 de noviembre de 2026, mediante el Real Decreto 806/2026, de 5 de octubre.",
+      "sourceUrl": "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2026-20742",
+      "additionalSourceUrls": [
+        "https://ine.es/dyngs/CEL/index.htm?cid=1699"
+      ]
+    },
+    {
+      "id": "it-tesla-2026-1119-reconocimiento",
+      "statement": "El MIT italiano informó el 20 de noviembre de 2026 de que la Motorizzazione reconoció el día 19 para Italia la homologación provisional neerlandesa de Tesla Assisted Driving. Se trata de reconocimiento territorial de asistencia a la conducción, no de una autorización europea definitiva de conducción sin supervisión.",
+      "sourceUrl": "https://mit.gov.it/comunicazione/news/guida-assistita-libera-del-mit-al-sistema-tesla"
+    },
+    {
+      "id": "es-ipc-2026-oct-anual",
+      "statement": "En España, el IPC general de octubre de 2026 registró una variación interanual del 4,9%, según la nota del INE del 13 de noviembre. Es una tasa frente a octubre de 2025, no una caída de los precios ni el encarecimiento acumulado desde 2018.",
+      "sourceUrl": "https://www.ine.es/dyngs/Prensa/IPC1026.htm",
+      "additionalSourceUrls": [
+        "https://www.ine.es/dyngs/Prensa/IPC1026.pdf"
+      ]
+    },
+    {
+      "id": "es-ipv-2026t2-anual",
+      "statement": "El Índice de Precios de Vivienda del INE para España registró una variación interanual del 12,2% en el segundo trimestre de 2026. Mide precios de compraventa; no es una estadística de alquileres.",
+      "sourceUrl": "https://www.ine.es/dyngs/Prensa/IPV2T26.htm",
+      "additionalSourceUrls": [
+        "https://www.ine.es/dyngs/Prensa/IPV2T26.pdf"
+      ]
+    },
+    {
+      "id": "es-pensiones-2026-revalorizacion",
+      "statement": "La Seguridad Social informa de una revalorización general del 2,7% en 2026 para las pensiones contributivas del sistema y las de Clases Pasivas, respecto al importe a 31 de diciembre de 2025. No es la previsión de subida para 2027.",
+      "sourceUrl": "https://www.seg-social.es/wps/portal/wss/internet/Pensionistas/Revalorizacion/30431?changeLanguage=es",
+      "additionalSourceUrls": [
+        "https://www.boe.es/buscar/doc.php?id=BOE-A-2026-2548"
+      ]
+    },
+    {
+      "id": "es-migracion-2026-1115-canarias",
+      "statement": "Interior contabiliza provisionalmente 24.364 llegadas irregulares por vía marítima a Canarias del 1 de enero al 15 de noviembre de 2026, frente a 14.690 en el mismo período de 2025: 9.674 más, un 65,9%.",
+      "sourceUrl": "https://www.interior.gob.es/opencms/export/sites/default/.galleries/galeria-de-prensa/documentos-y-multimedia/balances-e-informes/2026/21_informe_quincenal_acumulado_01-01_al_15-11-2026.pdf",
+      "additionalSourceUrls": [
+        "https://pt.euronews.com/2026/11/17/canarias-recebem-mais-de-11000-migrantes-irregulares-na-primeira-quinzena-de-novembro"
+      ]
+    },
+    {
+      "id": "es-andalucia-2026-escanos",
+      "statement": "En las elecciones al Parlamento de Andalucía del 17 de mayo de 2026, el reparto publicado por la Junta Electoral de Andalucía fue: PP, 53; PSOE de Andalucía, 28; Vox, 15; Adelante Andalucía, 8; y Por Andalucía, 5, sobre 109 escaños. Son resultados del escrutinio general publicados oficialmente, no el avance provisional de la noche electoral.",
+      "sourceUrl": "https://juntaelectoral.parlamentodeandalucia.es/documents/20117/74639/2026-0602-Resultados%2Belectorales.pdf/246524f6-8bdc-9311-8bb3-8f55e6fae2ff?t=1780400615236",
+      "additionalSourceUrls": [
+        "https://www.juntaelectoralcentral.es/cs/jec/documentos/Andalucia_2026_resultados.pdf"
+      ]
+    },
+    {
+      "id": "es-permiso-nacimiento-19-semanas",
+      "statement": "La información vigente de la Seguridad Social para nacimientos, adopciones o acogimientos a partir del 31 de julio de 2025 establece un descanso total de 19 semanas para cada progenitor y 32 para familias monoparentales, sujeto a los requisitos de la prestación.",
+      "sourceUrl": "https://prestaciones.seg-social.es/servicio/prestacion-nacimiento-adopcion-cuidado-menor",
+      "additionalSourceUrls": [
+        "https://www.boe.es/buscar/doc.php?id=BOE-A-2025-15741&lang=es"
+      ]
+    }
+  ]
+}

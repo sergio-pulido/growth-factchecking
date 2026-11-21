@@ -13,7 +13,7 @@ type Filter = 'all' | 'attention' | 'transcript';
 const EASE = 'cubic-bezier(.32,.72,0,1)';
 
 const LIVE_TEXT: Record<SessionSnapshot['state'], string> = {
-  idle: 'Sin empezar', starting: 'Conectando…', live: 'Transcribiendo', paused: 'En pausa', ending: 'Guardando…', ended: 'Terminada',
+  idle: 'Not started', starting: 'Connecting…', live: 'Transcribing', paused: 'Paused', ending: 'Saving…', ended: 'Ended',
 };
 
 export type CallPanel = {
@@ -42,7 +42,7 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
   const face = h('div', { class: 'pill-face', role: 'group', 'aria-label': 'FactCheck' });
   const live = h('span', { class: 'live off' }, h('i'), h('span', {}, ''));
   const pauseButton = h('button', { class: 'icon-btn', type: 'button' }, icon('mic'));
-  const minimize = h('button', { class: 'icon-btn', type: 'button', title: 'Minimizar', 'aria-label': 'Minimizar' }, icon('minimize'));
+  const minimize = h('button', { class: 'icon-btn', type: 'button', title: 'Minimise', 'aria-label': 'Minimise' }, icon('minimize'));
   const sumText = h('span');
   const sumAttention = h('span', { class: 'sum-attn' });
   const distbar = h('div', { class: 'distbar' });
@@ -152,25 +152,25 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
     if (key === pillKey) return;
     pillKey = key;
 
-    const opener = h('button', { class: 'pf-open', type: 'button', 'aria-label': 'Abrir FactCheck' }, logo());
+    const opener = h('button', { class: 'pf-open', type: 'button', 'aria-label': 'Open FactCheck' }, logo());
     opener.addEventListener('click', () => setOpen(true));
     if (capturing) {
       opener.append(h('span', { class: 'waves', 'aria-hidden': 'true' }, h('i'), h('i'), h('i'), h('i'), h('i')));
-      if (attention) opener.append(h('span', { class: 'pf-count', title: `${attention} requieren atención` }, String(attention)));
+      if (attention) opener.append(h('span', { class: 'pf-count', title: `${attention} need attention` }, String(attention)));
     } else if (snap.state === 'starting' || snap.state === 'ending') {
       opener.append(h('span', { class: 'typing', 'aria-hidden': 'true' }, h('i'), h('i'), h('i')));
     } else {
       opener.append(h('span', { class: 'pf-label' },
-        snap.state === 'ended' ? `Terminada · ${snap.claims.length} afirmaciones`
-          : source.capture === 'captions' ? 'Verificar esta llamada' : 'Verificar esta pestaña'));
+        snap.state === 'ended' ? `Ended · ${snap.claims.length} claims`
+          : source.capture === 'captions' ? 'Check this call' : 'Check this tab'));
     }
     const children: Node[] = [opener];
     if (capturing) {
       const paused = snap.state === 'paused';
       children.push(
-        pillButton('pf-pause', paused ? 'Reanudar escucha' : 'Pausar escucha', icon(paused ? 'play' : 'pause'),
+        pillButton('pf-pause', paused ? 'Resume listening' : 'Pause listening', icon(paused ? 'play' : 'pause'),
           () => (paused ? session.resume() : session.pause())),
-        pillButton('pf-stop', 'Detener escucha', icon('stop'), () => void session.stop()),
+        pillButton('pf-stop', 'Stop listening', icon('stop'), () => void session.stop()),
       );
     }
     face.replaceChildren(...children);
@@ -184,7 +184,7 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
     live.lastElementChild!.textContent = on ? `${LIVE_TEXT.live} · ${clock(elapsed)}` : LIVE_TEXT[snap.state];
     const capturing = on || snap.state === 'paused';
     pauseButton.hidden = !capturing;
-    const label = snap.state === 'paused' ? 'Reanudar escucha' : 'Pausar escucha';
+    const label = snap.state === 'paused' ? 'Resume listening' : 'Pause listening';
     pauseButton.title = label;
     pauseButton.setAttribute('aria-label', label);
     pauseButton.style.color = snap.state === 'paused' ? 'var(--v-pno)' : '';
@@ -193,9 +193,9 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
   function renderSummary(snap: SessionSnapshot, attention: number) {
     const done = snap.claims.filter((item) => item.state === 'checked' && item.verdict);
     const pending = snap.claims.filter((item) => item.state === 'retrying').length;
-    const extra = [pending ? `${pending} en curso` : '', snap.analyzing ? 'analizando' : ''].filter(Boolean).join(' · ');
-    sumText.replaceChildren(h('strong', {}, String(done.length)), ` verificada${done.length === 1 ? '' : 's'}${extra ? ` · ${extra}` : ''}`);
-    sumAttention.textContent = attention ? `${attention} requiere${attention > 1 ? 'n' : ''} atención` : '';
+    const extra = [pending ? `${pending} in progress` : '', snap.analyzing ? 'analysing' : ''].filter(Boolean).join(' · ');
+    sumText.replaceChildren(h('strong', {}, String(done.length)), ` checked${extra ? ` · ${extra}` : ''}`);
+    sumAttention.textContent = attention ? `${attention} need${attention > 1 ? '' : 's'} attention` : '';
     distbar.replaceChildren(...ORDER.flatMap((verdict) => {
       const count = done.filter((item) => item.verdict === verdict).length;
       if (!count) return [];
@@ -205,7 +205,7 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
       return [bar];
     }));
     const counts: Record<Filter, [string, number]> = {
-      all: ['Todas', snap.claims.length], attention: ['Requieren atención', attention], transcript: ['Transcripción', snap.transcript.length],
+      all: ['All', snap.claims.length], attention: ['Needs attention', attention], transcript: ['Transcript', snap.transcript.length],
     };
     for (const [name, button] of Object.entries(tabButtons) as Array<[Filter, HTMLButtonElement]>) {
       button.replaceChildren(counts[name][0], h('span', { class: 'count' }, String(counts[name][1])));
@@ -217,22 +217,22 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
   }
 
   function consent() {
-    const start = h('button', { class: 'btn primary', type: 'button' }, 'Empezar a verificar');
+    const start = h('button', { class: 'btn primary', type: 'button' }, 'Start checking');
     start.addEventListener('click', () => void session.start());
     const reads = source.capture === 'captions'
-      ? h('li', {}, `lee los subtítulos de ${source.label} en esta pestaña, con el nombre de quien habla;`)
-      : h('li', {}, 'escucha el audio de esta pestaña y lo transcribe con OpenAI; el audio no se guarda y los participantes aparecen sin nombre;');
+      ? h('li', {}, `reads the ${source.label} captions in this tab, with the speaker's name;`)
+      : h('li', {}, 'listens to this tab\'s audio and transcribes it with OpenAI; the audio is not stored and speakers are not named;');
     const consentBlock = h('div', { class: 'consent' },
-      h('strong', {}, source.capture === 'captions' ? `Verificar esta llamada de ${source.label}` : 'Verificar el audio de esta pestaña'),
-      h('span', {}, 'Al empezar, FactCheck:'),
+      h('strong', {}, source.capture === 'captions' ? `Check this ${source.label} call` : 'Check this tab\'s audio'),
+      h('span', {}, 'Once started, FactCheck:'),
       h('ul', {}, reads,
-        h('li', {}, 'guarda la transcripción y las afirmaciones en tu API local;'),
-        h('li', {}, 'contrasta cada afirmación con el corpus de fuentes.')),
-      h('span', {}, 'Avisa a los participantes antes de empezar. Puedes pausar, detener y borrar la conversación cuando quieras.'));
+        h('li', {}, 'saves the transcript and the claims in your local API;'),
+        h('li', {}, 'checks each claim against the source corpus.')),
+      h('span', {}, 'Tell the participants before you start. You can pause, stop and delete the conversation at any time.'));
     if (source.language) consentBlock.append(languagePicker(source.language));
     consentBlock.append(start);
     if (options.onCheckSelection) {
-      const selection = h('button', { class: 'link', type: 'button' }, 'Verificar el texto seleccionado en la página');
+      const selection = h('button', { class: 'link', type: 'button' }, 'Check the text selected on the page');
       // Keep the page selection: a click on a button would otherwise clear it.
       selection.addEventListener('mousedown', (event) => event.preventDefault());
       selection.addEventListener('click', () => options.onCheckSelection?.());
@@ -242,7 +242,7 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
   }
 
   function languagePicker(choice: NonNullable<CaptureSource['language']>) {
-    const group = h('div', { class: 'seg', role: 'group', 'aria-label': 'Idioma de la conversación' });
+    const group = h('div', { class: 'seg', role: 'group', 'aria-label': 'Conversation language' });
     const buttons = choice.options.map((option) => {
       const button = h('button', { type: 'button', 'aria-pressed': String(option.value === choice.value()) }, option.label);
       button.addEventListener('click', () => {
@@ -252,7 +252,7 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
       return button;
     });
     group.append(...buttons);
-    return h('div', { class: 'language' }, h('span', {}, 'Idioma de la conversación'), group);
+    return h('div', { class: 'language' }, h('span', {}, 'Conversation language'), group);
   }
 
   function empty(title: string, text: string) {
@@ -264,7 +264,7 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
     const handlers = { onRetry: (id: string) => void session.retry(id), onToggle: session.toggleSources };
     if (filter === 'transcript') {
       return snap.transcript.length ? snap.transcript.map(transcriptLine)
-        : [empty('Aún no hay transcripción', `Aquí verás cada frase que FactCheck ${source.capture === 'captions' ? 'lee de los subtítulos' : 'transcribe del audio'} y guarda.`)];
+        : [empty('No transcript yet', `Every sentence FactCheck ${source.capture === 'captions' ? 'reads from the captions' : 'transcribes from the audio'} and saves will show here.`)];
     }
     const list = filter === 'attention' ? snap.claims.filter(isAttention) : snap.claims;
     const cards: Node[] = list.map((item) => {
@@ -274,8 +274,8 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
     if (filter === 'all' && snap.analyzing) cards.push(analyzingCard(snap.analyzing));
     if (cards.length) return cards;
     return filter === 'attention'
-      ? [empty('Nada dudoso por ahora', 'Las afirmaciones con veredicto No o Probablemente no aparecerán aquí.')]
-      : [empty('Aún no hay afirmaciones', 'Cuando alguien diga algo verificable, aparecerá aquí con su veredicto.')];
+      ? [empty('Nothing doubtful so far', 'Claims rated False or Likely false will show here.')]
+      : [empty('No claims yet', 'When someone says something checkable, it shows here with its verdict.')];
   }
 
   function renderFeed(snap: SessionSnapshot) {
@@ -292,13 +292,13 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
   function renderFoot(snap: SessionSnapshot) {
     const buttons: HTMLButtonElement[] = [];
     if (snap.state === 'live' || snap.state === 'paused') {
-      const stop = h('button', { class: 'btn danger', type: 'button' }, 'Detener');
+      const stop = h('button', { class: 'btn danger', type: 'button' }, 'Stop');
       stop.addEventListener('click', () => void session.stop());
       buttons.push(stop);
     } else if (snap.state === 'ended') {
-      const erase = h('button', { class: 'btn danger', type: 'button' }, 'Borrar conversación');
+      const erase = h('button', { class: 'btn danger', type: 'button' }, 'Delete conversation');
       erase.addEventListener('click', () => void session.remove());
-      const again = h('button', { class: 'btn primary', type: 'button' }, 'Nueva verificación');
+      const again = h('button', { class: 'btn primary', type: 'button' }, 'New check');
       again.addEventListener('click', () => void session.start());
       buttons.push(erase, again);
     }

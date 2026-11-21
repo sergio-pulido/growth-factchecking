@@ -8,19 +8,19 @@ import type { ClaimItem, TranscriptLine } from './types.js';
 type Tone = { color: string; bg: string; step: number; why: string };
 
 export const TONES: Record<Verdict, Tone> = {
-  yes: { color: '--v-yes', bg: '--v-yes-bg', step: 5, why: 'Las fuentes lo confirman.' },
-  probably_yes: { color: '--v-pyes', bg: '--v-pyes-bg', step: 4, why: 'Las fuentes apuntan a que es cierto.' },
-  neutral: { color: '--v-neutral', bg: '--v-neutral-bg', step: 3, why: 'Las fuentes no permiten confirmarlo ni descartarlo.' },
-  probably_no: { color: '--v-pno', bg: '--v-pno-bg', step: 2, why: 'Las fuentes apuntan a que no es cierto.' },
-  no: { color: '--v-no', bg: '--v-no-bg', step: 1, why: 'Las fuentes lo contradicen.' },
+  yes: { color: '--v-yes', bg: '--v-yes-bg', step: 5, why: 'The sources confirm it.' },
+  probably_yes: { color: '--v-pyes', bg: '--v-pyes-bg', step: 4, why: 'The sources suggest it is true.' },
+  neutral: { color: '--v-neutral', bg: '--v-neutral-bg', step: 3, why: 'The sources neither confirm nor rule it out.' },
+  probably_no: { color: '--v-pno', bg: '--v-pno-bg', step: 2, why: 'The sources suggest it is not true.' },
+  no: { color: '--v-no', bg: '--v-no-bg', step: 1, why: 'The sources contradict it.' },
 };
 export const ORDER: readonly Verdict[] = VERDICTS;
-export const NO_EVIDENCE = 'No hay evidencia sobre esta afirmación en las fuentes disponibles.';
+export const NO_EVIDENCE = 'There is no evidence about this claim in the available sources.';
 
 const cssVar = (name: string) => `var(${name})`;
 
 export function verdictPill(verdict: Verdict | null, label?: string): HTMLSpanElement {
-  const pill = h('span', { class: 'pill' }, h('i'), label ?? (verdict ? verdictLabels[verdict] : 'Sin contrastar'));
+  const pill = h('span', { class: 'pill' }, h('i'), label ?? (verdict ? verdictLabels[verdict] : 'Not checked'));
   pill.style.background = cssVar(verdict ? TONES[verdict].bg : '--surface-2');
   pill.style.color = cssVar(verdict ? TONES[verdict].color : '--t2');
   return pill;
@@ -64,7 +64,7 @@ function sourcesSection(item: ClaimItem, onToggle: (id: string) => void) {
   else favs.append(h('span', { class: 'fav fav-none' }, icon('search')));
 
   const label = h('span', { class: 'src-label' },
-    count ? `Contrastado con ${count} fuente${count > 1 ? 's' : ''}` : 'Sin fuentes encontradas',
+    count ? `Checked against ${count} source${count > 1 ? 's' : ''}` : 'No sources found',
     h('span', { class: 'src-sub' }, count ? ` · ${hosts.slice(0, 2).join(', ')}` : ''));
   const chevron = icon('chevron');
   chevron.classList.add('chev');
@@ -74,7 +74,7 @@ function sourcesSection(item: ClaimItem, onToggle: (id: string) => void) {
   const section = h('div', { class: `sources${item.open ? ' open' : ''}` }, toggle);
   if (item.open) {
     const body = h('div', { class: 'src-body' });
-    if (!count) body.append(h('div', { class: 'src-fail' }, 'Ningún documento del corpus menciona esta afirmación.'));
+    if (!count) body.append(h('div', { class: 'src-fail' }, 'No document in the corpus mentions this claim.'));
     for (const source of item.sources) {
       const host = hostOf(source.sourceUrl);
       body.append(h('div', { class: 'src-item' },
@@ -97,14 +97,14 @@ export function claimCard(item: ClaimItem, handlers: CardHandlers, extra = ''): 
   const quote = h('p', { class: 'quote' }, `“${item.claim}”`);
   if (item.state === 'retrying') {
     return h('div', { class: `card pending ${extra}`, 'data-id': item.id }, meta(item.speaker, item.at), quote,
-      h('div', { class: 'meta' }, 'Verificando con las fuentes…'), shimmer());
+      h('div', { class: 'meta' }, 'Checking against the sources…'), shimmer());
   }
   if (item.state === 'failed' || !item.verdict) {
-    const retry = h('button', { class: 'link', type: 'button' }, 'Reintentar');
+    const retry = h('button', { class: 'link', type: 'button' }, 'Retry');
     retry.addEventListener('click', () => handlers.onRetry(item.id));
     return h('div', { class: `card error ${extra}`, 'data-id': item.id }, meta(item.speaker, item.at), quote,
       h('div', { class: 'verdict' }, verdictPill(null)),
-      h('p', { class: 'why' }, 'No se pudo contrastar. La llamada sigue y puedes reintentarlo.'),
+      h('p', { class: 'why' }, 'Could not be checked. The call goes on and you can retry.'),
       h('div', { class: 'actions' }, retry));
   }
   const why = item.sources.length ? TONES[item.verdict].why : NO_EVIDENCE;
@@ -122,7 +122,7 @@ function shimmer() {
 
 export function analyzingCard(count: number): HTMLDivElement {
   return h('div', { class: 'card pending' },
-    h('div', { class: 'meta' }, `Analizando ${count === 1 ? 'la última frase' : `las últimas ${count} frases`}…`), shimmer());
+    h('div', { class: 'meta' }, `Analysing ${count === 1 ? 'the last sentence' : `the last ${count} sentences`}…`), shimmer());
 }
 
 export function transcriptLine(line: TranscriptLine): HTMLDivElement {

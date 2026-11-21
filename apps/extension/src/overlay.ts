@@ -1,16 +1,16 @@
 import { CLAIM_MAX_LENGTH, DEMO_SCENARIOS } from '@growth-factcheking/shared';
 import type { DemoScenario } from '@growth-factcheking/shared';
 import type { FactCheckMessage, FactCheckMode, FactCheckResponse } from './messages.js';
-import { isXHome, startInlineFeed } from './inline-feed.js';
+import { isXFactCheckPage, startInlineFeed } from './inline-feed.js';
 import styles from './overlay.css';
 import { verdictLabels } from './verdict-labels.js';
 
-const demoClaim = 'La biblioteca de Puerto Aurora abre los sábados.';
+const demoClaim = 'The Puerto Aurora library opens on Saturdays.';
 const sourcePreference = 'factCheckSource';
 const scenarioLabels: Record<DemoScenario, string> = {
   ...verdictLabels,
-  no_evidence: 'Sin fuentes',
-  error: 'Error de servicio',
+  no_evidence: 'No sources',
+  error: 'Service error',
 };
 
 declare global {
@@ -40,10 +40,43 @@ export function mountOverlay() {
   const header = document.createElement('header');
   const close = document.createElement('button');
   close.type = 'button';
-  close.setAttribute('aria-label', 'Cerrar');
+  close.setAttribute('aria-label', 'Close');
   close.textContent = '×';
-  header.append(title, close);
+  const minimise = document.createElement('button');
+  minimise.type = 'button';
+  minimise.className = 'panel-min';
+  minimise.setAttribute('aria-label', 'Minimise');
+  minimise.setAttribute('aria-pressed', 'false');
+  minimise.textContent = '–';
+  minimise.addEventListener('click', () => {
+    const minimised = panel.classList.toggle('is-min');
+    minimise.setAttribute('aria-pressed', String(minimised));
+  });
+  header.append(title, minimise, close);
   panel.append(header);
+
+  // Drag the panel by its header. transform is not set by the :host rules, so it applies.
+  let dragX = 0;
+  let dragY = 0;
+  header.addEventListener('pointerdown', (event) => {
+    if (event.target instanceof HTMLButtonElement) return;
+    const startX = event.clientX - dragX;
+    const startY = event.clientY - dragY;
+    header.setPointerCapture(event.pointerId);
+    const move = (moveEvent: PointerEvent) => {
+      dragX = moveEvent.clientX - startX;
+      dragY = moveEvent.clientY - startY;
+      host.style.transform = `translate(${dragX}px, ${dragY}px)`;
+    };
+    const end = () => {
+      header.removeEventListener('pointermove', move);
+      header.removeEventListener('pointerup', end);
+      header.removeEventListener('pointercancel', end);
+    };
+    header.addEventListener('pointermove', move);
+    header.addEventListener('pointerup', end);
+    header.addEventListener('pointercancel', end);
+  });
 
   const demo = document.createElement('p');
   demo.className = 'demo-label';
@@ -52,15 +85,15 @@ export function mountOverlay() {
   const form = document.createElement('form');
   const modeLabel = document.createElement('label');
   modeLabel.htmlFor = 'factchecking-mode';
-  modeLabel.textContent = 'Fuente de verificación';
+  modeLabel.textContent = 'Checking source';
   const modeSelect = document.createElement('select');
   modeSelect.id = modeLabel.htmlFor;
   modeSelect.className = 'factchecking-mode';
-  modeSelect.add(new Option('Simulado', 'mock'));
+  modeSelect.add(new Option('Simulated', 'mock'));
   modeSelect.add(new Option('Real', 'live'));
   const label = document.createElement('label');
   label.htmlFor = 'factchecking-scenario';
-  label.textContent = 'Escenario de prueba';
+  label.textContent = 'Test scenario';
   const select = document.createElement('select');
   select.id = label.htmlFor;
   for (const scenario of DEMO_SCENARIOS) {
@@ -79,20 +112,20 @@ export function mountOverlay() {
   sources.append(sourceTitle, sourceList);
   const scenarioView = document.createElement('div');
   scenarioView.append(demo, quote, form, status, sources);
-  if (isXHome()) {
+  if (isXFactCheckPage()) {
     const active = Boolean(window.growthFactCheckingFeed);
     const feed = document.createElement('div');
     feed.className = 'feed-controls';
 
     const toggle = document.createElement('button');
     toggle.type = 'button';
-    toggle.textContent = active ? 'Desactivar verificaciones en X' : 'Verificar publicaciones en X';
+    toggle.textContent = active ? 'Pause inline checks' : 'Start inline checks';
 
     const note = document.createElement('p');
     note.className = 'demo-label';
     note.textContent = active
-      ? 'Las verificaciones están activas en esta pestaña.'
-      : 'Envía el texto de las publicaciones visibles a OpenAI a través de la API local.';
+      ? 'Inline checks are active in this tab.'
+      : 'Checks the text of visible posts through the local API and OpenAI.';
 
     toggle.addEventListener('click', () => {
       if (window.growthFactCheckingFeed) window.growthFactCheckingFeed();
@@ -109,6 +142,7 @@ export function mountOverlay() {
 
   function setBusy(value: boolean) {
     busy = value;
+    host.toggleAttribute('data-busy', value);
     modeSelect.disabled = value;
     select.disabled = value;
     submit.disabled = value || (mode === 'live' && !selection);
@@ -122,15 +156,15 @@ export function mountOverlay() {
   function renderMode() {
     const live = mode === 'live';
     modeSelect.value = mode;
-    demo.textContent = live ? 'Verificación con OpenAI y el corpus local' : 'Datos simulados';
+    demo.textContent = live ? 'Checked with OpenAI and the local corpus' : 'Simulated data';
     quote.textContent = live ? selection : selection || demoClaim;
     quote.hidden = live && !selection;
     label.hidden = live;
     select.hidden = live;
     submit.classList.toggle('factchecking-live-submit', live);
-    submit.textContent = live ? 'Verificar' : 'Probar';
+    submit.textContent = live ? 'Check' : 'Try';
     status.textContent = live && !selection
-      ? 'Selecciona texto de la página y vuelve a abrir el panel.'
+      ? 'Select text on the page and reopen the panel.'
       : '';
     clearSources();
   }
@@ -141,8 +175,8 @@ export function mountOverlay() {
     mode = stored[sourcePreference] === 'live' ? 'live' : 'mock';
     renderMode();
   }, (error: unknown) => {
-    console.warn('No se pudo leer la fuente de verificación.', error);
-    status.textContent = 'No se pudo leer la preferencia. Se usa el modo simulado.';
+    console.warn('Could not read the checking source.', error);
+    status.textContent = 'Could not read your preference. Using simulated mode.';
   }).finally(() => setBusy(false));
 
   modeSelect.addEventListener('change', async () => {
@@ -154,9 +188,9 @@ export function mountOverlay() {
       mode = nextMode;
       renderMode();
     } catch (error) {
-      console.warn('No se pudo guardar la fuente de verificación.', error);
+      console.warn('Could not save the checking source.', error);
       modeSelect.value = mode;
-      status.textContent = 'No se pudo guardar el cambio de modo. Vuelve a intentarlo.';
+      status.textContent = 'Could not save the mode change. Try again.';
     } finally {
       setBusy(false);
     }
@@ -177,7 +211,7 @@ export function mountOverlay() {
 
     setBusy(true);
     clearSources();
-    status.textContent = 'Cargando…';
+    status.textContent = 'Checking…';
 
     try {
       const response = await chrome.runtime.sendMessage<FactCheckMessage, FactCheckResponse>(message);
@@ -188,9 +222,9 @@ export function mountOverlay() {
 
       const { check: result, mode: resultMode } = response.result;
       status.textContent = result.sources.length === 0
-        ? `${verdictLabels[result.verdict]} · Sin fuentes`
+        ? `${verdictLabels[result.verdict]} · No sources`
         : verdictLabels[result.verdict];
-      sourceTitle.textContent = resultMode === 'mock' ? 'Fuentes de ejemplo' : 'Fuentes';
+      sourceTitle.textContent = resultMode === 'mock' ? 'Sample sources' : 'Sources';
       for (const source of result.sources) {
         const item = document.createElement('li');
         const link = document.createElement('a');
@@ -203,8 +237,8 @@ export function mountOverlay() {
       }
       sources.hidden = result.sources.length === 0;
     } catch (error) {
-      console.warn('No se pudo mostrar el resultado de la verificación.', error);
-      status.textContent = 'No se pudo cargar el resultado. Vuelve a abrir el panel.';
+      console.warn('Could not show the check result.', error);
+      status.textContent = 'Could not load the result. Reopen the panel.';
     } finally {
       setBusy(false);
     }

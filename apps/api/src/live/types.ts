@@ -6,6 +6,7 @@ export type Fact = {
   statement: string;
   sourceUrl: string;
   sourceTitle: string | null;
+  additionalSourceUrls: string[];
   /** Cosine similarity to the claim, 0..1. */
   similarity: number;
 };

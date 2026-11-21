@@ -48,6 +48,7 @@ export function isCallRequest(message: unknown, senderUrl: string | undefined): 
         && m.utterances.length <= UTTERANCE_BATCH_MAX && m.utterances.every(isUtterance);
     case 'call-end':
     case 'call-remove':
+    case 'call-claims':
       return isId(m.id);
     case 'call-recheck':
       return typeof m.claim === 'string' && m.claim.trim().length > 0 && m.claim.length <= CLAIM_MAX_LENGTH;
@@ -71,6 +72,7 @@ async function run(request: CallRequest, tabId: number): Promise<unknown> {
     case 'call-end': return api.end(request.id);
     case 'call-remove': return api.remove(request.id);
     case 'call-recheck': return api.recheck(request.claim);
+    case 'call-claims': return api.claims(request.id);
     case 'call-badge':
       await chrome.action.setBadgeBackgroundColor({ tabId, color: '#D6453D' });
       await chrome.action.setBadgeText({ tabId, text: request.count ? String(request.count) : '' });
@@ -87,8 +89,8 @@ export async function relayCallRequest(request: CallRequest, tabId: number): Pro
     return { ok: true, result: (await run(request, tabId)) ?? null };
   } catch (error) {
     if (error instanceof CallTransportError) return { ok: false, message: error.message, code: error.code };
-    console.warn('Falló una llamada del panel de FactCheck.', error);
-    const message = error instanceof Error && error.message ? error.message : 'No se pudo completar la solicitud.';
+    console.warn('A FactCheck overlay request failed.', error);
+    const message = error instanceof Error && error.message ? error.message : 'Could not complete the request.';
     return { ok: false, message, code: 'unavailable' };
   }
 }

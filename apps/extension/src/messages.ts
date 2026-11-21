@@ -20,6 +20,7 @@ export type CallRequest =
   | { kind: 'call-end'; id: string }
   | { kind: 'call-remove'; id: string }
   | { kind: 'call-recheck'; claim: string }
+  | { kind: 'call-claims'; id: string }
   | { kind: 'call-badge'; count: number }
   | { kind: 'audio-start'; language?: string }
   | { kind: 'audio-pause' }
@@ -47,3 +48,6 @@ export type OffscreenEvent =
   | { source: 'offscreen'; kind: 'segment'; itemId: string; text: string }
   | { source: 'offscreen'; kind: 'error'; message: string }
   | { source: 'offscreen'; kind: 'token-needed' };
+
+export type DemoPostsRequest = { kind: 'x-demo-posts' };
+export type DemoPostsResponse = { postIds: string[] };

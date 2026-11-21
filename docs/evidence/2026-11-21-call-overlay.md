@@ -67,6 +67,23 @@ them; the browser runs above predate them.
 Known limitation: after a short pause, the model can still release a few words said just before the pause; they are
 stored as a fragment after resume. Nothing said during the pause is sent.
 
+## Run 4: merge with main and the Meet e2e acceptance test
+
+Main had merged GF-03 (Meet captions engine) and a restyled English UI with an offline interview demo. After
+merging, Meet captions go through GF-03's DOM reader and consolidator inside the overlay; the interview demo and the
+remaining simulators were removed, as asked. Checks: typecheck, lint, build pass; tests API 27/27, extension 28/28.
+
+GF-03's acceptance test, ported to the overlay session, ran against the real API on 127.0.0.1:3170
+(`API_ORIGIN=http://127.0.0.1:3170 npm run test:e2e --workspace @growth-factcheking/extension`, corpus
+`data/demo/meet-startup.json` already in the database):
+
+- First run failed on the last assertion: the test drops the first batch's response after the API stored it, the
+  retry came back as duplicates with no claims, so the overlay never showed those claims. The session now fetches
+  the conversation's claims when a batch reports duplicates.
+- Second run passed: 5 interventions stored once with both speakers, "Lumen Labs se fundó en 2021 en Barcelona." → yes,
+  "…50.000 euros de ingresos recurrentes mensuales." → no, no claims from the investor or the opinion; the claims in
+  the overlay match the stored ones. The first run's conversation was deleted.
+
 ## Not covered
 
 - The extension loaded in Chrome: content scripts, toolbar toggle, `tabCapture`, offscreen document lifecycle.

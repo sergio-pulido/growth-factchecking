@@ -1,18 +1,19 @@
 # Call overlay: live fact-checking over any call
 
-Status: **implemented** (build, typecheck, lint, unit tests green). The tab-audio path was agent-run end to end
-against real OpenAI and Postgres on 2026-11-21 ([evidence](../evidence/2026-11-21-call-overlay.md)). Not yet run
-with the extension loaded in Chrome, and the caption readers have not met a real Meet, Zoom or Teams call.
+Status: **implemented** (build, typecheck, lint, unit tests green; Meet e2e acceptance test green against the real
+API). The tab-audio path was agent-run end to end against real OpenAI and Postgres on 2026-11-21
+([evidence](../evidence/2026-11-21-call-overlay.md)). Not yet run with the extension loaded in Chrome, and the caption
+readers have not met a real Meet, Zoom or Teams call.
 
 UI source: the "FactCheck Prototype" design (collapsed pill, verdict bubbles, glass panel, screen-edge flash).
-Backend contract: [conversation capture](conversation-capture.md). There are no simulators: the overlay only runs
-over real pages.
+Backend contract: [conversation capture](conversation-capture.md). Meet caption engine: [GF-03](meet-captions-capture.md).
+There are no simulators: the overlay only runs over real pages.
 
 ## Where it runs
 
 | Page | How the overlay appears | Source |
 | --- | --- | --- |
-| Google Meet call (`meet.google.com/xxx-xxxx-xxx`) | Pill appears on its own; toolbar icon toggles it | Meet captions |
+| Google Meet call (`meet.google.com/xxx-xxxx-xxx`) | Pill appears on its own; toolbar icon toggles it | Meet captions (GF-03 engine) |
 | Zoom web client (`*.zoom.us/wc/…`) | Same | Zoom captions (speaker names when Zoom shows them) |
 | Teams web (`teams.microsoft.com`, `teams.live.com`, `teams.cloud.microsoft`) during a call | Same | Teams live captions |
 | Any other tab | Toolbar icon opens it | Tab audio, transcribed by OpenAI |
@@ -23,7 +24,7 @@ Desktop apps (Zoom, Teams) are out of reach for a Chrome extension; their web cl
 
 ```text
 pill / toolbar icon -> panel with consent text (+ language picker in audio mode)
-"Empezar a verificar" --- call-start ---> background ---> POST /api/conversations { platform, capture }
+"Start checking" --- call-start ---> background ---> POST /api/conversations { platform, capture }
   captions: turn on the app's captions if off; skip what is already on screen
   audio:    tabCapture stream id -> offscreen document -> WebRTC to OpenAI live transcription
             (client secret from POST /api/transcription/token, language hint from the picker)
@@ -33,7 +34,14 @@ Pause: nothing is sent (audio track muted); finished sentences said before the p
 Stop -> POST /:id/end · Erase -> DELETE /:id · failed claim "Reintentar" -> POST /api/fact-check/live (not stored)
 ```
 
-## Captions (`apps/extension/src/call/platforms.ts`, `caption-source.ts`, `segmenter.ts`)
+## Captions
+
+**Meet** (`call/meet-source.ts`) wraps the GF-03 engine: `meet/meet-captions-dom.ts` reads the caption rows every
+300 ms and `meet/caption-consolidator.ts` emits one utterance per intervention once it settles (rules in
+[meet-captions-capture.md](meet-captions-capture.md)). Captions on screen at Start, or when resuming, are fed to a
+fresh consolidator and discarded, so they are never sent. Pause keeps turns that already settled.
+
+**Zoom and Teams** (`call/platforms.ts`, `caption-source.ts`, `segmenter.ts`):
 
 - One reader per app: region selector, block / speaker / text selectors, a structural fallback (first line of a block
   is the speaker), a hint shown when captions are missing, and the pill's distance from the app's own controls.
@@ -53,22 +61,22 @@ Stop -> POST /:id/end · Erase -> DELETE /:id · failed claim "Reintentar" -> PO
   one open item and never send `completed`. The content side cuts that stream into sentences (a sentence is finished
   when another word follows it, a finished tail after 1.5 s of silence, an unfinished one after 8 s, run-ons at 60
   words). `completed` events are used only for items that sent no deltas (other models).
-- The language picker (Español, English, Otro = automatic) defaults to the browser language. The hint matters: in the
+- The language picker (Español, English, Other = automatic) defaults to the browser language. The hint matters: in the
   run without it, "treinta y dos mil" came back as "train to Y dos mil".
 - Speaker is "Audio de la pestaña" (`speakerKind: unknown`). Only the tab's audio is captured: the user's own
   microphone is not.
 
 ## Panel (`apps/extension/src/call/panel.ts`, `cards.ts`, `alerts.ts`, `call.css`)
 
-Closed shadow root, DOM APIs only (Meet enforces Trusted Types). Tabs: Todas, Requieren atención, Transcripción.
+Closed shadow root, DOM APIs only (Meet enforces Trusted Types). English UI, as on main. Tabs: All, Needs attention, Transcript.
 Cards show speaker, minute, claim, verdict and five-step scale, a one-line reading of the verdict and the sources.
 The consent card also links to the selection check (the older panel, now mounted from the overlay).
 
 ## Privacy
 
 Nothing is read before Start; captions already on screen at Start and speech said while paused are never sent; the
-"Transcribiendo" indicator stays visible; the consent text asks the user to inform participants; "Borrar
-conversación" deletes the conversation, utterances and claims. Audio is never stored: it goes from the offscreen
+"Transcribing" indicator stays visible; the consent text asks the user to inform participants; "Delete
+conversation" deletes the conversation, utterances and claims. Audio is never stored: it goes from the offscreen
 document to OpenAI, and only text reaches the local API. The OpenAI key stays on the server; the extension only
 holds 10-minute client secrets. The page URL sent with a conversation is origin and path only, and must match the
 tab that sent it.
@@ -77,7 +85,7 @@ tab that sent it.
 
 | Prototype | Here | Why |
 | --- | --- | --- |
-| "Omitidas" tab | "Transcripción" tab | The API does not return skipped sentences. |
+| "Skipped" tab | "Transcript" tab | The API does not return skipped sentences. |
 | Suggested question, "¿Correcto?" feedback | Not shown | No data or storage for them yet. |
 | Only the founder is checked | Every speaker is checked | Claim extraction is speaker-agnostic. Open question. |
 | Motion library from a CDN, Inter font | Web Animations API, system font | MV3 forbids remote code. |
@@ -85,8 +93,11 @@ tab that sent it.
 
 ## Removed
 
-The Meet simulators: the "Simular Google Meet" view of the old panel, `POST /api/meet/demo/check` with its scripted
-transcript and tests, and the Meet-like demo page.
+All simulated calls: the "Simulate Google Meet" view of the old panel, `POST /api/meet/demo/check` with its scripted
+transcript and tests, the Meet-like demo page, and the offline interview demo (`interview-demo.ts`) merged from
+main. From GF-03, the capture session, controller, service-worker bridge and placeholder panel were replaced by the
+overlay's session and panel; its DOM reader, consolidator, their unit tests and the e2e acceptance test stay (the
+e2e test now drives `meet-source` + `session`).
 
 ## Open items
 

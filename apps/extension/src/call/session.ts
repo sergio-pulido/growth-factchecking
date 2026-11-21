@@ -1,7 +1,7 @@
 // One fact-checked call: reads its source (captions or tab audio) after the user presses Start, sends final
 // utterances to the local API in batches and keeps the claims it returns. Spec: docs/specs/call-overlay.md
 import { SPEAKER_MAX, UTTERANCE_BATCH_MAX, UTTERANCE_TEXT_MAX } from '@growth-factcheking/shared';
-import type { ClaimCheck, UtteranceInput } from '@growth-factcheking/shared';
+import type { ClaimCheck, UtteranceBatchResult, UtteranceInput } from '@growth-factcheking/shared';
 import { speakerKindOf } from './platforms.js';
 import { CallTransportError } from './types.js';
 import type {
@@ -24,7 +24,7 @@ const FLUSH_NOW_AT = 4;
 const RETRY_MS = 4000;
 
 function message(error: unknown) {
-  return error instanceof Error && error.message ? error.message : 'No se pudo contactar con la API local.';
+  return error instanceof Error && error.message ? error.message : 'Could not reach the local API.';
 }
 
 export function createCallSession(
@@ -44,7 +44,7 @@ export function createCallSession(
   let voice = false;
   let notice: string | null = null;
   let seq = 0;
-  let flushTimer = 0;
+  let flushTimer: ReturnType<typeof setTimeout> | undefined;
 
   const elapsed = () => (startedAt === null ? 0 : Math.max(0, (Date.now() - startedAt) / 1000));
 
@@ -79,7 +79,7 @@ export function createCallSession(
 
   function enqueue({ speaker, text, kind }: Segment) {
     // Call apps sometimes re-render a caption block as a new node with the same words: send them once.
-    const name = (speaker || 'Participante').slice(0, SPEAKER_MAX);
+    const name = (speaker || 'Participant').slice(0, SPEAKER_MAX);
     if (transcript.slice(-5).some((line) => line.speaker === name && line.text === text)) return;
     const clientId = `u${++seq}`;
     const at = elapsed();
@@ -92,8 +92,8 @@ export function createCallSession(
   }
 
   function scheduleFlush(delay: number) {
-    window.clearTimeout(flushTimer);
-    flushTimer = window.setTimeout(() => void flush(), delay);
+    clearTimeout(flushTimer);
+    flushTimer = setTimeout(() => void flush(), delay);
   }
 
   function toItem(check: ClaimCheck): ClaimItem {
@@ -103,6 +103,21 @@ export function createCallSession(
       state: check.status === 'checked' && check.verdict ? 'checked' : 'failed',
       verdict: check.verdict, sources: check.sources, open: false,
     };
+  }
+
+  /**
+   * A retried batch the API had already stored comes back as duplicates without its claims (the first response
+   * was lost, e.g. on a timeout). Fetch the conversation's claims so they still reach the overlay.
+   */
+  async function withRecoveredClaims(id: string, result: UtteranceBatchResult): Promise<ClaimCheck[]> {
+    if (!(result.duplicates > 0)) return result.claims;
+    const known = new Set([...claims.map((item) => item.id), ...result.claims.map((check) => check.id)]);
+    try {
+      const stored = await transport.claims(id);
+      return [...result.claims, ...stored.filter((check) => !known.has(check.id))];
+    } catch {
+      return result.claims;
+    }
   }
 
   /** Sends the next batch. While one is in flight, returns that one instead of starting another. */
@@ -123,9 +138,9 @@ export function createCallSession(
     try {
       const result = await transport.send(conversationId, batch);
       queue = queue.slice(batch.length);
-      const fresh = result.claims.map(toItem);
+      const fresh = (await withRecoveredClaims(conversationId, result)).map(toItem);
       claims = [...claims, ...fresh];
-      notice = result.extraction === 'failed' ? 'No se pudieron extraer afirmaciones de lo último que se dijo. La transcripción se ha guardado.' : null;
+      notice = result.extraction === 'failed' ? 'Could not extract claims from what was just said. The transcript was saved.' : null;
       fresh.filter((item) => item.state === 'checked').forEach(events.onVerdict);
       return true;
     } catch (error) {
@@ -133,7 +148,7 @@ export function createCallSession(
       if (error instanceof CallTransportError && error.code !== 'unavailable') {
         queue = [];
         source.stop();
-        window.clearTimeout(flushTimer);
+        clearTimeout(flushTimer);
         state = 'ended';
       } else {
         retryIn = RETRY_MS;
@@ -212,7 +227,7 @@ export function createCallSession(
     const rest = source.stop();
     if (wasLive) rest.forEach(enqueue);
     state = 'ending';
-    window.clearTimeout(flushTimer);
+    clearTimeout(flushTimer);
     changed();
     // Wait for a batch already in flight, then send what is left before ending the conversation.
     if (inflight) await inflight;
@@ -226,7 +241,7 @@ export function createCallSession(
         notice = message(error);
       }
     }
-    if (queue.length) notice = `${queue.length} frases no se pudieron guardar.`;
+    if (queue.length) notice = `${queue.length} sentences could not be saved.`;
     queue = [];
     state = 'ended';
     changed();
@@ -247,7 +262,7 @@ export function createCallSession(
     transcript = [];
     transport.badge?.(0);
     state = 'idle';
-    notice = 'Conversación borrada de la base de datos local.';
+    notice = 'Conversation deleted from the local database.';
     changed();
   }
 
@@ -279,11 +294,11 @@ export function createCallSession(
   function endOnLeave() {
     if (state !== 'live' && state !== 'paused') return;
     source.stop();
-    window.clearTimeout(flushTimer);
+    clearTimeout(flushTimer);
     state = 'ended';
     if (conversationId) void transport.end(conversationId).catch(() => undefined);
   }
-  window.addEventListener('pagehide', endOnLeave);
+  globalThis.addEventListener?.('pagehide', endOnLeave);
 
   return {
     start, pause, resume, stop, remove, retry, toggleSources, snapshot,
@@ -291,7 +306,7 @@ export function createCallSession(
       disposed = true;
       // Leaving a call inside a single-page app does not fire pagehide.
       endOnLeave();
-      window.removeEventListener('pagehide', endOnLeave);
+      globalThis.removeEventListener?.('pagehide', endOnLeave);
     },
   };
 }

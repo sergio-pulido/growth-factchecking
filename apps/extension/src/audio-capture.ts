@@ -56,7 +56,7 @@ export async function startAudio(tabId: number, language?: string): Promise<null
   if (current && current.tabId !== tabId) {
     // A record without an offscreen document is left over from a crash: it must not block other tabs.
     if (await hasOffscreen()) {
-      throw new CallTransportError('FactCheck ya está escuchando otra pestaña. Detén esa verificación primero.');
+      throw new CallTransportError('FactCheck is already listening to another tab. Stop that check first.');
     }
     await setCaptured(null);
   }
@@ -70,11 +70,11 @@ export async function startAudio(tabId: number, language?: string): Promise<null
     try {
       streamId = await chrome.tabCapture.getMediaStreamId({ targetTabId: tabId });
     } catch {
-      throw new CallTransportError('Chrome no dejó capturar el audio. Pulsa el icono de la extensión en esta pestaña y vuelve a empezar.');
+      throw new CallTransportError('Chrome did not allow capturing the audio. Click the extension icon on this tab and start again.');
     }
-    if ((await captured())?.tabId !== tabId) throw new CallTransportError('La escucha se detuvo antes de empezar.');
+    if ((await captured())?.tabId !== tabId) throw new CallTransportError('Listening stopped before it started.');
     const reply = await command({ target: 'offscreen', kind: 'start', streamId, token: token.value });
-    if (!reply?.ok) throw new CallTransportError(reply?.message ?? 'No se pudo capturar el audio de la pestaña.');
+    if (!reply?.ok) throw new CallTransportError(reply?.message ?? 'Could not capture the tab audio.');
   } catch (error) {
     if ((await captured())?.tabId === tabId) await release();
     throw error;

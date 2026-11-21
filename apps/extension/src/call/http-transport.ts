@@ -6,8 +6,8 @@ import type {
 import { CallTransportError } from './types.js';
 import type { CallTransport } from './types.js';
 
-const UNAVAILABLE = 'La verificación en vivo no está disponible. Comprueba que la API local tenga OpenAI y PostgreSQL configurados.';
-const OFFLINE = 'No se pudo contactar con la API local. Comprueba que esté en marcha con npm start.';
+const UNAVAILABLE = 'Live checking is unavailable. Check that the local API has OpenAI and PostgreSQL configured.';
+const OFFLINE = 'Could not reach the local API. Check that it is running (npm start).';
 
 function isSource(value: unknown): value is FactCheckResult['sources'][number] {
   return typeof value === 'object' && value !== null
@@ -24,7 +24,7 @@ export function isFactCheckResult(value: unknown): value is FactCheckResult {
     && 'sources' in value && Array.isArray(value.sources) && value.sources.every(isSource);
 }
 
-function isClaimCheck(value: unknown): value is ClaimCheck {
+export function isClaimCheck(value: unknown): value is ClaimCheck {
   return typeof value === 'object' && value !== null
     && 'id' in value && typeof value.id === 'string'
     && 'claim' in value && typeof value.claim === 'string'
@@ -41,31 +41,28 @@ export function isBatchResult(value: unknown): value is UtteranceBatchResult {
     && 'claims' in value && Array.isArray(value.claims) && value.claims.every(isClaimCheck);
 }
 
-async function call(url: URL, method: 'POST' | 'DELETE', body: object | undefined, timeoutMs: number): Promise<Response> {
+async function call(url: URL, method: 'GET' | 'POST' | 'DELETE', body: object | undefined, timeoutMs: number): Promise<Response> {
   let response: Response;
   try {
-    response = await fetch(url, {
-      method,
-      headers: body ? { 'Content-Type': 'application/json' } : undefined,
-      body: body ? JSON.stringify(body) : undefined,
-      redirect: 'error',
-      signal: AbortSignal.timeout(timeoutMs),
-    });
+    const payload: RequestInit = body
+      ? { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
+      : {};
+    response = await fetch(url, { method, ...payload, redirect: 'error', signal: AbortSignal.timeout(timeoutMs) });
   } catch {
     throw new CallTransportError(OFFLINE);
   }
   if (response.ok) return response;
-  if (response.status === 404) throw new CallTransportError('La conversación ya no existe en la API local.', 'missing');
-  if (response.status === 409) throw new CallTransportError('La conversación ya estaba terminada.', 'ended');
+  if (response.status === 404) throw new CallTransportError('The conversation no longer exists in the local API.', 'missing');
+  if (response.status === 409) throw new CallTransportError('The conversation had already ended.', 'ended');
   if (response.status === 503) throw new CallTransportError(UNAVAILABLE);
-  throw new CallTransportError(`La API local respondió con un error (${response.status}).`);
+  throw new CallTransportError(`The local API returned an error (${response.status}).`);
 }
 
 async function json(response: Response): Promise<unknown> {
   try {
     return await response.json();
   } catch {
-    throw new CallTransportError('La API local devolvió una respuesta ilegible.');
+    throw new CallTransportError('The local API returned an unreadable response.');
   }
 }
 
@@ -85,15 +82,23 @@ export function createHttpTransport(origin: string): HttpTransport {
       };
       const data = await json(await call(new URL(CONVERSATIONS_PATH, origin), 'POST', body, 10_000));
       if (typeof data !== 'object' || data === null || !('id' in data) || typeof data.id !== 'string') {
-        throw new CallTransportError('La API local no devolvió un identificador de conversación.');
+        throw new CallTransportError('The local API did not return a conversation id.');
       }
       return { id: data.id };
     },
     async send(id: string, utterances: UtteranceInput[]) {
       // Extraction plus several live fact-checks can take a while.
       const data = await json(await call(conversation(id, '/utterances'), 'POST', { utterances }, 45_000));
-      if (!isBatchResult(data)) throw new CallTransportError('La API local devolvió afirmaciones inválidas.');
+      if (!isBatchResult(data)) throw new CallTransportError('The local API returned invalid claims.');
       return data;
+    },
+    async claims(id: string) {
+      const data = await json(await call(conversation(id), 'GET', undefined, 10_000));
+      const claims = typeof data === 'object' && data !== null && 'claims' in data ? data.claims : undefined;
+      if (!Array.isArray(claims) || !claims.every(isClaimCheck)) {
+        throw new CallTransportError('The local API returned invalid claims.');
+      }
+      return claims;
     },
     async end(id: string) {
       await call(conversation(id, '/end'), 'POST', undefined, 5000);
@@ -105,7 +110,7 @@ export function createHttpTransport(origin: string): HttpTransport {
       const response = await call(new URL(`${FACT_CHECK_PATH}/live`, origin), 'POST', { claim }, 15_000);
       const data = await json(response);
       if (response.headers.get('X-Fact-Check-Mode') !== 'live' || !isFactCheckResult(data)) {
-        throw new CallTransportError('La API local devolvió un resultado inválido.');
+        throw new CallTransportError('The local API returned an invalid result.');
       }
       return data;
     },
@@ -113,7 +118,7 @@ export function createHttpTransport(origin: string): HttpTransport {
       const body = language ? { language } : {};
       const data = await json(await call(new URL(TRANSCRIPTION_TOKEN_PATH, origin), 'POST', body, 10_000));
       if (typeof data !== 'object' || data === null || !('value' in data) || typeof data.value !== 'string') {
-        throw new CallTransportError('La API local no devolvió un permiso de transcripción.');
+        throw new CallTransportError('The local API did not return a transcription token.');
       }
       return data as TranscriptionTokenResult;
     },

@@ -5,8 +5,15 @@
   "type": "module",
   "scripts": {
     "build": "tsc --noEmit && node build.mjs",
-    "test": "esbuild src/call/segmenter.ts --format=esm --outfile=test-dist/segmenter.js --log-level=warning && node --test"
+    "test": "node build-test.mjs && node --test test/*.test.mjs",
+    "test:e2e": "node build-test.mjs && node --test test/e2e/*.e2e.mjs"
   },
-  "dependencies": { "@growth-factcheking/shared": "0.1.0" },
-  "devDependencies": { "@types/chrome": "^0.3.7", "esbuild": "^0.28.2" }
+  "dependencies": {
+    "@growth-factcheking/shared": "0.1.0"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.3.7",
+    "esbuild": "^0.28.2",
+    "jsdom": "^27.4.0"
+  }
 }
