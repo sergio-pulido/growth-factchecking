@@ -8,8 +8,8 @@ const RECONNECT_MS = 2000;
 const MAX_RECONNECTS = 3;
 
 type Capture = {
-  stream: MediaStream;
-  /** Clone of the tab audio sent to OpenAI; muting it on pause keeps the user's playback untouched. */
+  inputs: MediaStream[];
+  /** Stream sent to OpenAI. Pausing it keeps the user's tab playback untouched. */
   send: MediaStream;
   playback: AudioContext;
   peer: RTCPeerConnection | null;
@@ -18,6 +18,7 @@ type Capture = {
 };
 
 let capture: Capture | null = null;
+let generation = 0;
 
 function emit(event: OffscreenEvent) {
   void chrome.runtime.sendMessage(event).catch(() => undefined);
@@ -43,6 +44,7 @@ function onRealtimeEvent(raw: string) {
       break;
     case 'error':
       console.warn('OpenAI live transcription error.', event.error);
+      emit({ source: 'offscreen', kind: 'error', message: 'OpenAI could not transcribe the audio. Start a new check to try again.' });
       break;
     default:
       break;
@@ -52,9 +54,12 @@ function onRealtimeEvent(raw: string) {
 async function connect(current: Capture, token: string) {
   const peer = new RTCPeerConnection();
   current.peer = peer;
+  const alive = () => !current.stopping && capture === current && current.peer === peer;
   for (const track of current.send.getAudioTracks()) peer.addTrack(track, current.send);
   const channel = peer.createDataChannel('oai-events');
-  channel.addEventListener('message', (event) => onRealtimeEvent(String(event.data)));
+  channel.addEventListener('message', (event) => {
+    if (alive()) onRealtimeEvent(String(event.data));
+  });
   peer.addEventListener('connectionstatechange', () => {
     if (current.stopping || capture !== current || current.peer !== peer) return;
     if (peer.connectionState === 'failed' || peer.connectionState === 'closed' || peer.connectionState === 'disconnected') {
@@ -62,7 +67,6 @@ async function connect(current: Capture, token: string) {
     }
   });
 
-  const alive = () => !current.stopping && capture === current && current.peer === peer;
   const offer = await peer.createOffer();
   await peer.setLocalDescription(offer);
   const response = await fetch(REALTIME_CALLS, {
@@ -107,21 +111,48 @@ async function reconnect(current: Capture) {
   }
 }
 
-async function start(streamId: string, token: string) {
+function stopStreams(streams: readonly MediaStream[]) {
+  streams.forEach((stream) => stream.getTracks().forEach((track) => track.stop()));
+}
+
+async function start(streamId: string, token: string, microphone: boolean) {
   stop();
-  const stream = await navigator.mediaDevices.getUserMedia({
-    audio: { mandatory: { chromeMediaSource: 'tab', chromeMediaSourceId: streamId } },
-  } as unknown as MediaStreamConstraints);
-  // Capturing a tab mutes it for the user: play it back so the call stays audible.
-  const playback = new AudioContext();
-  playback.createMediaStreamSource(stream).connect(playback.destination);
-  const send = new MediaStream(stream.getAudioTracks().map((track) => track.clone()));
-  const current: Capture = { stream, send, playback, peer: null, stopping: false, reconnects: 0 };
-  capture = current;
+  const started = generation;
+  const inputs: MediaStream[] = [];
+  let playback: AudioContext | undefined;
   try {
+    const tab = await navigator.mediaDevices.getUserMedia({
+      audio: { mandatory: { chromeMediaSource: 'tab', chromeMediaSourceId: streamId } },
+    } as unknown as MediaStreamConstraints);
+    inputs.push(tab);
+    if (started !== generation) throw new Error('Listening stopped before it started.');
+
+    // Restore playback as soon as Chrome takes over the tab. Only the tab audio is played back locally.
+    playback = new AudioContext();
+    const tabSource = playback.createMediaStreamSource(tab);
+    tabSource.connect(playback.destination);
+    let send: MediaStream;
+    if (microphone) {
+      const mic = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+      inputs.push(mic);
+      if (started !== generation) throw new Error('Listening stopped before it started.');
+      const mix = playback.createMediaStreamDestination();
+      tabSource.connect(mix);
+      playback.createMediaStreamSource(mic).connect(mix);
+      send = mix.stream;
+    } else {
+      send = new MediaStream(tab.getAudioTracks().map((track) => track.clone()));
+    }
+    const current: Capture = { inputs, send, playback, peer: null, stopping: false, reconnects: 0 };
+    capture = current;
     await connect(current, token);
+    if (started !== generation) throw new Error('Listening stopped before it started.');
   } catch (error) {
-    stop();
+    if (started === generation && capture) stop();
+    else {
+      stopStreams(inputs);
+      if (playback && playback.state !== 'closed') await playback.close();
+    }
     throw error;
   }
 }
@@ -134,13 +165,13 @@ function setMuted(muted: boolean) {
 }
 
 function stop() {
+  generation++;
   const current = capture;
   if (!current) return;
   current.stopping = true;
   capture = null;
   current.peer?.close();
-  current.send.getTracks().forEach((track) => track.stop());
-  current.stream.getTracks().forEach((track) => track.stop());
+  stopStreams([current.send, ...current.inputs]);
   void current.playback.close();
 }
 
@@ -148,8 +179,15 @@ chrome.runtime.onMessage.addListener((message: unknown, sender, respond) => {
   if (sender.id !== chrome.runtime.id || typeof message !== 'object' || message === null
     || !('target' in message) || message.target !== 'offscreen') return;
   const command = message as OffscreenCommand;
+  if (command.kind === 'microphone-status') {
+    navigator.permissions.query({ name: 'microphone' as PermissionName }).then(
+      ({ state }) => respond({ ok: true, permission: state }),
+      () => respond({ ok: false }),
+    );
+    return true;
+  }
   if (command.kind === 'start') {
-    start(command.streamId, command.token).then(
+    start(command.streamId, command.token, command.microphone).then(
       () => respond({ ok: true }),
       (error: unknown) => respond({ ok: false, message: error instanceof Error ? error.message : 'Could not capture the audio.' }),
     );

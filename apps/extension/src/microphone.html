@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>FactCheck microphone setup</title>
+    <style>
+      body { color-scheme: light dark; max-width: 36rem; margin: 12vh auto; padding: 0 1.5rem; font: 1rem/1.5 system-ui, sans-serif; }
+      button { font: inherit; padding: .5rem .9rem; cursor: pointer; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Enable the microphone for FactCheck</h1>
+      <p>FactCheck uses your microphone with the tab audio for live transcription in Google Meet after you press Start checking.</p>
+      <button id="enable" type="button">Enable microphone</button>
+      <p id="status" role="status"></p>
+    </main>
+    <script src="microphone.js"></script>
+  </body>
+</html>

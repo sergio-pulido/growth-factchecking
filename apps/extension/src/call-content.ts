@@ -8,7 +8,6 @@ import { createCaptionSource } from './call/caption-source.js';
 import { isBatchResult, isClaimCheck, isFactCheckResult } from './call/http-transport.js';
 import { mountCallPanel } from './call/panel.js';
 import type { CallPanel } from './call/panel.js';
-import { createMeetSource } from './call/meet-source.js';
 import { MEET, platformOf } from './call/platforms.js';
 import type { CaptionPlatform, CallPlatform } from './call/platforms.js';
 import { CallTransportError } from './call/types.js';
@@ -85,28 +84,28 @@ function mount(source: CaptureSource): CallPanel {
   return panel;
 }
 
-function captionSource(platform: CallPlatform | CaptionPlatform): CaptureSource {
-  return platform === MEET ? createMeetSource() : createCaptionSource(platform as CaptionPlatform);
+function callSource(platform: CallPlatform | CaptionPlatform): CaptureSource {
+  return platform === MEET ? createAudioSource(relay, 'meet') : createCaptionSource(platform as CaptionPlatform);
 }
 
 /** Shows or removes the pill on call apps as the user joins or leaves a call. */
 function sync() {
   const platform = platformOf(location);
   const panel = window.growthFactCheckingCall;
-  if (!platform || panel?.capture === 'audio') return;
+  if (!platform || (panel?.capture === 'audio' && platform !== MEET)) return;
   const inCall = platform.isCall(location, document);
-  if (inCall && !panel) mount(captionSource(platform));
+  if (inCall && !panel) mount(callSource(platform));
   else if (!inCall && panel) {
     panel.destroy();
     window.growthFactCheckingCall = undefined;
   }
 }
 
-/** Toolbar icon: open the overlay, in captions mode on a call app and in tab-audio mode anywhere else. */
+/** Toolbar icon: open the overlay and grant Chrome tab capture when the source needs it. */
 function toggle() {
   sync();
   if (!window.growthFactCheckingCall) {
-    mount(createAudioSource((request) => relay(request))).open();
+    mount(createAudioSource(relay, platformOf(location) === MEET ? 'meet' : 'web')).open();
     return;
   }
   window.growthFactCheckingCall.toggle();

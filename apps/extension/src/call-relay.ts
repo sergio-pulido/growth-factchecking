@@ -63,7 +63,8 @@ export function isCallRequest(message: unknown, senderUrl: string | undefined): 
     case 'call-badge':
       return typeof m.count === 'number' && Number.isInteger(m.count) && m.count >= 0;
     case 'audio-start':
-      return m.language === undefined || (typeof m.language === 'string' && /^[a-z]{2}$/u.test(m.language));
+      return (m.language === undefined || (typeof m.language === 'string' && /^[a-z]{2}$/u.test(m.language)))
+        && (m.microphone === undefined || (m.microphone === true && senderUrl?.startsWith('https://meet.google.com/') === true));
     case 'audio-pause':
     case 'audio-resume':
     case 'audio-stop':
@@ -85,7 +86,7 @@ async function run(request: CallRequest, tabId: number): Promise<unknown> {
       await chrome.action.setBadgeBackgroundColor({ tabId, color: '#D6453D' });
       await chrome.action.setBadgeText({ tabId, text: request.count ? String(request.count) : '' });
       return null;
-    case 'audio-start': return startAudio(tabId, request.language);
+    case 'audio-start': return startAudio(tabId, request.language, request.microphone);
     case 'audio-pause': return pauseAudio(tabId);
     case 'audio-resume': return resumeAudio(tabId);
     case 'audio-stop': return stopAudio(tabId);

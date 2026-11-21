@@ -88,7 +88,8 @@ Design and UI contribution for the browser extension by Michella and Tomás. Tom
 
 Click the extension icon on the call's tab to open the FactCheck overlay. On Google Meet, Zoom (web client) and Microsoft Teams (web), the **Check this call** pill also appears on its own once you are in a call. The panel says what it will do; tell the participants, then press **Start checking**.
 
-- **Meet, Zoom web and Teams web:** the extension reads the app's own captions, with the speaker's name, and turns them on if they are off. Meet captions go through the GF-03 caption engine ([spec](docs/specs/meet-captions-capture.md)).
+- **Google Meet:** click the toolbar icon on the Meet tab. During the first **Start checking**, enable the microphone in the setup tab, return to Meet and start again. Pick the language of the call. OpenAI transcribes the mix of your microphone and the tab audio. The transcript labels the mix **Call audio**. Use FactCheck's **Pause** or **Stop** to stop sending audio, even if you have muted yourself in Meet.
+- **Zoom web and Teams web:** the extension reads the app's captions and the speaker names shown there.
 - **Any other tab** (another video service, a webinar, a YouTube interview…): the extension captures the tab's audio and transcribes it with OpenAI. Pick the conversation language before starting. Audio is never stored and speakers are not named. Your own microphone is not part of the tab's audio.
 
 Each sentence is stored by the local API, which extracts the checkable claims and checks them against the corpus. **Pause** stops sending what is said, **Stop** ends the conversation and **Delete conversation** erases it from the database. There are no simulated calls: the overlay only runs over real pages.
@@ -137,6 +138,6 @@ Afirmación → Extensión → API
                           └─ OpenAI Decisions clasifica la afirmación con esos hechos
 ```
 
-Conversations are captured from Meet, Zoom web and Teams web captions, or from any tab's audio.
+Conversations are captured from the microphone and tab audio in Meet, captions in Zoom web and Teams web, or tab audio on other pages.
 
 [Especificación inicial](docs/specs/fact-checking-mvp.md) · [Estado del proyecto](docs/PROJECT_STATE.md) · [Decisiones de arquitectura](docs/DECISIONS.md)

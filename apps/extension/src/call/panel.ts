@@ -82,7 +82,7 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
   function onVerdict(item: ClaimItem) {
     if (!item.verdict) return;
     // True / false: the border of the video (tab audio) or of the screen (call apps) turns green or red.
-    flashFrame(flash, item.verdict, source.capture === 'audio' ? 'video' : 'screen');
+    flashFrame(flash, item.verdict, source.platform === 'web' ? 'video' : 'screen');
     if (ATTENTION.has(item.verdict)) flashIds = new Set([...flashIds, item.id]);
     if (!open) {
       bubbles.push(item);
@@ -222,16 +222,20 @@ export function mountCallPanel(source: CaptureSource, transport: CallTransport, 
   function consent() {
     const start = h('button', { class: 'btn primary', type: 'button' }, 'Start checking');
     start.addEventListener('click', () => void session.start());
+    const usesMicrophone = source.platform === 'meet' && source.capture === 'audio';
     const reads = source.capture === 'captions'
       ? h('li', {}, `reads the ${source.label} captions in this tab, with the speaker's name;`)
-      : h('li', {}, 'listens to this tab\'s audio and transcribes it with OpenAI; the audio is not stored and speakers are not named;');
+      : usesMicrophone
+        ? h('li', {}, 'sends your microphone and the other participants’ tab audio to OpenAI for live transcription;')
+        : h('li', {}, 'listens to this tab\'s audio and transcribes it with OpenAI; the audio is not stored and speakers are not named;');
     const consentBlock = h('div', { class: 'consent' },
-      h('strong', {}, source.capture === 'captions' ? `Check this ${source.label} call` : 'Check this tab\'s audio'),
+      h('strong', {}, source.platform !== 'web' ? `Check this ${source.label} call` : 'Check this tab\'s audio'),
       h('span', {}, 'Once started, FactCheck:'),
       h('ul', {}, reads,
         h('li', {}, 'saves the transcript and the claims in your local API;'),
         h('li', {}, 'checks each claim against the source corpus.')),
       h('span', {}, 'Tell the participants before you start. You can pause, stop and delete the conversation at any time.'));
+    if (usesMicrophone) consentBlock.append(h('span', {}, 'Use Pause or Stop here to stop sending audio. Meet’s mute button controls Meet only.'));
     if (source.language) consentBlock.append(languagePicker(source.language));
     consentBlock.append(start);
     if (options.onCheckSelection) {

@@ -1,7 +1,7 @@
 // Tab audio as a capture source. The background worker captures this tab's audio and an offscreen document
 // streams it to OpenAI live transcription. The live model streams text deltas without turn detection, so the
 // deltas are cut into sentences here.
-import type { TabEvent } from '../messages.js';
+import type { CallRequest, TabEvent } from '../messages.js';
 import { takeSentences } from './segmenter.js';
 import type { CaptureSource, Segment, SourceSink } from './types.js';
 
@@ -14,9 +14,7 @@ const FINISHED = /[.!?…]["»”)]?$/u;
 const TICK_MS = 400;
 const VOICE_MS = 1200;
 
-export type AudioControl = (request: { kind: 'audio-start'; language?: string } | { kind: 'audio-pause' | 'audio-resume' | 'audio-stop' }) => Promise<unknown>;
-
-const segment = (text: string): Segment => ({ speaker: AUDIO_SPEAKER, text, kind: 'unknown' });
+export type AudioControl = (request: Extract<CallRequest, { kind: `audio-${string}` }>) => Promise<unknown>;
 
 const LANGUAGES = [
   { value: 'es', label: 'Español' },
@@ -30,7 +28,9 @@ function browserLanguage(): string {
   return LANGUAGES.some(({ value }) => value === language) ? language : '';
 }
 
-export function createAudioSource(control: AudioControl): CaptureSource {
+export function createAudioSource(control: AudioControl, platform: 'web' | 'meet' = 'web'): CaptureSource {
+  const microphone = platform === 'meet';
+  const segment = (text: string): Segment => ({ speaker: microphone ? 'Call audio' : AUDIO_SPEAKER, text, kind: 'unknown' });
   let sink: SourceSink | null = null;
   let paused = false;
   let buffer = '';
@@ -86,10 +86,10 @@ export function createAudioSource(control: AudioControl): CaptureSource {
 
   return {
     capture: 'audio',
-    platform: 'web',
-    label: 'this tab',
-    hint: 'Waiting for audio from this tab…',
-    anchorBottom: 24,
+    platform,
+    label: microphone ? 'Google Meet' : 'this tab',
+    hint: microphone ? 'Waiting for the microphone and call audio…' : 'Waiting for audio from this tab…',
+    anchorBottom: microphone ? 96 : 24,
     language: {
       options: LANGUAGES,
       value: () => language,
@@ -102,8 +102,9 @@ export function createAudioSource(control: AudioControl): CaptureSource {
       sink = next;
       paused = false;
       buffer = '';
+      streamedItems.clear();
       try {
-        await control({ kind: 'audio-start', ...(language ? { language } : {}) });
+        await control({ kind: 'audio-start', ...(language ? { language } : {}), ...(microphone ? { microphone: true } : {}) });
       } catch (error) {
         detach();
         throw error;

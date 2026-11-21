@@ -6,14 +6,14 @@ API). The tab-audio path was agent-run end to end against real OpenAI and Postgr
 readers have not met a real Meet, Zoom or Teams call.
 
 UI source: the "FactCheck Prototype" design (collapsed pill, verdict bubbles, glass panel, screen-edge flash).
-Backend contract: [conversation capture](conversation-capture.md). Meet caption engine: [GF-03](meet-captions-capture.md).
+Backend contract: [conversation capture](conversation-capture.md). Previous Meet caption engine: [GF-03](meet-captions-capture.md).
 There are no simulators: the overlay only runs over real pages.
 
 ## Where it runs
 
 | Page | How the overlay appears | Source |
 | --- | --- | --- |
-| Google Meet call (`meet.google.com/xxx-xxxx-xxx`) | Pill appears on its own; toolbar icon toggles it | Meet captions in the tab or Meet's floating window (GF-03 engine) |
+| Google Meet call (`meet.google.com/xxx-xxxx-xxx`) | Pill appears on its own; toolbar icon grants tab capture | Microphone and tab audio, transcribed by OpenAI |
 | Zoom web client (`*.zoom.us/wc/…`) | Same | Zoom captions (speaker names when Zoom shows them) |
 | Teams web (`teams.microsoft.com`, `teams.live.com`, `teams.cloud.microsoft`) during a call | Same | Teams live captions |
 | Any other tab | Toolbar icon opens it | Tab audio, transcribed by OpenAI |
@@ -36,15 +36,6 @@ Stop -> POST /:id/end · Erase -> DELETE /:id · failed claim "Reintentar" -> PO
 
 ## Captions
 
-**Meet** (`call/meet-source.ts`) wraps the GF-03 engine: `meet/meet-captions-dom.ts` reads the caption rows every
-300 ms and `meet/caption-consolidator.ts` emits one utterance per intervention once it settles (rules in
-[meet-captions-capture.md](meet-captions-capture.md)). Captions on screen at Start, or when resuming, are fed to a
-fresh consolidator and discarded, so they are never sent. Pause keeps turns that already settled.
-
-When Meet opens a Document Picture-in-Picture window, the same source reads its caption document and uses
-the floating window's timer to settle captions. Closing the floating window returns reading to the tab in the
-same conversation. The overlay stays in the Meet tab. [Chrome Document Picture-in-Picture](https://developer.chrome.com/docs/web-platform/document-picture-in-picture)
-
 **Zoom and Teams** (`call/platforms.ts`, `caption-source.ts`, `segmenter.ts`):
 
 - One reader per app: region selector, block / speaker / text selectors, a structural fallback (first line of a block
@@ -58,17 +49,15 @@ same conversation. The overlay stays in the Meet tab. [Chrome Document Picture-i
 
 - The toolbar click grants `activeTab`, which lets the background worker get a `tabCapture` stream id for that tab.
   One tab at a time; the captured tab id lives in `chrome.storage.session` so a suspended worker keeps routing.
-- The offscreen document opens the stream, plays it back (capturing a tab mutes it otherwise), and sends a cloned
-  track to `https://api.openai.com/v1/realtime/calls` over WebRTC with the short-lived client secret. Pause disables
-  the cloned track only. It reconnects up to three times with a fresh secret if the connection drops.
+- The offscreen document restores playback of the captured tab. In Meet, it mixes the microphone and the remote audio into one track. On other tabs it clones the tab track. It sends the result to OpenAI Realtime over WebRTC with the short-lived client secret. Pause disables the outgoing track and Stop closes both inputs. A dropped connection can reconnect with a fresh secret.
+- Meet asks for microphone permission on a visible extension page. The user can close that page and start a new check from Meet once the permission is granted. The outgoing stream runs in the offscreen document as the user changes tabs or enters Picture-in-Picture. Meet's mute button controls the microphone for the call itself. FactCheck has its own Pause and Stop controls. [Chrome microphone capture example](https://github.com/GoogleChrome/chrome-extensions-samples/tree/main/functional-samples/cookbook.offscreen-user-media)
 - `gpt-live-transcribe` sessions have no turn detection: they stream `…input_audio_transcription.delta` events into
   one open item and never send `completed`. The content side cuts that stream into sentences (a sentence is finished
   when another word follows it, a finished tail after 1.5 s of silence, an unfinished one after 8 s, run-ons at 60
   words). `completed` events are used only for items that sent no deltas (other models).
 - The language picker (Español, English, Other = automatic) defaults to the browser language. The hint matters: in the
   run without it, "treinta y dos mil" came back as "train to Y dos mil".
-- Speaker is "Audio de la pestaña" (`speakerKind: unknown`). Only the tab's audio is captured: the user's own
-  microphone is not.
+- Speaker is **Call audio** in Meet and **Tab audio** elsewhere (`speakerKind: unknown`). The mixed audio has no participant labels.
 
 ## Panel (`apps/extension/src/call/panel.ts`, `cards.ts`, `alerts.ts`, `call.css`)
 
@@ -110,4 +99,4 @@ e2e test now drives `meet-source` + `session`).
    `chrome` API and a recorded clip instead of `tabCapture`).
 3. Decide whether to check every speaker or only selected participants.
 4. Persist re-checks of failed claims in the conversation (needs an API route).
-5. Include the user's microphone in audio mode (needs mic permission and mixing).
+5. Verify the microphone permission and both sides of a real Chrome Meet call with version 0.4.6.

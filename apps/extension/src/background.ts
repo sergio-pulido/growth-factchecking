@@ -7,8 +7,7 @@ import type {
   TabEvent,
 } from './messages.js';
 
-// The toolbar icon opens the FactCheck call overlay on the current tab: captions mode on Meet, Zoom web and
-// Teams web, tab-audio mode anywhere else. Clicking it also grants the tab capture permission audio mode needs.
+// The toolbar icon opens the overlay and grants the tab capture permission used by audio sources.
 chrome.action.onClicked.addListener(async ({ id }) => {
   if (id === undefined) return;
   const toggle: TabEvent = { kind: 'call-toggle' };

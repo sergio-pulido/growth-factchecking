@@ -6,9 +6,9 @@ La extensión guarda el modo de verificación en Chrome. **Simulado** usa los es
 
 Los vectores son conteos de palabras deterministas; el clasificador devuelve sí solo para un texto idéntico y neutral en el resto. El corpus simulado se almacena en memoria. Los tests de CI cubren la ingestión, repetición, actualización, validación, aislamiento y consulta.
 
-El panel de llamadas (diseño del prototipo FactCheck) se abre con el icono de la extensión en cualquier pestaña y aparece solo en Meet, Zoom web y Teams web. Después de **Empezar a verificar**, lee los subtítulos de la aplicación o, en cualquier otra pestaña, transcribe su audio con OpenAI; guarda la transcripción en PostgreSQL, extrae afirmaciones y muestra los veredictos. Las simulaciones de Meet se han eliminado. El audio se ha probado de extremo a extremo contra OpenAI y PostgreSQL con un audio de prueba; los lectores de subtítulos aún no se han probado en llamadas reales.
+El panel de llamadas se abre con el icono de la extensión y aparece automáticamente en Meet, Zoom web y Teams web. En la versión 0.4.6, Meet usa el micrófono y el audio de la pestaña mediante OpenAI Realtime. Zoom web y Teams web usan sus subtítulos. El resto de pestañas usa su propio audio. La API guarda el texto, extrae afirmaciones y coteja las fuentes.
 
-La compilación local 0.4.1 lee los subtítulos de la ventana flotante de Meet mientras la pestaña queda en segundo plano. Las pruebas simulan abrir y cerrar esa ventana durante la captura y comprueban que cada intervención se conserva una sola vez. Queda pendiente probar la ventana flotante de una llamada real en Chrome.
+Las pruebas automatizadas verificaron que se envían las dos pistas de Meet, que el micrófono queda fuera de la reproducción local y que Stop cierra ambas capturas. Se comprobó la transcripción de un audio sintético con OpenAI. Queda por verificar el permiso y la calidad de la captura en una llamada real de Chrome.
 
 ## Próximos hitos
 
