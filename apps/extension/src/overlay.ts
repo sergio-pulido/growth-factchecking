@@ -2,16 +2,16 @@ import { CLAIM_MAX_LENGTH, DEMO_SCENARIOS } from '@growth-factcheking/shared';
 import type { DemoScenario } from '@growth-factcheking/shared';
 import type { FactCheckMessage, FactCheckMode, FactCheckResponse } from './messages.js';
 import { isXFactCheckPage, startInlineFeed } from './inline-feed.js';
-import { createMeetDemo } from './meet-demo.js';
+import { createInterviewDemo } from './interview-demo.js';
 import styles from './overlay.css';
 import { verdictLabels } from './verdict-labels.js';
 
-const demoClaim = 'La biblioteca de Puerto Aurora abre los sábados.';
+const demoClaim = 'The Puerto Aurora library opens on Saturdays.';
 const sourcePreference = 'factCheckSource';
 const scenarioLabels: Record<DemoScenario, string> = {
   ...verdictLabels,
-  no_evidence: 'Sin fuentes',
-  error: 'Error de servicio',
+  no_evidence: 'No sources',
+  error: 'Service error',
 };
 
 declare global {
@@ -40,10 +40,43 @@ function mountOverlay() {
   const header = document.createElement('header');
   const close = document.createElement('button');
   close.type = 'button';
-  close.setAttribute('aria-label', 'Cerrar');
+  close.setAttribute('aria-label', 'Close');
   close.textContent = '×';
-  header.append(title, close);
+  const minimise = document.createElement('button');
+  minimise.type = 'button';
+  minimise.className = 'panel-min';
+  minimise.setAttribute('aria-label', 'Minimise');
+  minimise.setAttribute('aria-pressed', 'false');
+  minimise.textContent = '–';
+  minimise.addEventListener('click', () => {
+    const minimised = panel.classList.toggle('is-min');
+    minimise.setAttribute('aria-pressed', String(minimised));
+  });
+  header.append(title, minimise, close);
   panel.append(header);
+
+  // Drag the panel by its header. transform is not set by the :host rules, so it applies.
+  let dragX = 0;
+  let dragY = 0;
+  header.addEventListener('pointerdown', (event) => {
+    if (event.target instanceof HTMLButtonElement) return;
+    const startX = event.clientX - dragX;
+    const startY = event.clientY - dragY;
+    header.setPointerCapture(event.pointerId);
+    const move = (moveEvent: PointerEvent) => {
+      dragX = moveEvent.clientX - startX;
+      dragY = moveEvent.clientY - startY;
+      host.style.transform = `translate(${dragX}px, ${dragY}px)`;
+    };
+    const end = () => {
+      header.removeEventListener('pointermove', move);
+      header.removeEventListener('pointerup', end);
+      header.removeEventListener('pointercancel', end);
+    };
+    header.addEventListener('pointermove', move);
+    header.addEventListener('pointerup', end);
+    header.addEventListener('pointercancel', end);
+  });
 
   const demo = document.createElement('p');
   demo.className = 'demo-label';
@@ -52,15 +85,15 @@ function mountOverlay() {
   const form = document.createElement('form');
   const modeLabel = document.createElement('label');
   modeLabel.htmlFor = 'factchecking-mode';
-  modeLabel.textContent = 'Fuente de verificación';
+  modeLabel.textContent = 'Checking source';
   const modeSelect = document.createElement('select');
   modeSelect.id = modeLabel.htmlFor;
   modeSelect.className = 'factchecking-mode';
-  modeSelect.add(new Option('Simulado', 'mock'));
+  modeSelect.add(new Option('Simulated', 'mock'));
   modeSelect.add(new Option('Real', 'live'));
   const label = document.createElement('label');
   label.htmlFor = 'factchecking-scenario';
-  label.textContent = 'Escenario de prueba';
+  label.textContent = 'Test scenario';
   const select = document.createElement('select');
   select.id = label.htmlFor;
   for (const scenario of DEMO_SCENARIOS) {
@@ -79,7 +112,14 @@ function mountOverlay() {
   sources.append(sourceTitle, sourceList);
   const scenarioView = document.createElement('div');
   scenarioView.append(demo, quote, form, status, sources);
-  const meet = createMeetDemo();
+  const meet = createInterviewDemo((busy) => host.toggleAttribute('data-busy', busy), {
+    isMinimised: () => panel.classList.contains('is-min'),
+    expand: () => {
+      panel.classList.remove('is-min');
+      minimise.setAttribute('aria-pressed', 'false');
+      showMeet(true);
+    },
+  });
   const changeView = document.createElement('button');
   changeView.type = 'button';
   changeView.className = 'meet-switch';
@@ -87,12 +127,12 @@ function mountOverlay() {
   function showMeet(show: boolean) {
     scenarioView.hidden = show;
     meet.view.hidden = !show;
-    changeView.textContent = show ? 'Volver a verificación' : 'Simular Google Meet';
-    title.textContent = show ? 'Simulación de Google Meet' : 'FactChecking';
+    changeView.textContent = show ? 'Back to checks' : 'Play interview demo';
+    title.textContent = show ? 'The Wild Project demo' : 'FactChecking';
     if (!show) meet.stop();
   }
 
-  showMeet(window.location.hostname === 'meet.google.com');
+  showMeet(['meet.google.com', 'www.youtube.com', 'youtube.com'].includes(window.location.hostname));
   changeView.addEventListener('click', () => showMeet(meet.view.hidden));
   if (isXFactCheckPage()) {
     const active = Boolean(window.growthFactCheckingFeed);
@@ -117,13 +157,14 @@ function mountOverlay() {
     feed.append(toggle, note);
     scenarioView.prepend(feed);
   }
-  panel.append(changeView, scenarioView, meet.view);
+  panel.append(meet.toasts, changeView, scenarioView, meet.view);
 
   let mode: FactCheckMode = 'mock';
   let busy = true;
 
   function setBusy(value: boolean) {
     busy = value;
+    host.toggleAttribute('data-busy', value);
     modeSelect.disabled = value;
     select.disabled = value;
     submit.disabled = value || (mode === 'live' && !selection);
@@ -137,15 +178,15 @@ function mountOverlay() {
   function renderMode() {
     const live = mode === 'live';
     modeSelect.value = mode;
-    demo.textContent = live ? 'Verificación con OpenAI y el corpus local' : 'Datos simulados';
+    demo.textContent = live ? 'Checked with OpenAI and the local corpus' : 'Simulated data';
     quote.textContent = live ? selection : selection || demoClaim;
     quote.hidden = live && !selection;
     label.hidden = live;
     select.hidden = live;
     submit.classList.toggle('factchecking-live-submit', live);
-    submit.textContent = live ? 'Verificar' : 'Probar';
+    submit.textContent = live ? 'Check' : 'Try';
     status.textContent = live && !selection
-      ? 'Selecciona texto de la página y vuelve a abrir el panel.'
+      ? 'Select text on the page and reopen the panel.'
       : '';
     clearSources();
   }
@@ -156,8 +197,8 @@ function mountOverlay() {
     mode = stored[sourcePreference] === 'live' ? 'live' : 'mock';
     renderMode();
   }, (error: unknown) => {
-    console.warn('No se pudo leer la fuente de verificación.', error);
-    status.textContent = 'No se pudo leer la preferencia. Se usa el modo simulado.';
+    console.warn('Could not read the checking source.', error);
+    status.textContent = 'Could not read your preference. Using simulated mode.';
   }).finally(() => setBusy(false));
 
   modeSelect.addEventListener('change', async () => {
@@ -169,9 +210,9 @@ function mountOverlay() {
       mode = nextMode;
       renderMode();
     } catch (error) {
-      console.warn('No se pudo guardar la fuente de verificación.', error);
+      console.warn('Could not save the checking source.', error);
       modeSelect.value = mode;
-      status.textContent = 'No se pudo guardar el cambio de modo. Vuelve a intentarlo.';
+      status.textContent = 'Could not save the mode change. Try again.';
     } finally {
       setBusy(false);
     }
@@ -192,7 +233,7 @@ function mountOverlay() {
 
     setBusy(true);
     clearSources();
-    status.textContent = 'Cargando…';
+    status.textContent = 'Checking…';
 
     try {
       const response = await chrome.runtime.sendMessage<FactCheckMessage, FactCheckResponse>(message);
@@ -203,9 +244,9 @@ function mountOverlay() {
 
       const { check: result, mode: resultMode } = response.result;
       status.textContent = result.sources.length === 0
-        ? `${verdictLabels[result.verdict]} · Sin fuentes`
+        ? `${verdictLabels[result.verdict]} · No sources`
         : verdictLabels[result.verdict];
-      sourceTitle.textContent = resultMode === 'mock' ? 'Fuentes de ejemplo' : 'Fuentes';
+      sourceTitle.textContent = resultMode === 'mock' ? 'Sample sources' : 'Sources';
       for (const source of result.sources) {
         const item = document.createElement('li');
         const link = document.createElement('a');
@@ -218,8 +259,8 @@ function mountOverlay() {
       }
       sources.hidden = result.sources.length === 0;
     } catch (error) {
-      console.warn('No se pudo mostrar el resultado de la verificación.', error);
-      status.textContent = 'No se pudo cargar el resultado. Vuelve a abrir el panel.';
+      console.warn('Could not show the check result.', error);
+      status.textContent = 'Could not load the result. Reopen the panel.';
     } finally {
       setBusy(false);
     }
@@ -227,7 +268,7 @@ function mountOverlay() {
 
   const previousFocus = document.activeElement;
   function dismiss() {
-    meet.stop();
+    meet.destroy();
     host.remove();
     window.growthFactCheckingOverlay = undefined;
     if (previousFocus instanceof HTMLElement) previousFocus.focus();

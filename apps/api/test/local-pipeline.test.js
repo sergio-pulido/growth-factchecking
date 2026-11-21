@@ -51,7 +51,21 @@ test('live ingestion accepts both corpus formats and rejects invalid source reco
   assert.deepEqual(parseFacts([fact]), [fact]);
   const corroborated = { ...fact, additionalSourceUrls: ['https://example.org/other-source'] };
   assert.deepEqual(parseFacts([corroborated]), [corroborated]);
+  const translated = { ...fact, statementEn: 'The Puerto Aurora planetarium opens on Fridays.' };
+  assert.deepEqual(parseFacts([{ ...translated, statementEn: ` ${translated.statementEn} ` }]), [translated]);
+  assert.throws(() => parseFacts([{ ...fact, statementEn: ' ' }]), /English statement/);
   assert.throws(() => parseFacts([{ ...fact, additionalSourceUrls: [fact.sourceUrl] }]), /duplicate source/);
   assert.throws(() => parseFacts({ facts: [fact, fact] }), /duplicate ID/);
   assert.throws(() => parseFacts([fact, { ...fact, id: 'other', sourceUrl: 'file:///tmp/source' }]), /HTTP/);
+});
+
+test('the X demo endpoint exposes numeric post IDs from the curated collection', async (t) => {
+  const app = createApp(false);
+  t.after(() => app.close());
+  const response = await app.inject('/api/x-demo/posts');
+  assert.equal(response.statusCode, 200);
+  const { postIds } = response.json();
+  assert.ok(postIds.length >= 5);
+  assert.equal(postIds.length, new Set(postIds).size);
+  assert.ok(postIds.every((id) => typeof id === 'string' && /^\d+$/.test(id)));
 });

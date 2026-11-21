@@ -52,6 +52,21 @@ test('the verdict includes all links for the selected fact and no unrelated link
   })));
 });
 
+test('cited sources carry the English display text without changing the judged statement', async () => {
+  const translated = { ...fact, statement: 'El agua hierve a 100 C al nivel del mar.', statementEn: fact.statement };
+  let judged;
+  const { deps: d } = deps({
+    search: async () => [translated],
+    decide: async (_claim, evidence) => {
+      judged = evidence.map(({ statement }) => statement);
+      return { relevance: 0.9, sourceId: translated.id, choice: 'yes', confidence: 0.95 };
+    },
+  });
+  const out = await createFactChecker(d)('Water boils at 100 degrees');
+  assert.deepEqual(judged, [translated.statement]);
+  assert.deepEqual(out.result.sources[0], { statement: translated.statement, statementEn: fact.statement, sourceUrl: fact.sourceUrl });
+});
+
 test('retrieved facts that do not address the claim are not cited', async () => {
   const { deps: d } = deps({
     decide: async () => ({ relevance: 0.2, sourceId: null, choice: 'neutral', confidence: 0.9 }),

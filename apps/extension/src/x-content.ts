@@ -1,13 +1,9 @@
 import { articleStatusId, isXBookmarks, isXHome, isXPost, startInlineFeed } from './inline-feed.js';
 
-// Automatically check only the demo selection in Bookmarks.
-const demoPostIds = new Set([
-  '2124073885545148489', // Bank tax announcement
-  '2123743331163467835', // Atenea voting guide
-  '2123944095307735258', // Tesla store opening
-  '2123672699490775306', // Barcelona rental contracts
-  '2123741212414738719', // CERA deadline
-]);
+import type { DemoPostsRequest, DemoPostsResponse } from './messages.js';
+
+let demoPostIds: Set<string> | undefined;
+let loadingCatalog = false;
 
 function isPoliticsFeed() {
   if (!isXHome()) return false;
@@ -23,10 +19,21 @@ function canStart() {
 const observer = new MutationObserver(activate);
 function activate() {
   if (!canStart()) return;
+  if (!demoPostIds) {
+    if (!loadingCatalog) {
+      loadingCatalog = true;
+      void chrome.runtime.sendMessage<DemoPostsRequest, DemoPostsResponse>({ kind: 'x-demo-posts' })
+        .then((result) => { demoPostIds = new Set(result?.postIds); })
+        .catch(() => { demoPostIds = new Set(); })
+        .finally(activate);
+    }
+    return;
+  }
+  const approved = demoPostIds;
   observer.disconnect();
   startInlineFeed({
     available: canStart,
-    accepts: (article) => !isXBookmarks() || demoPostIds.has(articleStatusId(article) ?? ''),
+    accepts: (article) => !isXBookmarks() || approved.has(articleStatusId(article) ?? ''),
   });
 }
 

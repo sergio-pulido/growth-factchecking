@@ -2,7 +2,7 @@
 
 Status: API side **implemented** (tests 30/30) and agent-run on a real stack on 2026-11-21, see
 [docs/evidence/2026-11-21-conversation-capture.md](../evidence/2026-11-21-conversation-capture.md).
-Extension capture: not started (Codex).
+Extension capture: Meet captions in progress (GF-03, `docs/specs/meet-captions-capture.md`).
 
 ## Goal
 
@@ -98,7 +98,7 @@ Meeting bots, speaker identification from audio, a hosted deployment, auth, rete
 
 ## Open items
 
-1. Codex: capture in the extension (captions/chat/page-text readers per platform, tab-audio fallback, Start/Stop
-   and indicator) against this contract.
+1. Capture in the extension. Meet captions: first milestone in `docs/specs/meet-captions-capture.md` (GF-03).
+   Still open: chat and page-text readers, other platforms, tab-audio fallback.
 2. Retention policy and an in-extension "delete this conversation" control.
 3. Evaluate extraction on varied real transcripts (Spanish and English, cross-talk, numbers).
