@@ -1,5 +1,6 @@
 // Ports for conversation capture. Each one is injectable so the service is testable without network or database.
 import type {
+  ArgumentRelevance,
   ClaimCheck,
   ConversationCreateRequest,
   ConversationView,
@@ -17,6 +18,8 @@ export type ClaimRecord = {
   utteranceId: string;
   claim: string;
   check: LiveFactCheck | null;
+  /** Optional extra; only set when argument relevance is enabled. */
+  argumentRelevance?: ArgumentRelevance;
 };
 
 export type ConversationStore = {

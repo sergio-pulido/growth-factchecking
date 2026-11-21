@@ -41,6 +41,23 @@ export type UtteranceBatchRequest = { utterances: UtteranceInput[] };
 
 export type ClaimStatus = 'checked' | 'failed';
 
+/**
+ * Optional extra (docs/specs/argument-relevance.md): how much a claim contributes to the question or thesis that
+ * was active in the conversation. Absent unless ARGUMENT_RELEVANCE_ENABLED is on. Independent of `verdict`.
+ */
+export const ARGUMENT_RELEVANCE_LEVELS = ['high', 'partial', 'low'] as const;
+export type ArgumentRelevanceLevel = (typeof ARGUMENT_RELEVANCE_LEVELS)[number];
+
+export type ArgumentRelevance = {
+  status: 'assessed' | 'insufficient_context' | 'failed';
+  /** Null unless status is "assessed". */
+  level: ArgumentRelevanceLevel | null;
+  /** The earlier turn holding the active question or thesis; null unless status is "assessed". */
+  context: { utteranceClientId: string; speaker: string; text: string } | null;
+  /** Short Spanish explanation, ready to show. */
+  reason: string;
+};
+
 export type ClaimCheck = {
   id: string;
   claim: string;
@@ -50,6 +67,7 @@ export type ClaimCheck = {
   /** Null when status is "failed". */
   verdict: FactCheckResult['verdict'] | null;
   sources: FactCheckResult['sources'];
+  argumentRelevance?: ArgumentRelevance;
 };
 
 export type UtteranceBatchResult = {

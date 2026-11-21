@@ -20,6 +20,7 @@ import { loadLiveConfig } from '../live/config.js';
 import { createOpenAIClient } from '../live/openai.js';
 import { createLiveServices } from '../live/services.js';
 import { loadConversationConfig } from './config.js';
+import { createRelevanceAssessor } from './argument-relevance.js';
 import { createClaimExtractor } from './extractor.js';
 import { ConversationClosedError, createIngest } from './service.js';
 import type { Ingest } from './service.js';
@@ -89,7 +90,9 @@ function buildServices(app: FastifyInstance): ConversationServices | null {
   app.addHook('onClose', async () => pool.end());
   // Separate client: the fact-check client uses a short real-time timeout that extraction can exceed.
   const client = createOpenAIClient({ ...live, openaiTimeoutMs: config.extractionTimeoutMs });
-  const store = createConversationStore(pool);
+  const extra = config.argumentRelevance;
+  if (extra.enabled) app.log.info({ model: extra.model }, 'Argument relevance (optional extra) enabled');
+  const store = createConversationStore(pool, { argumentRelevance: extra.enabled });
   return {
     store,
     mintToken: createTokenMinter(client, config.transcriptionModel, config.transcriptionTokenTtlSeconds),
@@ -98,6 +101,7 @@ function buildServices(app: FastifyInstance): ConversationServices | null {
       extract: createClaimExtractor(client, config.extraction),
       check,
       contextSize: config.contextSize,
+      ...(extra.enabled ? { assessRelevance: createRelevanceAssessor(client, extra.model) } : {}),
       checkConcurrency: config.checkConcurrency,
       onError: (stage, error) => app.log.error({ err: error, stage }, 'conversation ingest step failed'),
     }),

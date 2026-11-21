@@ -1,5 +1,5 @@
 // Conversations, utterances and claims in Postgres. Schema: db/migrations/002_conversations.sql
-import type { ClaimCheck, ConversationView, SpeakerKind, UtteranceInput, Verdict } from '@growth-factcheking/shared';
+import type { ArgumentRelevance, ClaimCheck, ConversationView, SpeakerKind, UtteranceInput, Verdict } from '@growth-factcheking/shared';
 import type pg from 'pg';
 import type { ClaimRecord, ConversationState, ConversationStore, StoredUtterance } from './types.js';
 
@@ -20,6 +20,8 @@ type ClaimRow = {
   sources: ClaimCheck['sources'];
   speaker: string;
   client_id: string;
+  /** Only selected when the argument relevance extra is enabled. */
+  argument_relevance?: ArgumentRelevance | null;
 };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -44,13 +46,22 @@ const toClaim = (r: ClaimRow): ClaimCheck => ({
   status: r.status,
   verdict: r.verdict,
   sources: r.sources,
+  ...(r.argument_relevance ? { argumentRelevance: r.argument_relevance } : {}),
 });
 
-const CLAIM_SELECT = `
-  SELECT c.id, c.text, c.status, c.verdict, c.sources, u.speaker, u.client_id
-    FROM claims c JOIN utterances u ON u.id = c.utterance_id`;
+export type StoreOptions = {
+  /**
+   * Optional extra. When false (default) no query touches claims.argument_relevance, so the core runs unchanged
+   * and does not need migration 004.
+   */
+  argumentRelevance?: boolean;
+};
 
-export function createConversationStore(pool: pg.Pool): ConversationStore {
+export function createConversationStore(pool: pg.Pool, options: StoreOptions = {}): ConversationStore {
+  const relevance = options.argumentRelevance === true;
+  const CLAIM_SELECT = `
+  SELECT c.id, c.text, c.status, c.verdict, c.sources, u.speaker, u.client_id${relevance ? ', c.argument_relevance' : ''}
+    FROM claims c JOIN utterances u ON u.id = c.utterance_id`;
   return {
     async create({ platform, capture, title, pageUrl, language }) {
       const { rows } = await pool.query<{ id: string }>(
@@ -111,15 +122,15 @@ export function createConversationStore(pool: pg.Pool): ConversationStore {
     async saveClaims(conversationId, claims: readonly ClaimRecord[]) {
       if (claims.length === 0) return [];
       const { rows } = await pool.query<{ id: string }>(
-        `INSERT INTO claims (conversation_id, utterance_id, text, status, verdict, sources, reason, relevance, confidence)
-         SELECT $1, c.utterance_id, c.text, c.status, c.verdict, c.sources, c.reason, c.relevance, c.confidence
+        `INSERT INTO claims (conversation_id, utterance_id, text, status, verdict, sources, reason, relevance, confidence${relevance ? ', argument_relevance' : ''})
+         SELECT $1, c.utterance_id, c.text, c.status, c.verdict, c.sources, c.reason, c.relevance, c.confidence${relevance ? ', c.argument_relevance' : ''}
            FROM jsonb_to_recordset($2::jsonb) AS c(
                   utterance_id bigint, text text, status text, verdict text, sources jsonb,
-                  reason text, relevance real, confidence real)
+                  reason text, relevance real, confidence real${relevance ? ', argument_relevance jsonb' : ''})
          RETURNING id`,
         [
           conversationId,
-          JSON.stringify(claims.map(({ utteranceId, claim, check }) => ({
+          JSON.stringify(claims.map(({ utteranceId, claim, check, argumentRelevance }) => ({
             utterance_id: utteranceId,
             text: claim,
             status: check ? 'checked' : 'failed',
@@ -128,6 +139,7 @@ export function createConversationStore(pool: pg.Pool): ConversationStore {
             reason: check?.meta.reason ?? null,
             relevance: check?.meta.relevance ?? null,
             confidence: check?.meta.confidence ?? null,
+            ...(relevance ? { argument_relevance: argumentRelevance ?? null } : {}),
           }))),
         ],
       );
