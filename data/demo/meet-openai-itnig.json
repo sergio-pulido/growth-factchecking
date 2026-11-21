@@ -1,0 +1,42 @@
+[
+  {
+    "id": "meet-openai-origins",
+    "statement": "OpenAI's published chronology dates its start as a nonprofit to November 2015. It publicly announced OpenAI as a nonprofit AI research organization on December 11, 2015. The announcement named Sam Altman and Elon Musk as co-chairs.",
+    "sourceUrl": "https://openai.com/index/introducing-openai/",
+    "sourceTitle": "OpenAI — Introducing OpenAI (December 11, 2015)",
+    "additionalSourceUrls": ["https://openai.com/index/elon-musk-wanted-an-openai-for-profit/"]
+  },
+  {
+    "id": "meet-openai-chatgpt-launch",
+    "statement": "OpenAI launched ChatGPT publicly on November 30, 2022, as a research preview. ChatGPT was free to use during the preview.",
+    "sourceUrl": "https://openai.com/index/chatgpt/",
+    "sourceTitle": "OpenAI — Introducing ChatGPT (November 30, 2022)"
+  },
+  {
+    "id": "meet-openai-gpt5-launch",
+    "statement": "OpenAI launched GPT-5 in ChatGPT and on its API platform on August 7, 2025.",
+    "sourceUrl": "https://openai.com/index/introducing-gpt-5/",
+    "sourceTitle": "OpenAI — Introducing GPT-5 (August 7, 2025)",
+    "additionalSourceUrls": ["https://openai.com/index/introducing-gpt-5-for-developers/"]
+  },
+  {
+    "id": "meet-openai-devday-2025-chatgpt-usage",
+    "statement": "At OpenAI DevDay on October 6, 2025, the company reported that ChatGPT had more than 800 million weekly users. Sam Altman delivered the opening keynote.",
+    "sourceUrl": "https://openai.com/devday/2025/",
+    "sourceTitle": "OpenAI — DevDay 2025",
+    "additionalSourceUrls": ["https://www.youtube.com/watch?v=hS1YqcewH0c"]
+  },
+  {
+    "id": "meet-openai-oct-2025-structure",
+    "statement": "In the recapitalization announced on October 28, 2025, OpenAI's nonprofit became the OpenAI Foundation and the for-profit became a public benefit corporation called OpenAI Group PBC. The OpenAI Foundation retained control and has the right to appoint and replace all OpenAI Group directors.",
+    "sourceUrl": "https://openai.com/our-structure/",
+    "sourceTitle": "OpenAI — Our Structure"
+  },
+  {
+    "id": "meet-openai-oct-2025-microsoft-stake",
+    "statement": "At the closing of OpenAI's October 28, 2025 recapitalization, Microsoft reported an approximately 27 percent stake in OpenAI Group PBC on an as-converted diluted basis, including all owners.",
+    "sourceUrl": "https://www.sec.gov/Archives/edgar/data/789019/000119312525256310/msft-ex99_2.htm",
+    "sourceTitle": "Microsoft — Joint partnership announcement filed with the SEC (October 28, 2025)",
+    "additionalSourceUrls": ["https://blogs.microsoft.com/blog/2025/10/28/the-next-chapter-of-the-microsoft-openai-partnership/"]
+  }
+]

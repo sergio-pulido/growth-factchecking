@@ -104,6 +104,8 @@ It needs the API with `OPENAI_API_KEY` and `DATABASE_URL`, a migrated database a
 
 For a check against a public source, run `npm run seed -- data/demo/public-facts.json`. Then say “Francia tiene a Roma como capital” or “La capital de Francia es París” in a live call and check that the result cites the EU country profile.
 
+The [OpenAI–Itnig Meet role-play](docs/demo-openai-itnig.md) has sourced true, false and neutral examples. Load its evidence with `npm run seed -- data/demo/meet-openai-itnig.json`.
+
 [Call overlay spec](docs/specs/call-overlay.md)
 
 ## Escenarios de prueba
