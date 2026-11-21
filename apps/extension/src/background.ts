@@ -1,6 +1,6 @@
 import { CLAIM_MAX_LENGTH, DEMO_SCENARIOS, FACT_CHECK_PATH, MEET_DEMO_PATH, MEET_JUDGES, MEET_TRANSCRIPT, VERDICTS } from '@growth-factcheking/shared';
 import type { FactCheckResult, MeetCheckResult } from '@growth-factcheking/shared';
-import type { FactCheckMessage, FactCheckResponse, MeetDemoRequest, MeetDemoResponse } from './messages.js';
+import type { DemoPostsResponse, FactCheckMessage, FactCheckResponse, MeetDemoRequest, MeetDemoResponse } from './messages.js';
 import { registerConversationBridge, showMeetPanel } from './meet/conversation-bridge.js';
 
 registerConversationBridge();
@@ -116,8 +116,26 @@ async function checkClaim(request: FactCheckMessage): Promise<FactCheckResponse>
   return { ok: true, result: { check: data, mode } };
 }
 
+async function getDemoPosts(): Promise<DemoPostsResponse> {
+  try {
+    const response = await fetch(new URL('/api/x-demo/posts', apiOrigin), { signal: AbortSignal.timeout(3000), redirect: 'error' });
+    if (response.ok) {
+      const result = await response.json() as Partial<DemoPostsResponse>;
+      if (Array.isArray(result.postIds)) return { postIds: result.postIds.filter((value) => typeof value === 'string' && /^\d+$/.test(value)) };
+    }
+  } catch (error) {
+    console.warn('Could not load the X demo collection.', error);
+  }
+  return { postIds: [] };
+}
+
 chrome.runtime.onMessage.addListener((message: unknown, sender, respond) => {
   if (sender.id !== chrome.runtime.id || !sender.tab) return;
+  if (sender.url?.startsWith('https://x.com/') && typeof message === 'object' && message !== null
+    && 'kind' in message && message.kind === 'x-demo-posts') {
+    void getDemoPosts().then(respond);
+    return true;
+  }
 
   let request: Promise<FactCheckResponse | MeetDemoResponse>;
   if (isMeetDemoRequest(message)) {

@@ -1,0 +1,163 @@
+[
+  {
+    "postId": "2123741212414738719",
+    "url": "https://x.com/MAECgob/status/2123741212414738719",
+    "title": "CERA postal voting deadline",
+    "factId": "es-cera-2026-correo-consulado",
+    "kind": "sourced"
+  },
+  {
+    "postId": "2123672699490775306",
+    "url": "https://x.com/btvnoticies/status/2123672699490775306",
+    "title": "New rental contracts in Barcelona",
+    "factId": "es-barcelona-contratos-2019-2025",
+    "kind": "sourced"
+  },
+  {
+    "postId": "2123944095307735258",
+    "url": "https://x.com/jmilei_english/status/2123944095307735258",
+    "title": "Tesla’s first store in Argentina",
+    "factId": "ar-tesla-2026-1120-local",
+    "kind": "sourced"
+  },
+  {
+    "postId": "2123743331163467835",
+    "url": "https://x.com/atenea_esp/status/2123743331163467835",
+    "title": "Atenea’s voting guide",
+    "factId": "es-atenea-2026-guia-voto",
+    "kind": "sourced"
+  },
+  {
+    "postId": "2124073885545148489",
+    "url": "https://x.com/sanchezcastejon/status/2124073885545148489",
+    "title": "Bank tax announcement",
+    "factId": "es-banca-2026-1121-anuncio",
+    "kind": "sourced"
+  },
+  {
+    "postId": "2123525570814525642",
+    "url": "https://x.com/ElBulometro/status/2123525570814525642",
+    "title": "Spain’s Q3 employment survey",
+    "factId": "es-epa-2026t3-ocupacion",
+    "kind": "sourced"
+  },
+  {
+    "postId": "2123454183299043661",
+    "url": "https://x.com/electonomics/status/2123454183299043661",
+    "title": "The overseas voter census",
+    "factId": "es-generales-2026-censo",
+    "kind": "sourced"
+  },
+  {
+    "postId": "2123736923961282740",
+    "url": "https://x.com/elindepcom/status/2123736923961282740",
+    "title": "The moderator of the 23 November debate",
+    "factId": "es-debate-2026-1123-anuncio",
+    "kind": "sourced"
+  },
+  {
+    "postId": "2121555433148018752",
+    "url": "https://x.com/La1_tve/status/2121555433148018752",
+    "title": "RTVE’s eight-party debate announcement",
+    "factId": "es-debate-2026-1123-anuncio",
+    "kind": "sourced"
+  },
+  {
+    "postId": "2124110586225025325",
+    "url": "https://x.com/es_INE/status/2124110586225025325",
+    "title": "INE’s consular ballot-box deadline",
+    "factId": "es-cera-2026-urna-plazos",
+    "kind": "sourced"
+  },
+  {
+    "postId": "2124065380763156804",
+    "url": "https://x.com/exteriorscat/status/2124065380763156804",
+    "title": "Catalonia’s overseas voting guidance",
+    "factId": "es-cera-2026-urna-plazos",
+    "kind": "sourced"
+  },
+  {
+    "postId": "2124052098312741287",
+    "url": "https://x.com/ConEspNapoles/status/2124052098312741287",
+    "title": "Naples consulate’s in-person voting window",
+    "factId": "es-cera-2026-urna-plazos",
+    "kind": "sourced"
+  },
+  {
+    "postId": "2117890509641281829",
+    "url": "https://x.com/inclusiongob/status/2117890509641281829",
+    "title": "October Social Security enrolment",
+    "factId": "es-afiliacion-2026-oct-media",
+    "kind": "sourced"
+  },
+  {
+    "postId": "2107561919108223057",
+    "url": "https://x.com/mariomdp7/status/2107561919108223057",
+    "title": "The 29 November election date",
+    "factId": "es-generales-2026-fecha",
+    "kind": "sourced"
+  },
+  {
+    "postId": "2124081313653153808",
+    "url": "https://x.com/matricedigitale/status/2124081313653153808",
+    "title": "Italy’s Tesla assisted-driving recognition",
+    "factId": "it-tesla-2026-1119-reconocimiento",
+    "kind": "sourced"
+  },
+  {
+    "postId": "2124079267281777054",
+    "url": "https://x.com/EconXFin/status/2124079267281777054",
+    "title": "Italy’s provisional Tesla approval",
+    "factId": "it-tesla-2026-1119-reconocimiento",
+    "kind": "sourced"
+  },
+  {
+    "postId": "2121151090398040259",
+    "url": "https://x.com/es_INE/status/2121151090398040259",
+    "title": "INE’s October inflation figure",
+    "factId": "es-ipc-2026-oct-anual",
+    "kind": "sourced"
+  },
+  {
+    "postId": "2096888453309014044",
+    "url": "https://x.com/rtvenoticias/status/2096888453309014044",
+    "title": "RTVE on Q2 house prices",
+    "factId": "es-ipv-2026t2-anual",
+    "kind": "sourced"
+  },
+  {
+    "postId": "2096855991526518994",
+    "url": "https://x.com/es_INE/status/2096855991526518994",
+    "title": "INE’s Q2 house-price index",
+    "factId": "es-ipv-2026t2-anual",
+    "kind": "sourced"
+  },
+  {
+    "postId": "2123803322117194044",
+    "url": "https://x.com/cocinayestudia/status/2123803322117194044",
+    "title": "Context: the 2026 pension increase",
+    "factId": "es-pensiones-2026-revalorizacion",
+    "kind": "context"
+  },
+  {
+    "postId": "2123806611210731883",
+    "url": "https://x.com/mario_bilbao/status/2123806611210731883",
+    "title": "Context: reported sea arrivals to the Canary Islands",
+    "factId": "es-migracion-2026-1115-canarias",
+    "kind": "context"
+  },
+  {
+    "postId": "2056615840607592937",
+    "url": "https://x.com/ideal_granada/status/2056615840607592937",
+    "title": "Context: Andalusia’s published seat totals",
+    "factId": "es-andalucia-2026-escanos",
+    "kind": "context"
+  },
+  {
+    "postId": "2119690644910203220",
+    "url": "https://x.com/inclusiongob/status/2119690644910203220",
+    "title": "Context: leave for birth or care",
+    "factId": "es-permiso-nacimiento-19-semanas",
+    "kind": "context"
+  }
+]

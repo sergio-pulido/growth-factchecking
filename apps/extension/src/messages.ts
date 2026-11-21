@@ -13,3 +13,6 @@ export type LocalResponse<Result> =
 export type FactCheckResponse = LocalResponse<{ check: FactCheckResult; mode: FactCheckMode }>;
 export type MeetDemoRequest = MeetCheckRequest & { kind: 'meet-check' };
 export type MeetDemoResponse = LocalResponse<MeetCheckResult>;
+
+export type DemoPostsRequest = { kind: 'x-demo-posts' };
+export type DemoPostsResponse = { postIds: string[] };

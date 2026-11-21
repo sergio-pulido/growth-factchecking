@@ -66,7 +66,7 @@ Mock embeddings are normalized 256-dimensional hashed word counts with a fixed s
 
 Open the **Politics** timeline, X **Bookmarks** with demo posts saved, or an individual post from the [curated demo](docs/demo-x-posts.md). After installing or reloading the extension, refresh the X page. The extension checks complete, visible post text through the local API and OpenAI. It shows verdicts and source links below posts, and **Insufficient information** when the local corpus lacks direct evidence. On a post page it checks the linked post and skips the replies. Use **Pause inline checks** in the toolbar panel to stop.
 
-La [demo local de publicaciones](http://127.0.0.1:3000/x-demo) usa el mismo renderizador y la API real sin instalar la extensión. Para cargar los hechos que necesita, ejecuta `npm run seed -- data/demo/x-politics.json` después de migrar la base de datos. Reinicia la API para limpiar los veredictos guardados. To load the sourced facts for the real X posts instead, run `npm run seed -- data/demo/x-sourced-facts.json`.
+La [demo local de publicaciones](http://127.0.0.1:3000/x-demo) usa el mismo renderizador y la API real sin instalar la extensión. Para cargar los hechos que necesita, ejecuta `npm run seed -- data/demo/x-politics.json` después de migrar la base de datos. Reinicia la API para limpiar los veredictos guardados. To restore the public-source corpus with its existing embeddings, follow the [snapshot instructions](docs/demo-x-posts.md#restore-the-demo-corpus). To regenerate only the real X demo facts, run `npm run seed -- data/demo/x-sourced-facts.json`.
 
 ## Simulación de Google Meet
 

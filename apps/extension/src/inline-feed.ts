@@ -43,7 +43,7 @@ export function isXPost() {
 
 export function isXBookmarks() {
   if (location.hostname !== 'x.com') return false;
-  if (/^\/i\/bookmarks(?:\/|$)/.test(location.pathname)) return true;
+  if (/^\/i\/(?:bookmarks|history\/bookmarks)(?:\/|$)/.test(location.pathname)) return true;
   return /^\/i\/history\/?$/.test(location.pathname)
     && Array.from(document.querySelectorAll('[role="tab"][aria-selected="true"]')).some(
       (tab) => /^(bookmarks|marcadores|guardados)$/iu.test(tab.textContent?.trim() ?? ''),
