@@ -1,6 +1,6 @@
 # Live fact-check pipeline
 
-Status: **implemented** and wired in `createApp` (unit tests 17/17). Agent-run on a real stack (OpenAI + Postgres 17/pgvector) on 2026-11-21: 4/4 smoke checks pass, p50 618 / 519 ms total over two 20-call runs. See [docs/evidence/2026-11-21-live-smoke.md](../evidence/2026-11-21-live-smoke.md). A human re-run makes it **verified**; with that file it becomes **proven**.
+Status: **implemented** and wired in `createApp` (unit tests 17/17). Agent-run on a real stack (OpenAI + Postgres 17/pgvector) on 2026-11-21: smoke checks pass on `aebb287`, `b365e00` and `14a25ac` (source selection); p50 618 / 519 ms total over two 20-call runs (before `14a25ac`). See [docs/evidence/2026-11-21-live-smoke.md](../evidence/2026-11-21-live-smoke.md). A human re-run makes it **verified**; with that file it becomes **proven**.
 
 ## Flow
 

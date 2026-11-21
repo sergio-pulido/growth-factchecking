@@ -1,12 +1,13 @@
 # Live fact-check smoke run — 2026-11-21
 
 Ticket: GF-01. Route under test: `POST /api/fact-check/live`.
-Code under test: `main` at `aebb287` (run 1) and `b365e00` (run 2, after Codex's local-ingestion commit).
+Code under test: `main` at `aebb287` (run 1), `b365e00` (run 2, after Codex's local-ingestion commit) and
+`14a25ac` (run 3, smoke only, after Codex replaced the relevance predicate with source selection).
 Route wired in `07946e2`; relevance-predicate fix in `aebb287`.
 
 ## Evidence level
 
-- **Implemented**: merged to `main`, unit tests green (`npm test` 13/13 at `aebb287`, 17/17 at `b365e00`; fakes only).
+- **Implemented**: merged to `main`, unit tests green (`npm test` 13/13 at `aebb287`, 17/17 at `b365e00` and `14a25ac`; fakes only).
 - **Run on a real stack**: real OpenAI Embeddings + Decisions and a real Postgres 17 + pgvector, executed by the
   Claude Code agent on Sergio's machine on 2026-11-21. This meets the ticket's "verified" bar.
 - Under the Alodai definition, **verified** requires a human run. Re-running the commands below by hand
@@ -94,7 +95,21 @@ Run 2 at `b365e00`: identical verdicts, sources and status codes.
 
 The mock route still answers 200 with and without `?scenario=` on the same server.
 
-## Finding: relevance predicate rejected contradicting evidence (fixed in `aebb287`)
+Run 3 at `14a25ac` (Decisions now selects the supporting/refuting evidence item instead of a relevance predicate;
+`relevance` below is that selection's confidence):
+
+| Claim | Verdict | Source returned | relevance / confidence | Server-Timing |
+| --- | --- | --- | --- | --- |
+| Water boils at 100 degrees Celsius at sea level | yes | sample-001 | 0.98 / 0.93 | `embed;dur=518, search;dur=30, decide;dur=210, total;dur=758` |
+| The Eiffel Tower is in Rome | no | sample-002 | 1.00 / 1.00 | `embed;dur=398, search;dur=5, decide;dur=243, total;dur=646` |
+| Bitcoin closed above 100k yesterday | neutral | `[]` (no Decisions call) | — | `embed;dur=340, search;dur=8, decide;dur=0, total;dur=348` |
+| Humans have 30 pairs of chromosomes | no | sample-006 | 1.00 / 0.99 | `embed;dur=275, search;dur=16, decide;dur=318, total;dur=608` |
+| The Earth orbits the Sun every 300 days | no | sample-003 | 1.00 / 0.77 | `embed;dur=206, search;dur=9, decide;dur=220, total;dur=436` |
+| Water boils… with `OPENAI_TIMEOUT_MS=1` | 503 | — | — | none |
+
+The latency table below was measured on runs 1 and 2 only.
+
+## Finding: relevance predicate rejected contradicting evidence (fixed in `aebb287`, superseded in `14a25ac`)
 
 On the first smoke run (code at `07946e2`), claim #2 returned `neutral` (`reason: off_topic`, relevance 0.23,
 choice `no`, confidence 1). The predicate asked whether evidence addressed "the same assertion", which the model
@@ -112,7 +127,9 @@ read as "agrees with". A direct probe of Decisions with one evidence item per cl
 With the old wording an off-topic pair (0.43) outscored every contradiction (0.00–0.23), so no
 `VERDICT_MIN_RELEVANCE` value could separate them. The thresholds were therefore left unchanged and the predicate
 wording was fixed instead ("same subject and the same property … answer true when the evidence contradicts").
-The probe used 6 hand-picked pairs; it is not a calibration set.
+The probe used 6 hand-picked pairs; it is not a calibration set. Codex's `14a25ac` later replaced the predicate
+with a source-selection choice whose instructions state that a different value or date is valid counterevidence;
+run 3 shows it handles the same contradictions.
 
 ## Latency (20 sequential calls per run, `FACT_CHECK_CACHE_TTL_MS=0`)
 
