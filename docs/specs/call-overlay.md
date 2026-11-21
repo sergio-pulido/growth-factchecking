@@ -51,13 +51,14 @@ Stop -> POST /:id/end · Erase -> DELETE /:id · failed claim "Reintentar" -> PO
   One tab at a time; the captured tab id lives in `chrome.storage.session` so a suspended worker keeps routing.
 - The offscreen document restores playback of the captured tab. In Meet, it mixes the microphone and the remote audio into one track. On other tabs it clones the tab track. It sends the result to OpenAI Realtime over WebRTC with the short-lived client secret. Pause disables the outgoing track and Stop closes both inputs. A dropped connection can reconnect with a fresh secret.
 - Meet asks for microphone permission on a visible extension page. The user can close that page and start a new check from Meet once the permission is granted. The outgoing stream runs in the offscreen document as the user changes tabs or enters Picture-in-Picture. Meet's mute button controls the microphone for the call itself. FactCheck has its own Pause and Stop controls. [Chrome microphone capture example](https://github.com/GoogleChrome/chrome-extensions-samples/tree/main/functional-samples/cookbook.offscreen-user-media)
+- After granting microphone access, **Back to Google Meet** returns to the original tab. If Chrome rejects the separate request for tab audio, Meet checks the microphone alone and shows that limitation in the panel. To retry both sources, stop, invoke FactCheck from the toolbar on the Meet tab and start again. [Chrome tab capture](https://developer.chrome.com/docs/extensions/reference/api/tabCapture)
 - `gpt-live-transcribe` sessions have no turn detection: they stream `…input_audio_transcription.delta` events into
   one open item and never send `completed`. The content side cuts that stream into sentences (a sentence is finished
   when another word follows it, a finished tail after 1.5 s of silence, an unfinished one after 8 s, run-ons at 60
   words). `completed` events are used only for items that sent no deltas (other models).
 - The language picker (Español, English, Other = automatic) defaults to the browser language. The hint matters: in the
   run without it, "treinta y dos mil" came back as "train to Y dos mil".
-- Speaker is **Call audio** in Meet and **Tab audio** elsewhere (`speakerKind: unknown`). The mixed audio has no participant labels.
+- Speaker is **Call audio** for the mixed stream and **Tab audio** for tab-only capture (`speakerKind: unknown`). A microphone-only check uses **You (microphone)** (`speakerKind: self`).
 
 ## Panel (`apps/extension/src/call/panel.ts`, `cards.ts`, `alerts.ts`, `call.css`)
 

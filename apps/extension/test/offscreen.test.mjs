@@ -66,4 +66,17 @@ test('Meet sends microphone and tab audio in one stream and plays only the tab l
   assert.equal(sent[0].enabled, true);
   await send('stop');
   assert.ok([tab, mic, mix.stream].every((stream) => stream.tracks.every((track) => track.stopped)));
+
+  const microphoneOnly = new Stream();
+  media.mock.mockImplementation(() => ({
+    mediaDevices: { async getUserMedia({ audio }) {
+      assert.equal('mandatory' in audio, false);
+      return microphoneOnly;
+    } },
+  }));
+  assert.deepEqual(await send('start', { token: 'test', microphone: true }), { ok: true });
+  assert.equal(connections.length, 3);
+  assert.equal(sent.at(-1), microphoneOnly.tracks[0]);
+  await send('stop');
+  assert.equal(microphoneOnly.tracks[0].stopped, true);
 });

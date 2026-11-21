@@ -40,7 +40,9 @@ export type TabEvent =
 
 /** Background worker <-> offscreen document that holds the tab audio stream. */
 export type OffscreenCommand =
-  | { target: 'offscreen'; kind: 'start'; streamId: string; token: string; microphone: boolean }
+  | ({ target: 'offscreen'; kind: 'start'; token: string } & (
+    { streamId: string; microphone: boolean } | { streamId?: undefined; microphone: true }
+  ))
   | { target: 'offscreen'; kind: 'microphone-status' | 'pause' | 'resume' | 'stop' };
 
 export type OffscreenEvent =

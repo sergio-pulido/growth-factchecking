@@ -10,6 +10,8 @@ El panel de llamadas se abre con el icono de la extensión y aparece automática
 
 Las pruebas automatizadas verificaron que se envían las dos pistas de Meet, que el micrófono queda fuera de la reproducción local y que Stop cierra ambas capturas. Se comprobó la transcripción de un audio sintético con OpenAI. Queda por verificar el permiso y la calidad de la captura en una llamada real de Chrome.
 
+La versión 0.4.7 distingue el permiso del micrófono del acceso al audio de la pestaña. Si Chrome rechaza la captura de la pestaña, Meet sigue con el micrófono y el panel indica el modo activo. La pantalla de permiso permite volver a la llamada una vez concedido el acceso.
+
 ## Próximos hitos
 
 1. Evaluar la recuperación y los veredictos con un corpus revisado de fuentes primarias.

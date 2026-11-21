@@ -11,7 +11,7 @@ type Capture = {
   inputs: MediaStream[];
   /** Stream sent to OpenAI. Pausing it keeps the user's tab playback untouched. */
   send: MediaStream;
-  playback: AudioContext;
+  playback?: AudioContext;
   peer: RTCPeerConnection | null;
   stopping: boolean;
   reconnects: number;
@@ -115,33 +115,34 @@ function stopStreams(streams: readonly MediaStream[]) {
   streams.forEach((stream) => stream.getTracks().forEach((track) => track.stop()));
 }
 
-async function start(streamId: string, token: string, microphone: boolean) {
+async function start({ streamId, token, microphone }: Extract<OffscreenCommand, { kind: 'start' }>) {
   stop();
   const started = generation;
   const inputs: MediaStream[] = [];
   let playback: AudioContext | undefined;
   try {
-    const tab = await navigator.mediaDevices.getUserMedia({
-      audio: { mandatory: { chromeMediaSource: 'tab', chromeMediaSourceId: streamId } },
-    } as unknown as MediaStreamConstraints);
-    inputs.push(tab);
-    if (started !== generation) throw new Error('Listening stopped before it started.');
-
-    // Restore playback as soon as Chrome takes over the tab. Only the tab audio is played back locally.
-    playback = new AudioContext();
-    const tabSource = playback.createMediaStreamSource(tab);
-    tabSource.connect(playback.destination);
-    let send: MediaStream;
-    if (microphone) {
-      const mic = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
-      inputs.push(mic);
+    if (streamId) {
+      const tab = await navigator.mediaDevices.getUserMedia({
+        audio: { mandatory: { chromeMediaSource: 'tab', chromeMediaSourceId: streamId } },
+      } as unknown as MediaStreamConstraints);
+      inputs.push(tab);
       if (started !== generation) throw new Error('Listening stopped before it started.');
+      playback = new AudioContext();
+      playback.createMediaStreamSource(tab).connect(playback.destination);
+    }
+    if (microphone) {
+      inputs.push(await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }));
+      if (started !== generation) throw new Error('Listening stopped before it started.');
+    }
+    const [first, second] = inputs;
+    if (!first) throw new Error('No audio input is available.');
+    let send = first;
+    if (second && playback) {
       const mix = playback.createMediaStreamDestination();
-      tabSource.connect(mix);
-      playback.createMediaStreamSource(mic).connect(mix);
+      for (const input of inputs) playback.createMediaStreamSource(input).connect(mix);
       send = mix.stream;
-    } else {
-      send = new MediaStream(tab.getAudioTracks().map((track) => track.clone()));
+    } else if (streamId) {
+      send = new MediaStream(first.getAudioTracks().map((track) => track.clone()));
     }
     const current: Capture = { inputs, send, playback, peer: null, stopping: false, reconnects: 0 };
     capture = current;
@@ -171,8 +172,8 @@ function stop() {
   current.stopping = true;
   capture = null;
   current.peer?.close();
-  stopStreams([current.send, ...current.inputs]);
-  void current.playback.close();
+  stopStreams(current.inputs.includes(current.send) ? current.inputs : [current.send, ...current.inputs]);
+  void current.playback?.close();
 }
 
 chrome.runtime.onMessage.addListener((message: unknown, sender, respond) => {
@@ -187,7 +188,7 @@ chrome.runtime.onMessage.addListener((message: unknown, sender, respond) => {
     return true;
   }
   if (command.kind === 'start') {
-    start(command.streamId, command.token, command.microphone).then(
+    start(command).then(
       () => respond({ ok: true }),
       (error: unknown) => respond({ ok: false, message: error instanceof Error ? error.message : 'Could not capture the audio.' }),
     );
