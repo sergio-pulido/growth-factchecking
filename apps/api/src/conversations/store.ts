@@ -18,6 +18,7 @@ type ClaimRow = {
   status: 'checked' | 'failed';
   verdict: Verdict | null;
   sources: ClaimCheck['sources'];
+  reason: string | null;
   speaker: string;
   client_id: string;
 };
@@ -44,10 +45,11 @@ const toClaim = (r: ClaimRow): ClaimCheck => ({
   status: r.status,
   verdict: r.verdict,
   sources: r.sources,
+  ...(r.reason === 'general_knowledge' ? { basis: 'general_knowledge' as const } : {}),
 });
 
 const CLAIM_SELECT = `
-  SELECT c.id, c.text, c.status, c.verdict, c.sources, u.speaker, u.client_id
+  SELECT c.id, c.text, c.status, c.verdict, c.sources, c.reason, u.speaker, u.client_id
     FROM claims c JOIN utterances u ON u.id = c.utterance_id`;
 
 export function createConversationStore(pool: pg.Pool): ConversationStore {

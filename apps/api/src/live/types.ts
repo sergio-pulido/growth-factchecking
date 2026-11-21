@@ -28,6 +28,8 @@ export type DecisionOutcome = {
 export type Embedder = (text: string) => Promise<number[]>;
 export type FactSearch = (embedding: number[], limit: number) => Promise<Fact[]>;
 export type Decider = (claim: string, evidence: Fact[]) => Promise<DecisionOutcome>;
+/** Judges a claim with no corpus evidence against well-established general knowledge. */
+export type KnowledgeDecider = (claim: string) => Promise<{ choice: string | null; confidence: number | null }>;
 
 export type Timings = { embedMs: number; searchMs: number; decideMs: number; totalMs: number };
 
@@ -35,7 +37,7 @@ export type LiveFactCheck = {
   result: FactCheckResult;
   meta: {
     verdict: Verdict;
-    reason: 'no_evidence' | 'off_topic' | 'refused' | 'decided';
+    reason: 'no_evidence' | 'off_topic' | 'refused' | 'decided' | 'general_knowledge';
     relevance: number | null;
     confidence: number | null;
     evidenceCount: number;

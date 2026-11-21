@@ -8,6 +8,7 @@ await build({
     'inline-feed': 'src/inline-feed.ts',
     card: 'src/card.ts',
     segmenter: 'src/call/segmenter.ts',
+    terms: 'src/call/terms.ts',
     'call-session': 'src/call/session.ts',
     'meet-source': 'src/call/meet-source.ts',
     'http-transport': 'src/call/http-transport.ts',
