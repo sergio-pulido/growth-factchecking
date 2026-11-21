@@ -105,10 +105,17 @@ export function createBubbles(container: HTMLElement, onOpen: (id: string) => vo
 
 export function flashScreen(el: HTMLElement, verdict: Verdict) {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  el.getAnimations().forEach((animation) => animation.cancel());
   el.style.setProperty('--fc', FLASH[verdict]);
   const peak = verdict === 'yes' || verdict === 'no' ? 1 : 0.7;
+  const neutral = verdict === 'neutral';
   el.animate(
-    [{ opacity: 0 }, { opacity: peak, offset: 0.25 }, { opacity: peak, offset: 0.42 }, { opacity: 0 }],
-    { duration: 1300, easing: 'ease-in-out' },
+    [
+      { opacity: 0 },
+      { opacity: peak, offset: neutral ? 0.25 : 0.1 },
+      { opacity: peak, offset: neutral ? 0.42 : 0.78 },
+      { opacity: 0 },
+    ],
+    { duration: neutral ? 1300 : 3000, easing: 'ease-in-out' },
   );
 }
