@@ -72,3 +72,7 @@ build, lint and tests green (API 30/30, extension 30/30), migration 003 applied,
 - Live Meet DOM (selectors), real caption quality, speaker labels for the local user, Chrome service-worker
   lifecycle during a long call.
 - More than one scripted conversation; accuracy beyond this case.
+
+After merging `origin/main` at `60a2e77` and switching the Meet capture copy to English (to match PR #4):
+build, lint and tests green (API 31/31, extension 30/30) and the end-to-end test passed 1/1 (yes / no).
+A trial merge of main + PR #2 + PR #4 (Michella's restyle) had no conflicts and passed build, lint and tests.

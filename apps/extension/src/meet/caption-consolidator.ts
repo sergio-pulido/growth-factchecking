@@ -21,7 +21,7 @@ export type ConsolidatorOptions = {
 export const DEFAULT_CONSOLIDATOR_OPTIONS: Omit<ConsolidatorOptions, 'idPrefix'> = {
   settleMs: 1200,
   idleCommitMs: 4000,
-  unknownSpeaker: 'Desconocido',
+  unknownSpeaker: 'Unknown',
 };
 
 type Turn = {

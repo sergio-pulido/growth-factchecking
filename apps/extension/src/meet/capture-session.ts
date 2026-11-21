@@ -79,10 +79,10 @@ export const INITIAL_CAPTURE_STATE: CaptureState = {
 };
 
 const MESSAGES: Record<CaptureErrorKind, string> = {
-  api_unreachable: 'No se puede conectar con la API local. Se reintentará el envío.',
-  service_unavailable: 'La verificación no está disponible ahora mismo. Se reintentará el envío.',
-  conversation_closed: 'La conversación ya no admite intervenciones. La captura se ha detenido.',
-  rejected: 'La API rechazó un lote de intervenciones.',
+  api_unreachable: 'Cannot reach the local API. Sending will be retried.',
+  service_unavailable: 'Fact-checking is unavailable right now. Sending will be retried.',
+  conversation_closed: 'This conversation no longer accepts utterances. Capture has stopped.',
+  rejected: 'The API rejected a batch of utterances.',
 };
 
 function errorKind(status: number): CaptureErrorKind {
@@ -241,7 +241,7 @@ export function createCaptureSession(options: SessionOptions): CaptureSession {
         error: !ended.ok
           ? fail(errorKind(ended.status))
           : lost > 0
-            ? { ...fail('service_unavailable'), message: `No se pudieron enviar ${lost} intervenciones antes de detener.` }
+            ? { ...fail('service_unavailable'), message: `${lost} utterances could not be sent before stopping.` }
             : state.error,
       });
       return state;

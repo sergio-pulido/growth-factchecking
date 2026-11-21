@@ -27,11 +27,11 @@ li { border-top: 1px solid #e3e3e3; padding-top: 6px; }
 }`;
 
 const STATUS_TEXT: Record<MeetCaptureState['status'], string> = {
-  idle: 'Avisa a los participantes antes de empezar. Solo se leen los subtítulos visibles de esta pestaña.',
-  starting: 'Iniciando…',
+  idle: 'Tell participants before you start. Only the visible captions in this tab are read.',
+  starting: 'Starting…',
   capturing: '',
-  stopping: 'Enviando lo pendiente y cerrando…',
-  stopped: 'Captura detenida.',
+  stopping: 'Sending what is pending and closing…',
+  stopped: 'Capture stopped.',
   error: '',
 };
 
@@ -42,7 +42,7 @@ export function mountMeetPanel(controller: MeetCaptureController): { show(): voi
   const style = document.createElement('style');
   style.textContent = STYLES;
   const panel = document.createElement('section');
-  panel.setAttribute('aria-label', 'FactChecking en Meet');
+  panel.setAttribute('aria-label', 'FactChecking on Meet');
   const pill = document.createElement('button');
   pill.className = 'pill danger';
   pill.hidden = true;
@@ -61,47 +61,47 @@ export function mountMeetPanel(controller: MeetCaptureController): { show(): voi
   const render = (): void => {
     // While capturing, a visible indicator stays on screen even when the panel is collapsed.
     pill.hidden = !(collapsed && state.active);
-    pill.textContent = '● Transcribiendo · Abrir';
+    pill.textContent = '● Transcribing · Open';
     panel.hidden = collapsed;
     if (collapsed) return;
 
     const header = el('header');
     header.append(el('h2', 'FactChecking · Meet'));
     const close = el('button', '×');
-    close.setAttribute('aria-label', state.active ? 'Minimizar (la captura sigue activa)' : 'Cerrar');
+    close.setAttribute('aria-label', state.active ? 'Minimise (capture keeps running)' : 'Close');
     close.addEventListener('click', () => { collapsed = true; render(); });
     header.append(close);
 
     const status = el('p', '', 'muted');
     status.setAttribute('role', 'status');
     if (state.status === 'capturing') {
-      status.replaceChildren(el('span', 'Transcribiendo', 'indicator'));
+      status.replaceChildren(el('span', 'Transcribing', 'indicator'));
     } else {
       status.textContent = STATUS_TEXT[state.status];
     }
 
     const action = state.active
-      ? el('button', 'Detener', 'danger')
-      : el('button', 'Empezar transcripción', 'primary');
+      ? el('button', 'Stop', 'danger')
+      : el('button', 'Start transcribing', 'primary');
     action.disabled = state.status === 'starting' || state.status === 'stopping';
     action.addEventListener('click', () => { void (state.active ? controller.stop() : controller.start()); });
 
     const nodes: Node[] = [header, status, action];
     if (state.status === 'capturing' && !state.captionsDetected) {
-      nodes.push(el('p', 'No se ven subtítulos. Activa los subtítulos de Meet (CC).', 'error'));
+      nodes.push(el('p', 'No captions visible. Turn on Meet captions (CC).', 'error'));
     }
     if (state.conversationId) {
-      nodes.push(el('p', `Enviadas: ${state.sent} · Pendientes: ${state.pending}${state.duplicates ? ` · Repetidas: ${state.duplicates}` : ''}`, 'muted'));
+      nodes.push(el('p', `Sent: ${state.sent} · Pending: ${state.pending}${state.duplicates ? ` · Duplicates: ${state.duplicates}` : ''}`, 'muted'));
     }
     if (state.error) nodes.push(el('p', state.error.message, 'error'));
     if (state.extractionFailures > 0) {
-      nodes.push(el('p', `No se pudieron analizar ${state.extractionFailures} lotes; la transcripción sí se guardó.`, 'muted'));
+      nodes.push(el('p', `${state.extractionFailures} batches could not be analysed; their transcript was saved.`, 'muted'));
     }
     if (state.claims.length > 0) {
       const list = el('ul');
       for (const claim of [...state.claims].reverse()) {
         const item = el('li');
-        const verdict = claim.verdict ? verdictLabels[claim.verdict] : 'Sin verificar';
+        const verdict = claim.verdict ? verdictLabels[claim.verdict] : 'Not checked';
         item.append(el('div', `${claim.speaker}: ${claim.claim}`), el('div', verdict, 'verdict'));
         const source = claim.sources[0];
         if (source) item.append(el('div', source.statement, 'muted'));

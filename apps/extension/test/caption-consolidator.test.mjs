@@ -9,7 +9,7 @@ import {
 } from '../test-dist/caption-consolidator.js';
 import { EXPECTED, STEPS } from './fixtures/meet-call-es.mjs';
 
-const options = { idPrefix: 's1', settleMs: 1200, idleCommitMs: 4000, unknownSpeaker: 'Desconocido' };
+const options = { idPrefix: 's1', settleMs: 1200, idleCommitMs: 4000, unknownSpeaker: 'Unknown' };
 
 function run(steps, extra = {}) {
   const c = createCaptionConsolidator({ ...options, ...extra });
@@ -59,7 +59,7 @@ test('captions without a speaker, and the local user, are classified', () => {
   const c = createCaptionConsolidator(options);
   c.observe([{ speaker: '', text: 'Texto sin hablante' }, { speaker: 'Tú', text: 'Mi pregunta' }], 0);
   const out = c.flush();
-  assert.deepEqual(out.map((u) => [u.speaker, u.speakerKind]), [['Desconocido', 'unknown'], ['Tú', 'self']]);
+  assert.deepEqual(out.map((u) => [u.speaker, u.speakerKind]), [['Unknown', 'unknown'], ['Tú', 'self']]);
   assert.equal(classifySpeaker('You'), 'self');
   assert.equal(classifySpeaker('Marc Puig'), 'named');
 });

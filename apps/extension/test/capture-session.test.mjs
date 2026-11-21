@@ -140,5 +140,5 @@ test('stop gives up after the retry budget, still ends, and reports what was los
   const state = await stopping;
   assert.equal(state.status, 'stopped');
   assert.equal(api.calls.end, 1);
-  assert.match(state.error.message, /2 intervenciones/);
+  assert.match(state.error.message, /2 utterances/);
 });

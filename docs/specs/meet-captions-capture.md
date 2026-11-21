@@ -10,9 +10,9 @@ Builds on `docs/specs/conversation-capture.md` (API) and `packages/shared/src/co
 
 ## What it does
 
-An investor opens a Meet call, clicks the extension icon, presses **Empezar transcripción** and every visible
+An investor opens a Meet call, clicks the extension icon, presses **Start transcribing** and every visible
 caption (investor questions included, for context) is consolidated into final utterances and sent to
-`/api/conversations/:id/utterances`. Claims and verdicts come back and are shown in the panel. **Detener** stops
+`/api/conversations/:id/utterances`. Claims and verdicts come back and are shown in the panel. **Stop** stops
 reading at once, sends what is pending and ends the conversation.
 
 ```text
@@ -46,7 +46,7 @@ meet.google.com tab (content script meet-capture.js)                         ser
   utterance with only the new words (e.g. a pause inside one block).
 - `clientId` = `meet-<8 hex per capture session>-<n>`, assigned when the caption first appears; retries re-send the
   queued object, so the same id. `spokenAt` = when the caption first appeared.
-- Speaker: the name Meet shows; `Tú`/`You` → `speakerKind: "self"`; no name → `"Desconocido"`, `"unknown"`.
+- Speaker: the name Meet shows; `Tú`/`You` → `speakerKind: "self"`; no name → `"Unknown"`, `"unknown"`.
 
 ## UX/UI integration points
 
@@ -66,21 +66,21 @@ capture.showPanel()                          // opens the default panel (the ico
 
 | Field | Use in the UI |
 | --- | --- |
-| `active` | **Show the "Transcribiendo" indicator whenever true** (starting, capturing, stopping). Must stay visible even if the panel is minimized. |
+| `active` | **Show the "Transcribing" indicator whenever true** (starting, capturing, stopping). Must stay visible even if the panel is minimized. |
 | `status` | `idle` → `starting` → `capturing` → `stopping` → `stopped`; or `error`. Disable Start/Stop during `starting`/`stopping`. |
-| `captionsDetected` | `false` while capturing ⇒ prompt "Activa los subtítulos de Meet (CC)". |
+| `captionsDetected` | `false` while capturing ⇒ prompt "Turn on Meet captions (CC)". |
 | `conversationId` | For "view / delete conversation" actions (`GET`/`DELETE /api/conversations/:id`). |
 | `sent`, `pending`, `duplicates`, `openTurns` | Progress. `duplicates` > 0 is normal after a retry. |
 | `claims: ClaimCheck[]` | Speaker, claim, `verdict` (null when `status: "failed"`), `sources`. Labels: `verdictLabels`. |
 | `extractionFailures` | Batches stored without claim analysis. |
-| `error: { kind, message, at } \| null` | Latest problem, cleared by the next success. `message` is ready-to-show Spanish copy. |
+| `error: { kind, message, at } \| null` | Latest problem, cleared by the next success. `message` is ready-to-show English copy (the UI is English since PR #4). |
 
 Error kinds: `api_unreachable` (API down; retrying), `service_unavailable` (503: OpenAI/Postgres; retrying),
 `conversation_closed` (409/404: capture stopped), `rejected` (400: batch dropped, capture continues).
 
 To replace the default panel, remove the `mountMeetPanel` call in `meet-capture.ts` and render from `subscribe`.
-Copy is Spanish; consent text in the default panel: *"Avisa a los participantes antes de empezar. Solo se leen los
-subtítulos visibles de esta pestaña."*
+Copy is English, matching the restyled overlay; consent text in the default panel: *"Tell participants before you
+start. Only the visible captions in this tab are read."*
 
 ## Tests
 
@@ -110,11 +110,11 @@ API_ORIGIN=http://127.0.0.1:3000 npm run test:e2e --workspace @growth-factchekin
 1. Tell every participant the call is being transcribed for fact-checking, and get their OK.
 2. Start the API (above). Load `apps/extension/dist` as an unpacked extension (`chrome://extensions`).
 3. In Meet: turn captions on (CC) and set the caption language to Spanish.
-4. Click the extension icon → **Empezar transcripción**. Check the red "Transcribiendo" indicator.
+4. Click the extension icon → **Start transcribing**. Check the red "Transcribing" indicator.
 5. Two people say the fixture lines (investor greeting + question, founder founding + revenue claims, investor
-   opinion). Then **Detener**.
+   opinion). Then **Stop**.
 6. `GET /api/conversations/<id>`: speakers right, each intervention once, two verdicts. Record a dated note under
-   `docs/evidence/` with the share of utterances whose speaker is `Desconocido` and any missing or merged text.
+   `docs/evidence/` with the share of utterances whose speaker is `Unknown` and any missing or merged text.
 
 ## Limitations
 
@@ -132,10 +132,10 @@ By design / not yet observed live:
 - Selectors are unverified on a live call; obfuscated classes (`KcIKyf`, `bh44bd`, …) change without notice.
   The localized `aria-label` (Captions/Subtítulos) is the most stable hook; `captionsDetected` exposes breakage.
 - Captions must be on, in the spoken language. Public reports describe them as lossy (paraphrase, missing
-  punctuation) and, in some layouts, without a separate speaker element (→ `Desconocido`).
+  punctuation) and, in some layouts, without a separate speaker element (→ `Unknown`).
 - Closing the tab loses at most the last ~3 s of pending utterances; the background still ends the conversation.
 - The API origin is hard-coded to `http://127.0.0.1:3000` like the rest of the extension.
 
 **When to fall back to tab audio** (`/api/transcription/token`, GF-02): when, on live calls, `captionsDetected`
-stays false with captions on, a large share of utterances end up `Desconocido`, text is visibly lost against what
+stays false with captions on, a large share of utterances end up `Unknown`, text is visibly lost against what
 was said, or the platform has no captions. Decide with the numbers from the manual test above.
