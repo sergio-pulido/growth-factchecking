@@ -1,0 +1,9 @@
+{
+  "name": "@growth-factcheking/extension",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": { "build": "tsc --noEmit && node build.mjs" },
+  "dependencies": { "@growth-factcheking/shared": "0.1.0" },
+  "devDependencies": { "@types/chrome": "^0.3.7", "esbuild": "^0.28.2" }
+}

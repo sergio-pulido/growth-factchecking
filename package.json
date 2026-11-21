@@ -1,0 +1,22 @@
+{
+  "name": "growth-factcheking",
+  "private": true,
+  "version": "0.1.0",
+  "engines": {
+    "node": ">=22.14"
+  },
+  "workspaces": [
+    "packages/shared",
+    "apps/api",
+    "apps/extension"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "start": "npm run start --workspace @growth-factcheking/api",
+    "test": "npm run test --workspace @growth-factcheking/api"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "typescript": "~5.9.3"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "Growth FactChecking",
+  "description": "Panel de fact-checking sobre la pestaña activa.",
+  "version": "0.1.0",
+  "minimum_chrome_version": "120",
+  "action": { "default_title": "Abrir Growth FactChecking" },
+  "background": { "service_worker": "background.js" },
+  "permissions": ["activeTab", "scripting"]
+}
