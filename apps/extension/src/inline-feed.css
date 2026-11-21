@@ -220,3 +220,7 @@ a {
   .icon.spinner { animation: none; }
   .chevron { transition: none; }
 }
+
+.timing {
+  font-variant-numeric: tabular-nums;
+}

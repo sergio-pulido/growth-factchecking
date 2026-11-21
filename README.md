@@ -1,11 +1,11 @@
 # Growth FactChecking
 
-Punto de partida para una extensión de Chrome que mostrará verificaciones sobre Google Meet, X y otras páginas web.
+Chrome extension that fact-checks what is said live on Google Meet, Zoom, Teams or any tab with audio, and posts on X.
 
 | Espacio de trabajo | Contenido inicial |
 | --- | --- |
-| `apps/extension` | Extensión Manifest V3 con verificación real, escenarios simulados y una conversación ficticia de Google Meet. |
-| `apps/api` | API local con `GET /health`, `POST /api/fact-check`, `POST /api/fact-check/live` y `POST /api/meet/demo/check`. |
+| `apps/extension` | Manifest V3 extension: call overlay, selected-text checks and X checks. |
+| `apps/api` | Local API: `GET /health`, `POST /api/fact-check`, `POST /api/fact-check/live`, conversations (`/api/conversations`) and `POST /api/transcription/token`. |
 | `packages/shared` | Contrato TypeScript compartido por la extensión y la API. |
 
 ## Arranque local
@@ -68,63 +68,41 @@ Open the **Politics** timeline, X **Bookmarks** with demo posts saved, or an ind
 
 La [demo local de publicaciones](http://127.0.0.1:3000/x-demo) usa el mismo renderizador y la API real sin instalar la extensión. Para cargar los hechos que necesita, ejecuta `npm run seed -- data/demo/x-politics.json` después de migrar la base de datos. Reinicia la API para limpiar los veredictos guardados. To restore the public-source corpus with its existing embeddings, follow the [snapshot instructions](docs/demo-x-posts.md#restore-the-demo-corpus). To regenerate only the real X demo facts, run `npm run seed -- data/demo/x-sourced-facts.json`.
 
-## Overlay design and demo scenarios (Michella and Tomás)
+## Overlay design (Michella and Tomás)
 
-Design and UI contribution for the browser extension by Michella and Tomás. Tomás built the interactive prototype (`FactCheck Prototype.html`); its interaction model is ported into the extension below.
+Design and UI contribution for the browser extension by Michella and Tomás. Tomás built the interactive prototype (`FactCheck Prototype.html`); its interaction model is the call overlay described below.
 
-**Goal.** Show fact checks next to the content a person is already watching, reading or listening to, in a panel that stays out of the way: each claim with a verdict, a short explanation and links to its sources, without leaving the page.
+**Goal.** Show fact checks next to the content a person is already watching, reading or listening to, in a panel that stays out of the way: each claim with a verdict and links to its sources, without leaving the page.
 
-**Panel design** (`apps/extension/src/overlay.css`, `overlay.ts`)
+**Selection panel** (`apps/extension/src/overlay.css`, `overlay.ts`): floating glass panel, movable by its header, minimisable, with a soft glow while a check runs; English verdict labels (True, Likely true, Neutral, Likely false, False) and source links with their domain. It checks the text selected on a page and controls the X checks.
 
-- Floating glass panel: dark translucent background with blur, Helvetica, rounded controls.
-- Resizable from the bottom-right corner, movable by dragging the header, and can be minimised to its header and restored.
-- A soft moving glow around the border only while a check is running; no glow when idle.
-- English UI text across the panel, background messages and verdict labels: True, Likely true, Neutral, Likely false, False.
-- Source links shown at the end of every answer, with the domain of each source.
+**Call overlay** (`apps/extension/src/call/`), from Tomás's prototype:
 
-**Features from Tomás's prototype** (`apps/extension/src/interview-demo.ts`)
-
+- A collapsed pill with live waves, pause and stop, that morphs into a glass panel.
 - Summary line (checked, in progress, needs attention) with a bar showing the mix of verdicts.
-- Tabs: All, Needs attention (False and Likely false) and Skipped.
-- Sentences that are not checkable facts (questions, opinions, personal beliefs, projections) are listed under Skipped with the reason, instead of receiving a verdict.
-- Each claim card: 5-step verdict scale, explanation, suggested follow-up question with Copy, and sources.
-- A "Not checked" state with Retry when sources cannot be reached.
-- The screen edge briefly tints with the verdict colour when a result arrives.
-- When the panel is minimised, new verdicts appear as small cards; clicking one reopens the panel.
-- Select text on the page to show a Check button for that text.
+- Tabs: All, Needs attention (False and Likely false) and Transcript.
+- Each claim card: speaker, minute, 5-step verdict scale, a one-line reading of the verdict and its sources; "Not checked" with Retry when the check fails.
+- The screen edge briefly tints with the verdict colour when a result arrives; with the panel collapsed, new verdicts appear as bubbles above the pill, and clicking one opens the panel on that claim.
 
-### Use case 1: video meeting
+## Live fact-checking on calls
 
-A person in a video call (for example an investor meeting a founder on Google Meet) keeps the panel open beside the call. As each person speaks, the extension takes the spoken sentences, separates checkable statements (figures, dates, agreements) from questions, opinions and projections, and checks each statement against the documents available for that meeting. The panel shows the verdict, the evidence, and a suggested follow-up question the listener can ask while the call is still going. Nothing is said in the call by the extension; it only informs the person using it.
+Click the extension icon on the call's tab to open the FactCheck overlay. On Google Meet, Zoom (web client) and Microsoft Teams (web), the **Check this call** pill also appears on its own once you are in a call. The panel says what it will do; tell the participants, then press **Start checking**.
 
-- Example used for this scenario: a fictional startup, Nébula Salud. Clara, an investor, asks Mateo, the founder, about traction; his figures on customers, revenue, retention and a hospital pilot are checked against fictional company records.
-- Tomás's prototype shows this flow end to end with captions, the collapsed panel and verdict cards.
-- In the repository, the simulated call is `apps/extension/src/meet-demo.ts` with the API endpoint `POST /api/meet/demo/check` (see "Simulación de Google Meet" below). Sources and verdicts are fictional.
+- **Meet, Zoom web and Teams web:** the extension reads the app's own captions, with the speaker's name, and turns them on if they are off. Meet captions go through the GF-03 caption engine ([spec](docs/specs/meet-captions-capture.md)).
+- **Any other tab** (another video service, a webinar, a YouTube interview…): the extension captures the tab's audio and transcribes it with OpenAI. Pick the conversation language before starting. Audio is never stored and speakers are not named. Your own microphone is not part of the tab's audio.
 
-### Use case 2: video interview
+Each sentence is stored by the local API, which extracts the checkable claims and checks them against the corpus. **Pause** stops sending what is said, **Stop** ends the conversation and **Delete conversation** erases it from the database. There are no simulated calls: the overlay only runs over real pages.
 
-A person watching a long-form video interview opens the panel on YouTube. On YouTube (and Google Meet) the panel opens the offline **interview demo**: press **Play interview demo**, then **Play interview**. It replays excerpts of an interview (The Wild Project, Jordi Wild with Pedro Sánchez, November 2026) and checks the statements made in it. It is one example scenario; the same flow applies to any speaker or topic.
+**Use case 1: video meeting.** A person in a video call keeps the pill in the corner. As each person speaks, the checkable statements (figures, dates, agreements) are checked against the documents in the corpus for that meeting, such as the founder's pitch deck, and flagged when the sources contradict them. The extension does not speak in the call; it only informs the person using it.
 
-- Runs entirely in the extension: no API, no network, no OpenAI key.
-- Statements are paraphrased from press coverage of the interview, and timestamps are approximate.
-- Verdicts and sources are **sample results for the demo**, not published fact checks. They describe whether the available sources support a statement; they do not evaluate the speaker, a party or a policy.
-- Opinions and personal beliefs are skipped rather than rated.
+- Example: a founder pitches on a video call hosted by itnig, with OpenAI in the role of the investor. While the founder presents, the investor checks the figures they say (customers, revenue, retention, signed pilots) against the numbers in the founder's pitch deck and the documents shared before the call. Where the spoken figure and the deck differ, the panel flags it.
+- This example is **illustrative and hypothetical**. itnig and OpenAI are named only to describe the setting of the hackathon demo; it does not describe a real meeting and implies no affiliation, partnership or endorsement.
 
-## Simulación de Google Meet
+**Use case 2: video interview.** Someone watching a long-form interview on YouTube clicks the extension icon and checks the audio of that tab. Verdicts describe whether the available sources support a statement; they do not evaluate the speaker, a party or a policy.
 
-El código de esta simulación sigue en `apps/extension/src/meet-demo.ts`; es el caso de uso 1 descrito arriba (reunión por vídeo); el panel abre ahora la demo de entrevista (caso de uso 2). En la versión anterior del panel se pulsaba **Simular Google Meet** y **Reproducir**. Clara, una inversora, pide a Mateo cifras de su empresa ficticia. El panel reproduce seis intervenciones y muestra cuatro afirmaciones verificables del emprendedor, con sus veredictos y fuentes de ejemplo. Las reglas de extracción están ajustadas a esta transcripción.
+It needs the API with `OPENAI_API_KEY` and `DATABASE_URL`, a migrated database and an imported corpus. The Zoom and Teams desktop apps are out of reach for a Chrome extension: use their web versions. The Meet acceptance test runs a scripted caption timeline against the real API: `API_ORIGIN=http://127.0.0.1:3000 npm run test:e2e --workspace @growth-factcheking/extension` (corpus: `data/demo/meet-startup.json`).
 
-El modo **Simulado** sirve para trabajar con resultados reproducibles. Para usar **OpenAI Decisions**, guarda `OPENAI_API_KEY` en el archivo `.env` de la raíz, reinicia la API con `npm start` y elige ese motor en el panel.
-
-La llamada a Decisions usa las afirmaciones de la demo y sus fuentes ficticias. El piloto sin documentación queda neutral. La demo se puede consultar directamente con:
-
-```bash
-curl -fsS 'http://127.0.0.1:3000/api/meet/demo/check' \
-  -H 'Content-Type: application/json' \
-  -d '{"turnId":"traction","mode":"mock"}'
-```
-
-[Especificación de la simulación](docs/specs/meet-demo.md) · [OpenAI Decisions](https://developers.openai.com/api/docs/guides/decisions)
+[Call overlay spec](docs/specs/call-overlay.md)
 
 ## Escenarios de prueba
 
@@ -155,6 +133,6 @@ Afirmación → Extensión → API
                           └─ OpenAI Decisions clasifica la afirmación con esos hechos
 ```
 
-La captura de conversaciones reales forma parte del flujo previsto.
+Conversations are captured from Meet, Zoom web and Teams web captions, or from any tab's audio.
 
 [Especificación inicial](docs/specs/fact-checking-mvp.md) · [Estado del proyecto](docs/PROJECT_STATE.md) · [Decisiones de arquitectura](docs/DECISIONS.md)

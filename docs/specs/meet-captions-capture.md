@@ -1,5 +1,10 @@
 # [GF-03] Google Meet captions capture (first milestone)
 
+> Update (2026-11-21, call overlay merge): the caption engine below (`meet-captions-dom.ts`,
+> `caption-consolidator.ts`) is what the call overlay uses for Meet, through `call/meet-source.ts`. The capture
+> session, controller, service-worker bridge and default panel listed below were replaced by the overlay's
+> session and panel ([call-overlay.md](call-overlay.md)); the e2e acceptance test now drives the overlay session.
+
 Status: **implemented** on branch `feat/meet-captions-capture` (extension tests 30/30, API tests 30/30).
 End-to-end acceptance run against the real API on 2026-11-21: see
 [docs/evidence/2026-11-21-meet-captions.md](../evidence/2026-11-21-meet-captions.md).

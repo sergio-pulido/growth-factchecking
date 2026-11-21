@@ -2,7 +2,6 @@ import { CLAIM_MAX_LENGTH, DEMO_SCENARIOS } from '@growth-factcheking/shared';
 import type { DemoScenario } from '@growth-factcheking/shared';
 import type { FactCheckMessage, FactCheckMode, FactCheckResponse } from './messages.js';
 import { isXFactCheckPage, startInlineFeed } from './inline-feed.js';
-import { createInterviewDemo } from './interview-demo.js';
 import styles from './overlay.css';
 import { verdictLabels } from './verdict-labels.js';
 
@@ -20,7 +19,8 @@ declare global {
   }
 }
 
-function mountOverlay() {
+/** Panel that checks the text selected on the page (and toggles the X feed checks on X). */
+export function mountOverlay() {
   const selection = window.getSelection()?.toString().trim().slice(0, CLAIM_MAX_LENGTH) || '';
   window.growthFactCheckingOverlay?.();
 
@@ -112,28 +112,6 @@ function mountOverlay() {
   sources.append(sourceTitle, sourceList);
   const scenarioView = document.createElement('div');
   scenarioView.append(demo, quote, form, status, sources);
-  const meet = createInterviewDemo((busy) => host.toggleAttribute('data-busy', busy), {
-    isMinimised: () => panel.classList.contains('is-min'),
-    expand: () => {
-      panel.classList.remove('is-min');
-      minimise.setAttribute('aria-pressed', 'false');
-      showMeet(true);
-    },
-  });
-  const changeView = document.createElement('button');
-  changeView.type = 'button';
-  changeView.className = 'meet-switch';
-
-  function showMeet(show: boolean) {
-    scenarioView.hidden = show;
-    meet.view.hidden = !show;
-    changeView.textContent = show ? 'Back to checks' : 'Play interview demo';
-    title.textContent = show ? 'The Wild Project demo' : 'FactChecking';
-    if (!show) meet.stop();
-  }
-
-  showMeet(['meet.google.com', 'www.youtube.com', 'youtube.com'].includes(window.location.hostname));
-  changeView.addEventListener('click', () => showMeet(meet.view.hidden));
   if (isXFactCheckPage()) {
     const active = Boolean(window.growthFactCheckingFeed);
     const feed = document.createElement('div');
@@ -157,7 +135,7 @@ function mountOverlay() {
     feed.append(toggle, note);
     scenarioView.prepend(feed);
   }
-  panel.append(meet.toasts, changeView, scenarioView, meet.view);
+  panel.append(scenarioView);
 
   let mode: FactCheckMode = 'mock';
   let busy = true;
@@ -268,7 +246,6 @@ function mountOverlay() {
 
   const previousFocus = document.activeElement;
   function dismiss() {
-    meet.destroy();
     host.remove();
     window.growthFactCheckingOverlay = undefined;
     if (previousFocus instanceof HTMLElement) previousFocus.focus();
@@ -284,5 +261,3 @@ function mountOverlay() {
   document.documentElement.append(host);
   close.focus();
 }
-
-mountOverlay();

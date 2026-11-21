@@ -5,7 +5,8 @@ import { JSDOM } from 'jsdom';
 const { window } = new JSDOM('<!doctype html><body></body>');
 globalThis.document = window.document;
 globalThis.NodeFilter = window.NodeFilter;
-const { findCheckedRange, sourceLabel } = await import('../test-dist/inline-feed.js');
+const { findCheckedRange } = await import('../test-dist/inline-feed.js');
+const { sourceLabel } = await import('../test-dist/card.js');
 
 function post(html) {
   const element = document.createElement('div');

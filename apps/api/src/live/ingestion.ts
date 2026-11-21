@@ -18,12 +18,13 @@ export function parseFacts(input: unknown): FactInput[] {
     };
     if (typeof row !== 'object' || row === null) return fail('expected an object.');
 
-    const { id, statement, sourceUrl, sourceTitle, additionalSourceUrls } = row as Partial<Record<keyof FactInput, unknown>>;
+    const { id, statement, statementEn, sourceUrl, sourceTitle, additionalSourceUrls } = row as Partial<Record<keyof FactInput, unknown>>;
     if (typeof id !== 'string' || !/^[a-zA-Z0-9_-]{1,100}$/.test(id)) return fail('invalid ID.');
     if (ids.has(id)) return fail('duplicate ID.');
-    if (typeof statement !== 'string' || !statement.trim() || Array.from(statement.trim()).length > CLAIM_MAX_LENGTH) {
-      return fail('invalid statement.');
-    }
+    const isStatement = (value: unknown): value is string =>
+      typeof value === 'string' && Boolean(value.trim()) && Array.from(value.trim()).length <= CLAIM_MAX_LENGTH;
+    if (!isStatement(statement)) return fail('invalid statement.');
+    if (statementEn !== undefined && !isStatement(statementEn)) return fail('invalid English statement.');
     if (!isSourceUrl(sourceUrl)) return fail('expected an HTTP(S) source URL without credentials.');
     if (additionalSourceUrls !== undefined) {
       if (!Array.isArray(additionalSourceUrls) || additionalSourceUrls.length > 5 || !additionalSourceUrls.every(isSourceUrl)) {
@@ -39,6 +40,7 @@ export function parseFacts(input: unknown): FactInput[] {
     return {
       id,
       statement: statement.trim(),
+      ...(statementEn === undefined ? {} : { statementEn: statementEn.trim() }),
       sourceUrl,
       ...(sourceTitle === undefined ? {} : { sourceTitle: sourceTitle.trim() }),
       ...(additionalSourceUrls === undefined ? {} : { additionalSourceUrls }),

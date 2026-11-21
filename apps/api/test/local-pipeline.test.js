@@ -51,6 +51,9 @@ test('live ingestion accepts both corpus formats and rejects invalid source reco
   assert.deepEqual(parseFacts([fact]), [fact]);
   const corroborated = { ...fact, additionalSourceUrls: ['https://example.org/other-source'] };
   assert.deepEqual(parseFacts([corroborated]), [corroborated]);
+  const translated = { ...fact, statementEn: 'The Puerto Aurora planetarium opens on Fridays.' };
+  assert.deepEqual(parseFacts([{ ...translated, statementEn: ` ${translated.statementEn} ` }]), [translated]);
+  assert.throws(() => parseFacts([{ ...fact, statementEn: ' ' }]), /English statement/);
   assert.throws(() => parseFacts([{ ...fact, additionalSourceUrls: [fact.sourceUrl] }]), /duplicate source/);
   assert.throws(() => parseFacts({ facts: [fact, fact] }), /duplicate ID/);
   assert.throws(() => parseFacts([fact, { ...fact, id: 'other', sourceUrl: 'file:///tmp/source' }]), /HTTP/);
@@ -65,4 +68,18 @@ test('the X demo endpoint exposes numeric post IDs from the curated collection',
   assert.ok(postIds.length >= 5);
   assert.equal(postIds.length, new Set(postIds).size);
   assert.ok(postIds.every((id) => typeof id === 'string' && /^\d+$/.test(id)));
+});
+
+test('the news demo endpoint lists approved articles with the sentences to check', async (t) => {
+  const app = createApp(false);
+  t.after(() => app.close());
+  const response = await app.inject('/api/news-demo/articles');
+  assert.equal(response.statusCode, 200);
+  const { articles } = response.json();
+  assert.ok(articles.length >= 10);
+  assert.equal(articles.length, new Set(articles.map(({ url }) => url)).size);
+  for (const { url, claims } of articles) {
+    assert.match(url, /^https:\/\//);
+    assert.ok(Array.isArray(claims) && claims.every((claim) => typeof claim === 'string' && claim.trim() && claim.length <= 1000));
+  }
 });

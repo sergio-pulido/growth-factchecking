@@ -3,16 +3,19 @@
     {
       "id": "es-generales-2026-fecha",
       "statement": "A 21 de noviembre de 2026, están convocadas en España elecciones al Congreso de los Diputados y al Senado para el domingo 29 de noviembre de 2026, mediante el Real Decreto 806/2026, de 5 de octubre.",
+      "statementEn": "As of 21 November 2026, elections to Spain's Congress of Deputies and Senate are called for Sunday 29 November 2026 by Royal Decree 806/2026 of 5 October.",
       "sourceUrl": "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2026-20742"
     },
     {
       "id": "es-generales-2026-madrid-diputados",
       "statement": "En las elecciones al Congreso de los Diputados convocadas para el 29 de noviembre de 2026, a la circunscripción de Madrid le corresponden 38 diputados, según el anexo del Real Decreto 806/2026.",
+      "statementEn": "In the Congress of Deputies election called for 29 November 2026, the Madrid constituency elects 38 deputies, according to the annex to Royal Decree 806/2026.",
       "sourceUrl": "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2026-20742"
     },
     {
       "id": "es-cera-2026-urna-plazos",
       "statement": "Para las generales españolas del 29 de noviembre de 2026, el período ordinario de depósito presencial de voto CERA en embajadas, consulados o centros habilitados es del 21 al 26 de noviembre, ambos incluidos.",
+      "statementEn": "For Spain's 29 November 2026 general election, the ordinary period for CERA voters to cast their vote in person at embassies, consulates or designated centres runs from 21 to 26 November, inclusive.",
       "sourceUrl": "https://www.lamoncloa.gob.es/serviciosdeprensa/notasprensa/interior/Paginas/voto-extranjero-elecciones-generales-29n.aspx"
     },
     {

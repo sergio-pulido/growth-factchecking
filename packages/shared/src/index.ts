@@ -15,21 +15,10 @@ export type FactCheckResult = {
   verdict: Verdict;
   sources: Array<{
     statement: string;
+    /** English rendering of `statement`, when the fact is not already in English. */
+    statementEn?: string;
     sourceUrl: string;
   }>;
-};
-
-export { MEET_TRANSCRIPT } from './meet-demo.js';
-export type { MeetTurn } from './meet-demo.js';
-
-export const MEET_DEMO_PATH = '/api/meet/demo/check';
-export const MEET_JUDGES = ['mock', 'decisions'] as const;
-export type MeetJudge = (typeof MEET_JUDGES)[number];
-
-export type MeetCheckRequest = { turnId: string; mode: MeetJudge };
-
-export type MeetCheckResult = {
-  checks: Array<FactCheckResult & { claim: string }>;
 };
 
 export * from './conversations.js';
