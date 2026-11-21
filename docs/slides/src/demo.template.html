@@ -61,7 +61,7 @@
   .dek { max-width: 600px; font-size: 26px; line-height: 1.35; color: var(--ink-2); }
 
   /* ---------- Left: the live demo ---------- */
-  .demo { margin-top: 32px; display: flex; flex-direction: column; }
+  .demo { margin-top: 32px; display: flex; flex-direction: column; justify-content: center; align-self: center; }
   .kicker { font-family: var(--mono); font-size: 19px; font-weight: 600; color: var(--ink-3); display: flex; align-items: center; gap: 12px; }
   .kicker .live { display: inline-flex; align-items: center; gap: 8px; color: var(--bad); }
   .kicker .live i { width: 10px; height: 10px; border-radius: 50%; background: var(--bad); animation: blink 1.4s ease-in-out infinite; }
@@ -119,7 +119,7 @@
   .fade.out { opacity: 0; }
 
   /* ---------- Right: where it works ---------- */
-  .where { margin-top: 32px; display: flex; flex-direction: column; }
+  .where { margin-top: 32px; display: flex; flex-direction: column; justify-content: center; align-self: center; }
   .row { padding: 16px 0; border-bottom: 1px solid var(--rule); display: grid; grid-template-columns: 250px 1fr; gap: 24px; align-items: center; }
   .row:first-of-type { padding-top: 12px; }
   .row h3 { font-family: var(--serif); font-size: 34px; font-weight: 600; line-height: 1.05; }
@@ -224,7 +224,7 @@
 <body>
 <main id="stage" class="stage">
   <header>
-    <h1 class="in d1">Fact-checked <em>where</em><br>you read it.</h1>
+    <h1 class="in d1">Fact-checked <em>everywhere.</em></h1>
   </header>
 
   <section class="demo in d3" aria-label="Live example">
