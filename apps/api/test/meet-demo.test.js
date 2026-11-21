@@ -77,3 +77,16 @@ test('invalid turns, missing configuration and Decisions failures have distinct 
   assert.equal((await checkTurn(app, 'traction', 'decisions')).statusCode, 503);
   assert.equal((await checkTurn(failingApp, 'traction', 'decisions')).statusCode, 502);
 });
+
+test('a rejected OpenAI key has an actionable error without provider response details', async (t) => {
+  const app = Fastify();
+  t.after(() => app.close());
+  registerMeetDemo(app, createPitchDecider('test-key', async () => Response.json({
+    error: { message: 'Private authentication details', code: 'invalid_api_key' },
+  }, { status: 401 })));
+
+  const response = await checkTurn(app, 'traction', 'decisions');
+  assert.equal(response.statusCode, 503);
+  assert.match(response.json().message, /Actualiza OPENAI_API_KEY/);
+  assert.doesNotMatch(response.body, /Private authentication details/);
+});

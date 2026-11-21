@@ -33,11 +33,7 @@ El modo simulado solo necesita Node.js.
 
 En el panel de la extensión, pulsa **Simular Google Meet** y **Reproducir**. Clara, una inversora, pide a Mateo cifras de su empresa ficticia. El panel reproduce seis intervenciones y muestra cuatro afirmaciones verificables del emprendedor, con sus veredictos y fuentes de ejemplo. Las reglas de extracción están ajustadas a esta transcripción.
 
-El modo **Simulado** sirve para trabajar con resultados reproducibles. Para usar **OpenAI Decisions** en el mismo panel, configura `OPENAI_API_KEY` en el entorno del servidor y vuelve a iniciarlo. Por ejemplo, si guardaste la clave en un archivo `.env` local, desde la raíz ejecuta:
-
-```bash
-node --env-file=.env apps/api/dist/index.js
-```
+El modo **Simulado** sirve para trabajar con resultados reproducibles. Para usar **OpenAI Decisions**, guarda `OPENAI_API_KEY` en el archivo `.env` de la raíz, reinicia la API con `npm start` y elige ese motor en el panel.
 
 La llamada a Decisions usa las afirmaciones de la demo y sus fuentes ficticias. El piloto sin documentación queda neutral. La demo se puede consultar directamente con:
 

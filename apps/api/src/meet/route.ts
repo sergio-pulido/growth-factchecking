@@ -1,6 +1,7 @@
 import { MEET_DEMO_PATH, MEET_JUDGES, MEET_TRANSCRIPT } from '@growth-factcheking/shared';
 import type { MeetCheckRequest, MeetCheckResult } from '@growth-factcheking/shared';
 import type { FastifyInstance } from 'fastify';
+import { DecisionsHttpError } from './decisions.js';
 import type { DecidePitch } from './decisions.js';
 import { extractPitchClaims } from './pitch.js';
 
@@ -55,6 +56,11 @@ export function registerMeetDemo(app: FastifyInstance, decide?: DecidePitch): vo
         return { checks };
       } catch (error) {
         request.log.warn({ err: error }, 'Falló Decisions en la demo de Meet.');
+        if (error instanceof DecisionsHttpError && error.statusCode === 401) {
+          return reply.code(503).send({
+            message: 'OpenAI rechazó la clave. Actualiza OPENAI_API_KEY en .env y reinicia la API local.',
+          });
+        }
         return reply.code(502).send({ message: 'No se pudo obtener un veredicto de Decisions para este turno.' });
       }
     },

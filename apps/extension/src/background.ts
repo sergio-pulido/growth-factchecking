@@ -54,6 +54,9 @@ function postJson(url: URL, body: object, timeoutMs: number) {
 
 async function checkMeetDemo({ turnId, mode }: MeetDemoRequest): Promise<MeetDemoResponse> {
   const response = await postJson(new URL(MEET_DEMO_PATH, apiOrigin), { turnId, mode }, 10_000);
+  if (response.status === 404) {
+    return { ok: false, message: 'Reinicia la API local con npm start para cargar la demo de Meet.' };
+  }
   const data: unknown = await response.json();
   if (!response.ok) {
     const message = typeof data === 'object' && data !== null && 'message' in data

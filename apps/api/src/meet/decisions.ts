@@ -4,6 +4,12 @@ import type { MeetCheckResult, Verdict } from '@growth-factcheking/shared';
 type PitchCase = Pick<MeetCheckResult['checks'][number], 'claim' | 'sources'>;
 export type DecidePitch = (claims: readonly PitchCase[]) => Promise<Verdict[]>;
 
+export class DecisionsHttpError extends Error {
+  constructor(readonly statusCode: number) {
+    super(`OpenAI Decisions respondió con HTTP ${statusCode}.`);
+  }
+}
+
 const descriptions: Record<Verdict, string> = {
   yes: 'La evidencia confirma la afirmación completa.',
   probably_yes: 'La evidencia favorece la afirmación, pero quedan lagunas.',
@@ -40,7 +46,7 @@ export function createPitchDecider(apiKey: string, send = fetch): DecidePitch {
     });
     if (!response.ok) {
       await response.body?.cancel();
-      throw new Error(`OpenAI Decisions respondió con HTTP ${response.status}.`);
+      throw new DecisionsHttpError(response.status);
     }
 
     const payload: unknown = await response.json();
