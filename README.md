@@ -141,3 +141,7 @@ Afirmación → Extensión → API
 Conversations are captured from the microphone and tab audio in Meet, captions in Zoom web and Teams web, or tab audio on other pages.
 
 [Especificación inicial](docs/specs/fact-checking-mvp.md) · [Estado del proyecto](docs/PROJECT_STATE.md) · [Decisiones de arquitectura](docs/DECISIONS.md)
+
+## Team
+
+Jaume Puig, Sergio Pulido, Tomás Becerra and Michella Warren.
