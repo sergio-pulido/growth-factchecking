@@ -145,3 +145,7 @@ Conversations are captured from the microphone and tab audio in Meet, captions i
 ## Team
 
 Jaume Puig, Sergio Pulido, Tomás Becerra and Michella Warren.
+
+## Pitch deck
+
+[View the pitch deck on Figma](https://www.figma.com/design/Yoto3ZAccGXgUKM0e9YYtO/Bias-Checker_Open-AI-Hackathon?node-id=1-2)
