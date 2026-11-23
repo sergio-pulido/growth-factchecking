@@ -1,4 +1,4 @@
-# Growth FactChecking
+# Bias Checker
 
 Chrome extension that fact-checks what is said live on Google Meet, Zoom, Teams or any tab with audio, and posts on X.
 
